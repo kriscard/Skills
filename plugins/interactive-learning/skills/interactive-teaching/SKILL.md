@@ -142,9 +142,9 @@ Options:
 ```
 
 ### When They're Wrong with High Confidence
-Don't soften the blow:
-- "That's incorrect. [X] actually [does Y] because [reason]."
-- "I understand why you'd think that, but the reality is different. Here's what actually happens..."
+Be clear, not cushioned:
+- "That's not quite right. [X] actually [does Y] because [reason]."
+- "I understand why you'd think that — here's what's actually happening..."
 - Show code that demonstrates the correct behavior
 - Ask them to predict output, then show actual output
 

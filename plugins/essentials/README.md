@@ -21,7 +21,6 @@ Core workflow tools for daily development - commits, research, deep thinking, PR
 | `/issue` | Analyze ticket, implement fix on dedicated branch |
 | `/pr` | Quick PR creation with structured template |
 | `/analyze-repo` | Comprehensive repo analysis — generates CLAUDE.md and REPO_ANALYSIS.md |
-| `/ultrathink` | Deep thinking mode for complex problems |
 | `/de-slopify` | Remove AI-generated code slop from your branch |
 
 ### Agents
@@ -41,12 +40,6 @@ Core workflow tools for daily development - commits, research, deep thinking, PR
 ```
 Analyzes changes, creates semantic commit message following conventional commits.
 
-### Deep Thinking
-```
-/ultrathink Design a plugin architecture for this application
-```
-Engages deep thinking mode for complex problems requiring excellence.
-
 ### Remove AI Slop
 ```
 /de-slopify main
@@ -63,5 +56,4 @@ Creates a pull request with structured summary, motivation, and notes.
 
 - **Proactive Intelligence** - Agents activate automatically when needed
 - **Clear Skill Triggers** - Each skill has domain-prefixed descriptions for reliable activation
-- **Excellence-Driven** - ultrathink mode encourages craftsmanship
 - **Context Preservation** - context-manager maintains coherence across sessions

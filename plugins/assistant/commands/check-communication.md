@@ -1,6 +1,6 @@
 # Staff Communication Review
 
-Analyze the following message against staff-level communication frameworks. Be direct and concise — flag what's weak, acknowledge what's strong.
+Analyze the following message against staff-level communication frameworks. Read it as a peer who wants the message to land, not as a judge looking for faults.
 
 ## Message to Review
 
@@ -28,50 +28,45 @@ State the detected type before proceeding. This determines which frameworks appl
 Score each as **Strong / Acceptable / Needs Work / Missing**. Skip dimensions that don't apply to the detected message type.
 
 ### BLUF (Bottom Line Up Front)
-Does it lead with conclusion/need, then context, then ask?
-- Anti-pattern: burying the point in paragraph 3
+Does it lead with conclusion/need, then context, then ask? Watch for the point buried in paragraph 3.
 
 ### Problem Level Clarity
-Is it clear WHAT level the message operates at?
+Is it clear what level the message operates at?
 - Level 1: Goal → Level 2: Problem → Level 3: Approach → Level 4: Solution
-- Anti-pattern: jumping to solution without stating the problem
+- Common miss: jumping to solution without stating the problem
 
 ### Trade-offs & Alternatives
-Does it name downsides of its own proposal? Mention rejected alternatives?
-- Anti-pattern: presenting only upsides (signals inexperience or bias)
+Does it name downsides of its own proposal? Mention rejected alternatives? Naming the cons builds credibility; presenting only upsides usually backfires.
 
 ### Ask Clarity
-Is there a clear action requested? From whom? By when?
-- Anti-pattern: vague "thoughts?" endings with no specific ask
+Is there a clear action requested? From whom? By when? A vague "thoughts?" with no specific ask leaves people unsure what to do next.
 
 ### Tone & Framing
-- Steel Man: Does it strengthen others' positions before countering?
+- Steel Man: does it strengthen others' positions before countering?
 - "Us vs the problem" framing, not "me vs you"
-- Anti-pattern: "As I already explained...", defensive language, talking down
+- Watch for: "As I already explained...", defensive language, or anything that makes the reader feel talked down to
 
 ### Signal-to-Noise Ratio
-Could it be shorter without losing meaning?
-- Anti-pattern: over-detailing, burying signal in noise
+Could it be shorter without losing meaning? The best edits cut words, not ideas.
 
 ### Audience Awareness
-Right level of detail for the audience?
-- Anti-pattern: explaining basics to experts, jargon to non-technical stakeholders
+Right level of detail for the audience? Explaining basics to experts wastes their time; heavy jargon with non-technical stakeholders loses the room.
 
 ## Step 3: Type-Specific Evaluation
 
 Apply ONLY the section matching the detected type.
 
 ### If Status Update → STATUS Framework
-- **S**tate — On track / At risk / Blocked
-- **T**arget — Deliverable and deadline
-- **A**chieved — Impact, not activity ("reduced latency 40%" not "worked on caching")
-- **T**hreats — What could go wrong
-- **US** — Unblocks needed from others
+- **State**: on track / at risk / blocked
+- **Target**: deliverable and deadline
+- **Achieved**: impact over activity ("reduced latency 40%", not "worked on caching")
+- **Threats**: what could go wrong
+- **Unblocks**: what you need from others
 
 ### If Standup → 30-Second Formula
-- **Signal** (5s) — What moved + impact
-- **Need** (5s) — What you need from the team
-- **Radar** (10s) — Something you noticed affecting others
+- **Signal** (5s): what moved and what it changed
+- **Need** (5s): what you need from the team
+- **Radar** (10s): something you noticed that affects others
 - Staff standups coordinate, they don't report accountability
 
 ### If Proposal / RFC → Proposal Structure
@@ -90,7 +85,7 @@ Apply ONLY the section matching the detected type.
 ### If Disagreement → Conflict Resolution
 - Steel Man technique (make their argument stronger, then compare)
 - Goes down one level to find agreement
-- Disagree and commit readiness ("I can commit — but want to flag [risk]")
+- Disagree and commit readiness ("I can commit, but want to flag [risk]")
 - Unlock questions when someone repeats themselves
 
 ### If Slack Message → Async Communication
@@ -100,26 +95,24 @@ Apply ONLY the section matching the detected type.
 
 ## Output Format
 
-```
-## Detected Type: [type]
+Write the feedback as natural prose with light markdown headers. Do not wrap the output in a code block.
 
-## Rating: [Senior / Staff / Principal]
+**Detected Type:** [type]
 
-### What's Working
-- [specific strengths with quotes from the message]
+**What's landing well**
+Start here. Name 1-2 specific strengths with a short quote from the message. Peer-level tone: you're reading this as a colleague who wants it to succeed, not as a judge.
 
-### Needs Improvement
-- [specific issues with concrete rewrites]
+**What to tighten**
+For each issue: name it plainly, explain why it matters in context, then offer a concrete rewrite. Keep it to 2-3 issues max — more than that and the feedback stops being useful.
 
-### Rewritten Version
-[Provide a staff-level rewrite preserving the author's voice]
-```
+**A version to steal from**
+Offer a rewrite that preserves the author's voice and intent. Improve the structure; don't swap their personality for a template. If the original is already strong, say so and note one small thing worth considering.
 
 ## Rules
 
-- Be blunt. Sugarcoating defeats the purpose.
-- Always provide concrete rewrites for weak areas, not just labels.
-- The rewritten version should preserve the author's voice — improve structure, not personality.
-- If the message is already strong, say so briefly. Still note 1 minor improvement if possible.
-- Apply the 2:1 ratio insight: staff communicators ask ~2 questions per statement.
-- The "No surprises" rule — flag if the message would surprise stakeholders in a group setting.
+- Honest and direct, but written as a peer, not a performance review.
+- Name issues plainly without labeling the person. "The ask is buried" not "this signals inexperience."
+- Concrete rewrites over abstract labels every time.
+- If the message is strong, acknowledge it genuinely. Don't manufacture criticism.
+- Flag the "no surprises" risk if the message would catch stakeholders off guard in a group setting.
+- Apply the 2:1 ratio insight: staff communicators ask roughly twice as many questions as they make statements.

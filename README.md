@@ -66,7 +66,7 @@ pi install npm:pi-subagents
 
 | Plugin | Description | How to Use |
 |--------|-------------|------------|
-| [essentials](./plugins/essentials) | Core workflow tools - commits, specs, PRs, deep thinking | **Commands:** `/commit`, `/spec`, `/deep-spec`, `/issue`, `/pr`, `/ultrathink`, `/analyze-repo`, `/de-slopify`<br>**Auto-enforces:** Skill usage across all interactions |
+| [essentials](./plugins/essentials) | Core workflow tools - commits, specs, PRs, and workflow enforcement | **Commands:** `/commit`, `/spec`, `/deep-spec`, `/issue`, `/pr`, `/analyze-repo`, `/de-slopify`<br>**Auto-enforces:** Skill usage across all interactions |
 | [assistant](./plugins/assistant) | Engineer workflow assistant - standups, career tracking, quality checks, context management | **Commands:** `/standup`, `/weekly-summary`, `/quality-check`, `/context-save`, `/context-restore`, `/staff-progress`<br>**Auto-suggests:** Actions after commits/PRs, learning from your patterns |
 | [ideation](./plugins/ideation) | Transform brain dumps into structured implementation artifacts | **Commands:** `/ideation`, `/validate-output`<br>**Workflow:** Confidence → Questions → Contract → PRDs → Specs |
 | [content](./plugins/content) | Blog posts, documentation, and conference talks | **Commands:** `/write-blog`, `/create-talk`<br>**Natural language:** "Write a blog about...", "Help me document..." |
