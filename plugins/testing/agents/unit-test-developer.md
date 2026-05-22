@@ -55,12 +55,14 @@ Expert unit test generation specialist focused on analyzing existing code and ge
 - Component accessibility testing with React Testing Library
 - React performance testing and rendering optimization validation
 - Mock implementation for React hooks and component dependencies
+- **RTL v16**: `@testing-library/dom` and `@types/react-dom` are now peer dependencies — install explicitly or installs silently break
 
 ### Frontend Testing Tools & Frameworks
 
 - Vitest as modern Jest alternative with Vite integration
-- Happy DOM and jsdom for faster DOM simulation
-- MSW (Mock Service Worker) for comprehensive API mocking
+- **Vitest 3 Browser Mode**: run component tests in real Chromium/Firefox/Safari via Playwright — all native browser APIs (clipboard, sessionStorage, geolocation, web workers) work without polyfills; 30% faster than full Playwright E2E for component-level scenarios
+- Happy DOM (preferred default over jsdom for speed) and jsdom for DOM simulation
+- **MSW v2**: `http.get('/api/user', () => HttpResponse.json({...}))` — `rest.*` from v1 is removed; use `http.*` and `HttpResponse` from `msw`; always set `onUnhandledRequest: 'error'` in tests
 - Storybook testing integration and component documentation
 - Chrome DevTools integration for debugging and performance analysis
 - React DevTools testing utilities and component inspection
@@ -120,6 +122,8 @@ Expert unit test generation specialist focused on analyzing existing code and ge
   **Do**: Fix or remove failing tests immediately; they erode trust in the test suite
 - **Don't**: Aim for 100% coverage as a goal
   **Do**: Focus on testing critical paths and edge cases; coverage is a metric, not a goal
+- **Don't**: Call `userEvent` methods without a session (`await userEvent.click(btn)`)
+  **Do**: Call `const user = userEvent.setup()` before `render()` — maintains pointer/keyboard state across chained interactions
 - **Don't**: Use arbitrary sleeps or waits in tests
   **Do**: Use proper async/await patterns or testing library utilities for timing
 - **Don't**: Copy-paste test code creating duplication
@@ -183,6 +187,7 @@ Expert unit test generation specialist focused on analyzing existing code and ge
 - **TDD Discipline**: Write failing test first, make it pass with minimal code, then refactor
 - **Test Maintainability**: Refactor tests as you refactor code; keep tests DRY
 - **Component Testing Strategy**: Use React Testing Library patterns, test user interactions
+- **Vitest 3 Browser Mode**: when a component needs real browser APIs (clipboard, geolocation, sessionStorage), run it in browser mode with Playwright provider instead of jsdom — configure per-file with `// @vitest-environment browser` or globally via `environment: 'browser'` in vitest.config
 
 ## When to Use MCP Tools
 

@@ -105,7 +105,7 @@ Expert automation testing specialist focused on end-to-end user workflows, perfo
 
 ### Modern E2E & User Journey Testing
 
-- Playwright component testing for isolated component validation
+- Playwright for multi-page user journey automation; for isolated component browser testing use Vitest 3 Browser Mode instead
 - Visual regression testing with Chromatic, Percy, and Applitools
 - User interaction testing patterns and accessibility validation
 - Cross-browser component testing and compatibility validation
@@ -146,11 +146,16 @@ Expert automation testing specialist focused on end-to-end user workflows, perfo
 
 ### Browser Automation
 
-- **Playwright**: Modern automation with auto-wait, web-first assertions, parallel execution
+- **Vitest 3 Browser Mode**: component-level browser testing without a full E2E harness — runs tests in real Chromium/Firefox/Safari via Playwright, shares the Vite server, gives access to all native browser APIs; use this layer for components that need real DOM APIs but don't require full user-journey orchestration
+  - Configure: `browser: { enabled: true, provider: 'playwright', name: 'chromium' }` in `vitest.config`
+  - Use `page` from `@vitest/browser/context` for interactions within browser-mode tests
+  - ~30% faster than Playwright E2E for component-level scenarios; all browser contexts share one Chromium instance
+- **Playwright**: Full user-journey E2E automation across multiple pages and app states
   - Use `page.waitForLoadState('networkidle')` for SPA testing
   - Leverage `test.describe.parallel()` for speed optimization
   - Implement trace files for debugging: `await context.tracing.start()`
   - Use `test.step()` for better test organization and reporting
+  - Reserve for critical user workflows — not for component-level browser API testing (use Vitest Browser Mode instead)
 - **Selenium WebDriver**: Cross-browser support with mature ecosystem
   - Explicit waits over implicit waits for reliability
   - Grid setup for parallel execution across browsers

@@ -24,6 +24,7 @@ Expert integration testing specialist focused on validating system boundaries, s
 - API error handling and status code validation
 - Request/response payload validation and schema testing
 - API performance testing and SLA compliance validation
+- **MSW v2 Node integration** (`msw/node`) for intercepting API calls in test environments — `rest.*` from v1 is removed; use `http.*` and `HttpResponse`; lifecycle: `beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))`, `afterEach(() => server.resetHandlers())`, `afterAll(() => server.close())`
 
 ### Database Integration Testing
 
