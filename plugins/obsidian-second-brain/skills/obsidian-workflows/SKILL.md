@@ -121,10 +121,20 @@ Apply layers only when you return to a note for a specific purpose. Don't proces
 - Evergreen notes Layer 3 (Encounters) is the most valuable but most neglected — actively prompt to add real-world encounters when revisiting concept notes
 - Review cadences will drift — anchor them to existing habits (daily standup, weekly planning meeting)
 
+## Reference Files
+
+| Reference | Load when |
+|-----------|-----------|
+| `references/advanced-workflows.md` | User asks about advanced linking, block references, evergreen note structure |
+| `references/dataview-patterns.md` | User asks about Dataview queries, dynamic views, vault dashboards |
+| `references/moc-advanced.md` | User asks about MOC architecture, hierarchical MOCs, dynamic MOCs |
+| `references/para-deep-dive.md` | User wants deep PARA methodology, project/area/resource nuances |
+
 ## Integration with Plugin Commands
 
 This skill informs all plugin commands and agents:
 - `/daily-startup` uses daily note workflow patterns
-- `/process-inbox` implements inbox processing workflow
-- `/review-okrs` applies review cadences to goal tracking
-- `/maintain-vault` ensures link health and organization
+- `/process-inbox` delegates to para-organizer agent for PARA placement
+- `/review-okrs` delegates to okr-tracker agent for reviews
+- `/maintain-vault` delegates link and tag checks to specialist agents
+- `/ideas` surfaces emergent ideas and promotes daily note candidates

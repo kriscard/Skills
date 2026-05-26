@@ -1,9 +1,10 @@
-# obsidian-utils.sh Reference
+# obsidian-utils Reference
 
-Shared utility script that wraps Obsidian CLI operations. Located at:
+Shared utility script that wraps Obsidian CLI operations. Available as a bare command (on PATH) when the plugin is enabled:
+```bash
+obsidian-utils <command> [args]
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/obsidian-utils.sh
-```
+Located at `${CLAUDE_PLUGIN_ROOT}/bin/obsidian-utils`.
 
 ## Script Commands
 

@@ -1,0 +1,8 @@
+[
+  {
+    "name": "inbox-watcher",
+    "command": "fswatch --event Created \"${user_config.vault_path}/0 - Inbox/\" 2>/dev/null || echo 'fswatch not available — install with: brew install fswatch'",
+    "description": "Watches 0 - Inbox/ for new captures. Notifies Claude when files are added so you can process them immediately.",
+    "when": "always"
+  }
+]

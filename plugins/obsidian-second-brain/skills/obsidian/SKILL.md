@@ -22,7 +22,7 @@ If commands fail, tell the user: "Obsidian CLI isn't working — update Obsidian
 Before any vault write or proposal, read the vault's `AGENTS.md` once per session:
 
 ```bash
-obsidian read path="AGENTS.md"
+obsidian read path="CLAUDE.md"
 ```
 
 It defines what you can write without asking and what requires explicit user approval:
@@ -34,7 +34,7 @@ It defines what you can write without asking and what requires explicit user app
 
 Read-only operations (read / search / list) do NOT need this precondition — proceed directly.
 
-If `obsidian read path="AGENTS.md"` fails, stop and confirm the vault path with the user before proceeding with any write.
+If `obsidian read path="CLAUDE.md"` fails, stop and confirm the vault path with the user before proceeding.
 
 ## Quick Reference
 
@@ -56,7 +56,8 @@ If `obsidian read path="AGENTS.md"` fails, stop and confirm the vault path with 
 
 ## Vault Structure
 
-Default vault: `/Users/kriscard/obsidian-vault-kriscard`
+Default vault (from plugin settings):
+!`echo "${CLAUDE_PLUGIN_OPTION_VAULT_PATH:-not configured — set vault_path in plugin settings}"`
 
 Key paths:
 - `0 - Inbox/` - Incoming notes

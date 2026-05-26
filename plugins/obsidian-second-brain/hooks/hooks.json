@@ -2,13 +2,9 @@
   "hooks": {
     "SessionStart": [
       {
-        "hooks": [
-          {
-            "type": "command",
-            "async": true,
-            "command": "VAULT=\"/Users/kriscard/obsidian-vault-kriscard\"; TODAY=$(date +%Y-%m-%d); YEAR=$(date +%Y); DOW=$(date +%u); DAILY=\"$VAULT/2 - Areas/Daily Ops/$YEAR/$TODAY.md\"; MISSING=\"\"; [ ! -f \"$DAILY\" ] && MISSING=\"daily\"; if [ \"$DOW\" = \"1\" ]; then WEEK=$(date +%G-W%V); MONTH_NUM=$(date +%-m); MONTH_NAME=$(date +%B); YEAR=$(date +%Y); WEEKLY_DIR=\"$VAULT/2 - Areas/Daily Ops/Weekly/$MONTH_NUM - $MONTH_NAME $YEAR\"; WEEKLY=\"$WEEKLY_DIR/$WEEK.md\"; [ ! -f \"$WEEKLY\" ] && MISSING=\"${MISSING:+$MISSING and }weekly\"; fi; [ -n \"$MISSING\" ] && echo \"Tip: Run /daily-startup to create your $MISSING note.\" || true"
-          }
-        ]
+        "type": "command",
+        "async": true,
+        "command": "VAULT=\"${user_config.vault_path}\"; TODAY=$(date +%Y-%m-%d); YEAR=$(date +%Y); DOW=$(date +%u); DAILY=\"$VAULT/2 - Areas/Daily Ops/$YEAR/$TODAY.md\"; MISSING=\"\"; [ ! -f \"$DAILY\" ] && MISSING=\"daily\"; if [ \"$DOW\" = \"1\" ]; then WEEK=$(date +%G-W%V); MONTH_NUM=$(date +%-m); MONTH_NAME=$(date +%B); YEAR=$(date +%Y); WEEKLY_DIR=\"$VAULT/2 - Areas/Daily Ops/Weekly/$MONTH_NUM - $MONTH_NAME $YEAR\"; WEEKLY=\"$WEEKLY_DIR/$WEEK.md\"; [ ! -f \"$WEEKLY\" ] && MISSING=\"${MISSING:+$MISSING and }weekly\"; fi; [ -n \"$MISSING\" ] && echo \"Tip: Run /daily-startup to create your $MISSING note.\" || true"
       }
     ]
   }

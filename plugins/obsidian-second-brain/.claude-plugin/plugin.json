@@ -21,9 +21,10 @@
   "license": "MIT",
   "userConfig": {
     "vault_path": {
-      "type": "string",
+      "type": "directory",
       "title": "Obsidian vault path",
-      "description": "Absolute path to your Obsidian vault (e.g. /Users/you/Documents/Vault). Used by all obsidian commands and agents."
+      "description": "Absolute path to your Obsidian vault (e.g. /Users/you/Documents/Vault). Used by all obsidian commands and agents.",
+      "required": true
     },
     "daily_notes_folder": {
       "type": "string",

@@ -39,7 +39,7 @@ Before anything else, classify the request:
 | "Update / refresh / status / roll forward" | **UPDATE** |
 | Ambiguous | Ask once: "Create new or update existing?" |
 
-If CREATE, run **Search-before-write** (per `AGENTS.md`):
+If CREATE, run **Search-before-write** (per `CLAUDE.md`):
 ```bash
 qmd query "<proposed-project-name>" --json -n 5 || obsidian search:context query="<name>" limit=5
 ```
@@ -112,7 +112,7 @@ sub-notes (architecture, ideation, strategy, PRDs). Match the `Markly/` and
 ### Step 5 — Scaffold from template
 
 Use `obsidian` CLI to create from the existing template — never copy-paste the
-template body. The `Templates/Project.md` is **read-only** per `AGENTS.md`.
+template body. The `Templates/Project.md` is **read-only** per `CLAUDE.md`.
 
 ```bash
 obsidian create path="1 - Projects/<Name>.md" template="Project" silent=true
@@ -123,7 +123,7 @@ operations.
 
 ### Step 6 — Approval gate
 
-Per `AGENTS.md`, **every project write needs explicit user approval before it
+Per `CLAUDE.md`, **every project write needs explicit user approval before it
 happens.** Present the assembled note (frontmatter + sections) as a preview
 and confirm via `AskUserQuestion` before writing.
 
@@ -175,7 +175,7 @@ Update the `Updated: YYYY-MM-DD` marker to today.
 
 ### Step 5 — Approval gate
 
-Show the diff. User approves before write (per `AGENTS.md`).
+Show the diff. User approves before write (per `CLAUDE.md`).
 
 ## Project completion path
 
@@ -201,7 +201,7 @@ If during UPDATE the user says "this is done":
   stalled-projects-list problem. Propose Area instead.
 - **Don't redesign the template** — `Templates/Project.md` is the source of
   truth. The skill scaffolds *from* it, never replaces it.
-- **Don't auto-write without approval** — `AGENTS.md` is explicit: every PARA
+- **Don't auto-write without approval** — `CLAUDE.md` is explicit: every PARA
   write requires user confirmation. Present a preview, then write.
 - **Don't ask 8 questions in 8 turns** — batch into 1–2 `AskUserQuestion`
   calls. The interview should feel like a single conversation, not a quiz.
@@ -217,8 +217,7 @@ If during UPDATE the user says "this is done":
   is a Project. This skill takes over once the decision is "yes, Project".
 - **`obsidian-workflows` skill** — Loaded automatically for PARA theory and
   review cadences. This skill does not duplicate that content.
-- **`template-patterns` skill** — Provides the `Project.md` template lookup.
-  This skill orchestrates around it.
+- **`vault-structure` skill** — Auto-loaded; provides `Templates/Project.md` path and template conventions.
 - **`/daily-startup` command** — Lists active projects. After this skill runs,
   the new/updated project will appear there.
 - **`okr-tracker` agent** — Use during Step 3 (link suggestions) to surface

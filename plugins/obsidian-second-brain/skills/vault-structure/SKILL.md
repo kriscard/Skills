@@ -1,6 +1,5 @@
 ---
 name: vault-structure
-disable-model-invocation: true
 user-invocable: false
 description: >-
   Provides the user's specific Obsidian vault structure — folder organization
@@ -15,7 +14,8 @@ version: 0.1.0
 
 Obsidian vault implementing a modified PARA method with MOCs, Bases, and a subject-only tagging system.
 
-**Vault Path:** `/Users/kriscard/obsidian-vault-kriscard`
+**Vault Path:**
+!`echo "${CLAUDE_PLUGIN_OPTION_VAULT_PATH:-not configured — set vault_path in plugin settings}"`
 
 ## Core Folder Structure
 
@@ -106,9 +106,6 @@ obsidian read path="3 - Resources/Obsidian org/PARA Method Implementation.md"
 
 # List files
 obsidian files folder="0 - Inbox/" format=json
-
-# Helper script
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/read-vault-file.sh "Tag Taxonomy.md"
 ```
 
 ## Reference Files
