@@ -1,6 +1,37 @@
 # Maintain Vault Command
 
-Run a comprehensive vault health check to identify and report issues. This is **read-only** - no changes will be made automatically.
+Run a comprehensive vault health check to identify and report issues. This is **read-only** — no changes are made automatically.
+
+## Wiki Lint (Karpathy pattern)
+
+Before structural checks, audit the wiki layer in `3 - Resources/`:
+
+### W1. Orphan wiki pages
+Pages with `source: claude-memory` that have zero inbound links. These are dead ends — either link them from related pages or flag for deletion.
+
+### W2. Concepts without pages
+Scan recent `index.md` entries and wiki pages for concept names mentioned in prose but lacking their own page in `3 - Resources/`. List candidates.
+
+### W3. Contradictions
+Read pairs of related wiki pages and flag where claims conflict. Focus on `3 - Resources/Coding/` and `3 - Resources/Concepts/`.
+
+### W4. Stale sources
+Check `index.md` Articles/Videos/Tweets entries. Flag any source older than 6 months whose wiki pages may need revisiting given newer content.
+
+### W5. Sources not in index
+Files in `3 - Resources/Articles|Tweets|Videos/` not listed in `index.md`. Run:
+```bash
+obsidian files folder="3 - Resources/Articles/" format=json
+```
+Cross-check against index.md sections.
+
+### W6. Missing cross-references
+Related concept pages that don't link to each other. Use `qmd query` on page titles to find semantic neighbors, then check if they're wikilinked.
+
+Append to log.md after lint:
+```
+## [YYYY-MM-DD] lint | <summary of findings>
+```
 
 ## Obsidian Access
 
