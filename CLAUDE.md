@@ -2,6 +2,10 @@
 
 This is a Claude Code plugin marketplace repository.
 
+## Requirements
+
+Node.js ≥ 18, pnpm ≥ 9
+
 ## Repository Structure
 
 ```
@@ -68,6 +72,7 @@ pnpm run create-plugin <name> --description "..."     # Create new plugin
 pnpm run sync                                         # Update marketplace.json from plugins
 pnpm run typecheck                                    # Type check TypeScript files
 pnpm run format                                       # Format all files
+pnpm run format:check                                 # Verify formatting (CI)
 ```
 
 ## Adding Content
@@ -135,33 +140,7 @@ Skip orchestration when:
 - ❌ Users know exactly which specialist they need
 - ❌ The "orchestrator" just routes to agents — the model picks specialists from clear descriptions, and routing skills add a layer of indirection (the Anthropic official marketplace ships zero orchestrator skills). Use slash commands for explicit multi-step chains instead.
 
-### Layered Architecture
-
-```
-Orchestration Layer (skills/commands)
-  ↓ [Coordinates workflows]
-
-Component Layer (agents, sub-skills, MCP)
-  ↓ [Execute specific tasks]
-
-Output Layer (files, summaries, actions)
-```
-
-### Examples from This Marketplace
-
-**Skill-based Orchestration:**
-- `ideation` - Confidence scoring → questions → contract → PRDs → specs
-- `blog-writer` - Brain dump → polished blog post with SEO
-- (Coding work uses slash commands and direct agent invocation — no mega-orchestrator skill, per the official Anthropic marketplace pattern)
-
-**Command-based Orchestration:**
-- `/daily-startup` - Coordinates agents + skills + MCP for morning workflow
-- `/test-suite` - Runs unit + integration + E2E tests in sequence
-
-**Hybrid:**
-- `architecture` - Commands for docs, skills for advisory
-
-See [docs/ORCHESTRATION-PATTERNS.md](./docs/ORCHESTRATION-PATTERNS.md) for detailed guidance.
+See [docs/ORCHESTRATION-PATTERNS.md](./docs/ORCHESTRATION-PATTERNS.md) for detailed guidance and examples.
 
 ## Practices
 
