@@ -1,17 +1,15 @@
 {
-  "name": "kriscard-claude-plugins",
+  "name": "skills",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Personal Claude Code plugin marketplace - skills, commands, and agents for maximum productivity",
+  "description": "Personal Claude Code skills — curated collection for development, knowledge management, writing, and productivity",
   "author": {
     "name": "Chris Cardoso",
     "email": "contact@christophercardoso.dev"
   },
   "license": "MIT",
   "scripts": {
-    "sync": "tsx scripts/sync-marketplace.ts",
-    "create-plugin": "tsx scripts/create-plugin.ts",
     "typecheck": "tsc --build",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
@@ -38,10 +36,7 @@
   ],
   "pi": {
     "skills": [
-      "plugins/*/skills"
-    ],
-    "prompts": [
-      "plugins/*/commands/*.md"
+      "skills/**"
     ],
     "extensions": [
       "pi/extensions/*.ts"

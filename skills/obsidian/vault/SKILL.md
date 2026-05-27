@@ -1,0 +1,101 @@
+---
+name: vault
+description: >-
+  Foundational Obsidian vault context skill. Make sure to use this skill
+  whenever the user mentions Obsidian, notes, vault, PARA, "in my notes",
+  "check my vault", "second brain", or any interaction that touches the
+  personal knowledge system. Provides vault structure, CLI reference, and
+  PARA rules that all other obsidian skills build on.
+---
+
+# Vault Context
+
+Core knowledge layer for the Obsidian vault. Always load before any
+vault operation — this provides the map that makes every other skill accurate.
+
+## Vault Path
+
+`/Users/kriscard/obsidian-vault-kriscard`
+
+## PARA Structure
+
+| Layer | Path | What belongs here |
+|-------|------|-------------------|
+| Inbox | `0 - Inbox/` | Unprocessed captures, raw ideas |
+| Projects | `1 - Projects/` | Active deliverables with outcome + deadline |
+| Areas | `2 - Areas/` | Ongoing responsibilities (no end date) |
+| Resources | `3 - Resources/` | Reference material, TIL, wiki pages |
+| Archives | `4 - Archives/` | Inactive projects, old resources |
+
+**PARA rule of thumb:**
+- Project = outcome + deadline. No deadline → Area.
+- Area = standard to maintain, not a finish line to cross.
+- Resource = potentially useful reference, not actionable.
+- Archive = anything from the other three that's no longer active.
+
+## Key Paths
+
+```
+2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md          # Daily notes
+2 - Areas/Daily Ops/Weekly/M - Month YYYY/YYYY-Www.md  # Weekly notes
+2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md   # Quarterly goals (typo preserved)
+2 - Areas/Goals/Monthly/M - Month YYYY.md        # Monthly goals
+2 - Areas/Goals/OKR Dashboard.base               # OKR base query
+3 - Resources/TIL/til-YYYY-MM-DD.md             # TIL notes
+0 - Inbox/                                       # Processing queue
+```
+
+Note: the quarterly folder is spelled "Quaterly" — preserve this to match
+the existing vault structure.
+
+## Obsidian CLI Reference
+
+```bash
+obsidian read path="<path>"                      # Read a note
+obsidian create path="<path>" template="<name>"  # Create from template
+obsidian patch path="<path>" section="<h>" content="..."  # Update section
+obsidian move path="<src>" newPath="<dst>"       # Move/rename note
+obsidian files folder="<path>" format=json       # List files
+obsidian search "<query>"                        # Full-text search
+obsidian search:context query="<q>" limit=10     # Search with surrounding lines
+obsidian simple_search "<query>"                 # Simpler search
+obsidian tasks todo daily                        # Today's open tasks
+obsidian tasks todo path="<path>" total          # Task count in folder
+obsidian task path="<path>" line=N done          # Mark a task done
+obsidian orphans                                 # Orphaned notes
+obsidian deadends                                # Notes with no outgoing links
+obsidian unresolved verbose counts               # Broken links
+obsidian backlinks path="<path>" counts          # Backlinks to a note
+obsidian links path="<path>"                     # Outgoing links from a note
+obsidian vault info=files                        # Vault stats
+obsidian tags all counts sort=count              # All tags with usage counts
+obsidian property:read path="<path>" name="<k>"  # Read a frontmatter property
+obsidian property:set path="<path>" name="<k>" value="<v>"  # Set a property
+obsidian daily:path                              # Get today's daily note path
+obsidian daily:read                              # Read today's daily note
+obsidian daily:append content="..." silent       # Append to daily note
+obsidian daily:prepend content="..." silent      # Prepend to daily note
+obsidian template:read name="<name>" resolve title="<t>"  # Render template
+obsidian base:query path="<path>" format=json    # Query a .base file
+```
+
+If any `obsidian` command fails: tell the user "Obsidian CLI isn't working —
+update Obsidian with CLI enabled."
+
+## Templates Location
+
+`Templates/` folder in vault root. Key templates:
+- `Templates/Daily Notes.md`
+- `Templates/Weekly.md`
+- `Templates/Project.md`
+- `Templates/TIL.md`
+
+## References
+
+| Priority | Load when | Reference |
+|----------|-----------|-----------|
+| 1 — High | Full CLI command needed beyond the inline reference | `references/cli-reference.md` |
+| 2 — High | obsidian-utils script commands or invocation syntax | `references/obsidian-utils.md` |
+| 3 — Medium | Complete folder tree, metadata patterns, or naming conventions | `references/detailed-structure.md` |
+| 4 — Medium | Tag taxonomy or tagging best practices | `references/tagging-system.md` |
+| 5 — Medium | Which template to use for a note type | `references/templates-guide.md` |
