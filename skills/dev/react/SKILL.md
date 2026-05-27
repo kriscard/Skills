@@ -1,7 +1,7 @@
 ---
 name: react
 description: >-
-  Audits React and Next.js code for the six highest-leverage pitfalls, then
+  Audits React and Next.js code for the seven highest-leverage pitfalls, then
   routes to deep-dive references on useEffect anti-patterns, re-render causes,
   rendering model selection, and waterfall chains. Make sure to use this skill
   whenever a .tsx or .jsx file is opened or reviewed, the user asks "is my
@@ -96,33 +96,31 @@ the same session.
    //    or TanStack Query.
    ```
 
-7. **`React.FC` / `React.FunctionComponent`**
-   Deprecated pattern. Adds an implicit `children` prop (wrong in React 18+),
-   forces a return type annotation, and provides no benefit over plain functions:
+7. **`React.FC` and `forwardRef` — both deprecated patterns**
+   `React.FC` adds an implicit `children` prop (wrong in React 18+), forces a
+   return type annotation, and provides no benefit over plain functions. In React
+   19, `ref` is a regular prop — `forwardRef` still works but is unnecessary for
+   new code:
    ```typescript
-   // ❌ React.FC — adds noise, implies children, was removed from CRA defaults
+   // ❌ React.FC — adds noise, implies children, removed from CRA defaults
    const Button: React.FC<ButtonProps> = ({ label }) => <button>{label}</button>;
 
-   // ✅ Plain function declaration — the 2026 standard (react-typescript-cheatsheet)
+   // ✅ Plain function declaration
    function Button({ label }: ButtonProps) {
      return <button>{label}</button>;
    }
-   ```
 
-8. **`React.FC` is not the only signal — also check for `forwardRef` wrappers**
-   In React 19, `ref` is a regular prop. `forwardRef` still works but is no
-   longer necessary for new code:
-   ```typescript
-   // ❌ React 18 boilerplate (still works, but unnecessary in new code)
+   // ❌ forwardRef — React 18 boilerplate, unnecessary in React 19+
    const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => (
      <input ref={ref} {...props} />
    ));
 
-   // ✅ React 19 — ref as a prop (if React 19+)
+   // ✅ React 19 — ref as a plain prop
    function Input({ ref, ...props }: InputProps & { ref?: React.Ref<HTMLInputElement> }) {
      return <input ref={ref} {...props} />;
    }
    ```
+
 
 ## Priority Checklist (run after universal checks)
 
