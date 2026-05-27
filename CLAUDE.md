@@ -2,6 +2,10 @@
 
 This is a Claude Code skills repository.
 
+## Requirements
+
+Node.js ≥ 18, pnpm ≥ 9
+
 ## Repository Structure
 
 ```
@@ -43,6 +47,7 @@ skills/<category>/<name>/
 ## Development Commands
 
 ```bash
+pnpm install                     # First-time setup
 bash scripts/link-skills.sh      # Symlink all skills to ~/.claude/skills/
 bash scripts/list-skills.sh      # List all SKILL.md paths
 pnpm run typecheck               # Type check TypeScript files
@@ -79,3 +84,4 @@ Skills use progressive disclosure: lean SKILL.md body + lazy-loaded references.
 - **Test before committing non-trivial changes** — run `bash scripts/list-skills.sh` to verify all skills are discoverable. For skill routing changes, run an eval (spawn subagents with the skill loaded, verify each loads the expected reference).
 - **Keep SKILL.md bodies lean** — if you find yourself over 300 lines, extract into `references/`.
 - **Skill names are global** — since `link-skills.sh` symlinks by directory name, two skills with the same name would collide. Check before creating.
+- **link-skills.sh creates symlinks** — edits to SKILL.md files take effect immediately without re-running the script.
