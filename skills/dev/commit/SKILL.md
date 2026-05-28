@@ -26,19 +26,22 @@ Add specific files by name rather than `git add .` or `git add -A`. Broad stagin
 
 Format: `<type>(<scope>): <subject>`
 
+- Subject line: ≤ 72 chars, ideally ≤ 50. Imperative mood ("add X", not "added X").
+- Body: **optional**. Only include if the *why* isn't obvious from the diff. 1–2 sentences max, never a bullet list.
+- If the subject line is self-explanatory, omit the body entirely.
+
 Common types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `style`, `perf`
 
-The body should be 2–4 sentences of prose — not a bullet list. Bullet lists enumerate *what* changed; prose forces you to explain *why* it changed, which is what future readers actually need.
-
 ```bash
+# No body needed — subject is self-explanatory
+git commit -m "fix(auth): handle expired token on page refresh"
+
+# Body only when the why is non-obvious
 git commit -m "$(cat <<'EOF'
 feat(auth): add refresh token rotation
 
-Access tokens were expiring during long user sessions, causing silent
-logouts. Refresh token rotation invalidates the old token on each use,
-so sessions stay alive without storing long-lived credentials. The old
-single-token approach is removed — no migration needed since sessions
-were already short-lived.
+Single-use tokens prevent session hijacking after a token is stolen —
+the old token is invalidated on first use.
 EOF
 )"
 ```
