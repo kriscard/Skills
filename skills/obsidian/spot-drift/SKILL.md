@@ -15,6 +15,14 @@ user-invocable: true
 Compare stated intentions against actual vault behavior over the past 30 days. Surface the gap
 between what you say matters and where energy actually goes. Find what's being avoided.
 
+## Ask, Don't Assume
+
+Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
+assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
+counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
+note, show your draft with its source and get explicit confirmation. Missing data is not permission
+to invent.
+
 ## Obsidian Access
 
 Use Obsidian CLI via Bash. On failure: "Obsidian CLI isn't working — update Obsidian with CLI

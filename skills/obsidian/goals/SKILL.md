@@ -15,6 +15,14 @@ Check-in and update goal notes across quarterly, monthly, and weekly levels. Goa
 matter if they connect to action — this skill always ends with concrete next steps, not just status
 updates.
 
+## Ask, Don't Assume
+
+Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
+assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
+counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
+note, show your draft with its source and get explicit confirmation. Missing data is not permission
+to invent.
+
 ## Step 1 — Determine Review Level
 
 If `$ARGUMENTS` is provided, use it. Otherwise ask via `AskUserQuestion`:

@@ -14,6 +14,14 @@ user-invocable: true
 End-of-day ritual. Parses today's daily note + Claude sessions, updates project notes in-place,
 surfaces vault connections, and sets up tomorrow. **A 5-minute ritual — not a lengthy report.**
 
+## Ask, Don't Assume
+
+Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
+assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
+counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
+note, show your draft with its source and get explicit confirmation. Missing data is not permission
+to invent.
+
 ## Obsidian Access
 
 Use Obsidian CLI via Bash. On failure: "Obsidian CLI isn't working — update Obsidian with CLI

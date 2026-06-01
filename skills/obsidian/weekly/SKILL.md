@@ -16,6 +16,14 @@ user-invocable: true
 Synthesize the week into a single coherent note. The goal is not to log what happened — it's to
 extract what you'll actually remember and carry forward.
 
+## Ask, Don't Assume
+
+Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
+assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
+counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
+note, show your draft with its source and get explicit confirmation. Missing data is not permission
+to invent.
+
 ## Step 1 — Read/Create This Week's Note
 
 ```bash
@@ -38,20 +46,24 @@ Read each matching TIL note.
 
 ## Step 3 — Read Daily Notes for the Week
 
-Read Monday through today's daily notes in parallel:
+Compute the actual dates for this week and read each day's note (don't hardcode the year or assume a
+Mon–Fri week — derive the real dates):
 
 ```bash
-for DAY in Mon Tue Wed Thu Fri; do
-  obsidian read path="2 - Areas/Daily Ops/2026/<date>.md" 2>/dev/null
-done
+# Resolve each YYYY-MM-DD in the current week, then:
+obsidian read path="2 - Areas/Daily Ops/$(date +%Y)/<YYYY-MM-DD>.md" 2>/dev/null
 ```
+
+If you're unsure which date range to cover (e.g. the user means last week, or a partial week), **ask
+before reading.** If a day's note is missing or sparse, do not conclude the day was idle — note the
+gap and ask the user what happened.
 
 Extract from daily notes:
 
 - **Accomplishments**: things completed or shipped
 - **Carry-forward items**: anything marked for "next week" or unresolved
 - **Key decisions**: any choices made that shaped direction
-- **Energy/focus notes**: if the user tracks these
+- **Energy/focus notes**: only if the user tracks these — don't invent them
 
 ## Step 4 — Synthesize into Weekly Note Sections
 
@@ -63,6 +75,10 @@ Write these sections into the weekly note:
 | **What I Learned**  | Distilled from TIL notes — key insights, not summaries |
 | **Carry Forward**   | Unfinished items moving to next week                   |
 | **Next Week Focus** | Top 1–3 priorities (from carry-forward + goal check)   |
+
+**Draft each section from the notes, then show the user what you extracted and the source for each
+item before writing anything.** Don't decide what counts as a highlight or a priority on their
+behalf — propose, let them correct or cut, then write only the confirmed version.
 
 The CLI has no `patch`, so filling these named sections means either the MCP
 `obsidian_patch_content` tool (heading-targeted) or a `read` + `create ... overwrite` rewrite of the
@@ -81,6 +97,9 @@ Ask: are this week's accomplishments connected to monthly objectives?
 
 Flag any goals that saw zero progress this week — not to guilt-trip, but because consistent drift
 means the goal should be adjusted or dropped.
+
+Set **Next Week Focus** from the user's stated priorities — ask them directly which 1–3 things
+matter most next week. Don't infer the focus from activity volume or what looks unfinished.
 
 ## Report
 
@@ -126,4 +145,6 @@ SUGGESTED STRUCTURE:
 ```
 
 Rules: be specific (cite daily note dates), prioritize insights over updates, match existing tone
-(first person, reflective, connects specific events to broader ideas).
+(first person, reflective, connects specific events to broader ideas). Present candidates as options
+— let the user pick which to develop; never assume which topic they want to write. Offer the
+connecting thread and structure as suggestions to confirm, not decisions already made.

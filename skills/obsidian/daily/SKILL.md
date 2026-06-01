@@ -14,6 +14,14 @@ user-invocable: true
 Structured morning ritual that creates periodic notes, surfaces what carried forward from yesterday,
 checks the inbox, and locks in today's focus.
 
+## Ask, Don't Assume
+
+Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
+assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
+counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
+note, show your draft with its source and get explicit confirmation. Missing data is not permission
+to invent.
+
 ## Step 1 — Create Periodic Notes (no confirmation needed)
 
 **Performance rule: batch all existence checks in parallel, then batch all template fetches in
