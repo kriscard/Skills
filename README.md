@@ -7,7 +7,7 @@ Personal Claude Code skills — a curated collection used daily across developme
 **Via `npx skills`** (recommended — installs globally):
 
 ```bash
-npx skills@latest add kriscard/kriscard-claude-plugins
+npx skills@latest add kriscard/Skills
 ```
 
 **Via symlink** (local dev — changes take effect immediately):
