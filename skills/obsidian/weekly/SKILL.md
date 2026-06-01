@@ -1,21 +1,20 @@
 ---
 name: weekly
 description: >-
-  Runs the weekly review ritual — reads daily notes, surfaces TIL notes from
-  the week, synthesizes accomplishments and learnings, and checks goal
-  alignment. Also surfaces candidate topics for writing by mining patterns and
-  insights from the week's notes. Make sure to use this skill whenever the
-  user says "weekly review", "weekly learnings", "what did I learn this week",
-  "write my weekly note", "prep my weekly writing", "surface this week's
-  ideas", or runs /weekly. A 15-minute weekly synthesis turns scattered daily
-  notes into retained knowledge that actually compounds.
+  Runs the weekly review ritual — reads daily notes, surfaces TIL notes from the week, synthesizes
+  accomplishments and learnings, and checks goal alignment. Also surfaces candidate topics for
+  writing by mining patterns and insights from the week's notes. Make sure to use this skill
+  whenever the user says "weekly review", "weekly learnings", "what did I learn this week", "write
+  my weekly note", "prep my weekly writing", "surface this week's ideas", or runs /weekly. A
+  15-minute weekly synthesis turns scattered daily notes into retained knowledge that actually
+  compounds.
 user-invocable: true
 ---
 
 # Weekly Review
 
-Synthesize the week into a single coherent note. The goal is not to log what
-happened — it's to extract what you'll actually remember and carry forward.
+Synthesize the week into a single coherent note. The goal is not to log what happened — it's to
+extract what you'll actually remember and carry forward.
 
 ## Step 1 — Read/Create This Week's Note
 
@@ -25,7 +24,7 @@ MONTH=$(date +"%B %Y" | sed 's/^/M - /')
 WEEKLY_PATH="2 - Areas/Daily Ops/Weekly/$MONTH/$WEEK.md"
 
 obsidian read path="$WEEKLY_PATH" 2>/dev/null || \
-  obsidian create path="$WEEKLY_PATH" template="Weekly" silent=true
+  obsidian create path="$WEEKLY_PATH" template="Weekly"
 ```
 
 ## Step 2 — Gather This Week's TIL Notes
@@ -34,8 +33,8 @@ obsidian read path="$WEEKLY_PATH" 2>/dev/null || \
 obsidian files folder="3 - Resources/TIL/" format=json
 ```
 
-Filter for files created or modified this week (ISO week number from filename
-`til-YYYY-MM-DD.md`). Read each matching TIL note.
+Filter for files created or modified this week (ISO week number from filename `til-YYYY-MM-DD.md`).
+Read each matching TIL note.
 
 ## Step 3 — Read Daily Notes for the Week
 
@@ -48,6 +47,7 @@ done
 ```
 
 Extract from daily notes:
+
 - **Accomplishments**: things completed or shipped
 - **Carry-forward items**: anything marked for "next week" or unresolved
 - **Key decisions**: any choices made that shaped direction
@@ -55,21 +55,18 @@ Extract from daily notes:
 
 ## Step 4 — Synthesize into Weekly Note Sections
 
-Patch these sections into the weekly note:
+Write these sections into the weekly note:
 
-| Section | Content |
-|---------|---------|
-| **Highlights** | 3–5 bullet accomplishments worth remembering |
-| **What I Learned** | Distilled from TIL notes — key insights, not summaries |
-| **Carry Forward** | Unfinished items moving to next week |
-| **Next Week Focus** | Top 1–3 priorities (from carry-forward + goal check) |
+| Section             | Content                                                |
+| ------------------- | ------------------------------------------------------ |
+| **Highlights**      | 3–5 bullet accomplishments worth remembering           |
+| **What I Learned**  | Distilled from TIL notes — key insights, not summaries |
+| **Carry Forward**   | Unfinished items moving to next week                   |
+| **Next Week Focus** | Top 1–3 priorities (from carry-forward + goal check)   |
 
-```bash
-obsidian patch path="$WEEKLY_PATH" section="Highlights" content="..."
-obsidian patch path="$WEEKLY_PATH" section="What I Learned" content="..."
-obsidian patch path="$WEEKLY_PATH" section="Carry Forward" content="..."
-obsidian patch path="$WEEKLY_PATH" section="Next Week Focus" content="..."
-```
+The CLI has no `patch`, so filling these named sections means either the MCP
+`obsidian_patch_content` tool (heading-targeted) or a `read` + `create ... overwrite` rewrite of the
+whole note. Ask the user which to use, then write each section's content.
 
 ## Step 5 — Check Goal Alignment
 
@@ -82,12 +79,13 @@ obsidian read path="$MONTHLY_PATH" 2>/dev/null
 
 Ask: are this week's accomplishments connected to monthly objectives?
 
-Flag any goals that saw zero progress this week — not to guilt-trip, but
-because consistent drift means the goal should be adjusted or dropped.
+Flag any goals that saw zero progress this week — not to guilt-trip, but because consistent drift
+means the goal should be adjusted or dropped.
 
 ## Report
 
 After synthesis:
+
 - Confirm which weekly note was created/updated
 - List the TIL notes pulled in
 - Surface any goals with zero weekly progress
@@ -95,16 +93,18 @@ After synthesis:
 
 ## Writing Prep Mode
 
-When the user wants candidate topics for writing (not note synthesis), output to
-terminal only — no file creation.
+When the user wants candidate topics for writing (not note synthesis), output to terminal only — no
+file creation.
 
 Read previous weekly learnings for continuity:
+
 ```bash
-obsidian search "Weekly Learnings" format=json
+obsidian search query="Weekly Learnings" format=json
 # Read the most recent one — extract threads opened but unresolved
 ```
 
 Then present:
+
 ```
 WEEKLY LEARNINGS PREP — Week [N], [YYYY]
 
@@ -125,5 +125,5 @@ SUGGESTED STRUCTURE:
 [3–4 sections based on depth of material]
 ```
 
-Rules: be specific (cite daily note dates), prioritize insights over updates,
-match existing tone (first person, reflective, connects specific events to broader ideas).
+Rules: be specific (cite daily note dates), prioritize insights over updates, match existing tone
+(first person, reflective, connects specific events to broader ideas).

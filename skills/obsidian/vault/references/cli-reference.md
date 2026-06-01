@@ -6,10 +6,10 @@ Complete command reference for Obsidian's native CLI. All commands use the `obsi
 
 Two ways to target files:
 
-| Parameter | Behavior | Example |
-|-----------|----------|---------|
-| `file=<name>` | Wikilink-style resolution (no path/ext needed) | `file=Recipe` finds `Recipes/Recipe.md` |
-| `path=<path>` | Exact path from vault root | `path="3 - Resources/TIL/til-2026-02-16.md"` |
+| Parameter     | Behavior                                       | Example                                      |
+| ------------- | ---------------------------------------------- | -------------------------------------------- |
+| `file=<name>` | Wikilink-style resolution (no path/ext needed) | `file=Recipe` finds `Recipes/Recipe.md`      |
+| `path=<path>` | Exact path from vault root                     | `path="3 - Resources/TIL/til-2026-02-16.md"` |
 
 ## File Operations
 
@@ -22,19 +22,19 @@ Two ways to target files:
 "obsidian" files folder="0 - Inbox/" format=json
 
 # Create new file
-"obsidian" create path="3 - Resources/TIL/til-2026-02-14.md" content="# TIL..." silent
+"obsidian" create path="3 - Resources/TIL/til-2026-02-14.md" content="# TIL..."
 
 # Create from template
-"obsidian" create path="note.md" template="Daily Notes" silent
+"obsidian" create path="note.md" template="Daily Notes"
 
-# Append to file (silent = don't open)
-"obsidian" append path="note.md" content="\n## New Section" silent
+# Append to file
+"obsidian" append path="note.md" content="\n## New Section"
 
 # Append inline (no newline added)
-"obsidian" append path="note.md" content=" - item" silent inline
+"obsidian" append path="note.md" content=" - item" inline
 
 # Prepend after frontmatter
-"obsidian" prepend path="note.md" content="# Header" silent
+"obsidian" prepend path="note.md" content="# Header"
 
 # Move/rename file
 "obsidian" move path="old.md" to="folder/new.md"
@@ -49,29 +49,42 @@ Two ways to target files:
 "obsidian" search query="meeting notes" format=json limit=20
 ```
 
+## Editing a Specific Section
+
+There is no `patch` command — the CLI cannot edit a named section in place. Use `append`/`prepend`
+when landing the content anywhere in the note is fine. When it must update or replace a _named
+section_, ask the user: use the MCP `obsidian_patch_content` tool (heading/block/frontmatter
+targeting), or recreate the note via `read` + `create ... overwrite`.
+
 ## Daily Notes
 
+There is no `daily:*` command. `daily` is only a flag on `task`/`tasks`. Work the daily note by its
+path:
+
 ```bash
+# Compute today's daily note path
+TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"
+
 # Read today's daily note
-"obsidian" daily:read
+"obsidian" read path="$TODAY"
 
 # Append to daily note
-"obsidian" daily:append content="- [ ] Buy groceries" silent
+"obsidian" append path="$TODAY" content="- [ ] Buy groceries"
 
 # Prepend to daily note
-"obsidian" daily:prepend content="# Morning Notes" silent
+"obsidian" prepend path="$TODAY" content="# Morning Notes"
 
-# Open daily note (just get path)
-"obsidian" daily silent
+# Today's open tasks from the daily note (the `daily` flag needs the Daily Notes plugin)
+"obsidian" tasks todo path="$TODAY"
 ```
 
 ## Tasks
 
 ```bash
 # List all tasks
-"obsidian" tasks all
+"obsidian" tasks
 
-# List tasks from daily note
+# List tasks from daily note (the `daily` flag requires the Daily Notes core plugin)
 "obsidian" tasks daily
 
 # List incomplete tasks
@@ -91,7 +104,7 @@ Two ways to target files:
 
 ```bash
 # List all tags with counts
-"obsidian" tags all counts
+"obsidian" tags counts
 
 # Get info about specific tag
 "obsidian" tag name="project" verbose
@@ -171,31 +184,30 @@ Two ways to target files:
 
 ## CLI Flags
 
-| Flag | Effect |
-|------|--------|
-| `silent` | Don't open file after operation |
-| `overwrite` | Replace existing file |
-| `inline` | Append/prepend without adding newline |
-| `permanent` | Delete permanently (skip trash) |
-| `resolve` | Resolve template variables |
-| `verbose` | Include extra details |
-| `counts` | Include occurrence counts |
-| `total` | Return count only |
+| Flag        | Effect                                |
+| ----------- | ------------------------------------- |
+| `overwrite` | Replace existing file                 |
+| `inline`    | Append/prepend without adding newline |
+| `permanent` | Delete permanently (skip trash)       |
+| `resolve`   | Resolve template variables            |
+| `verbose`   | Include extra details                 |
+| `counts`    | Include occurrence counts             |
+| `total`     | Return count only                     |
 
 ## Output Formats
 
-| Format | Use for |
-|--------|---------|
-| `format=json` | Parsing in code |
-| `format=text` | Human readable |
+| Format        | Use for                |
+| ------------- | ---------------------- |
+| `format=json` | Parsing in code        |
+| `format=text` | Human readable         |
 | `format=yaml` | Properties/frontmatter |
-| `format=tree` | Outline hierarchy |
-| `format=md` | Markdown output |
+| `format=tree` | Outline hierarchy      |
+| `format=md`   | Markdown output        |
 
 ## Multiline Content
 
 Use `\n` for newlines and `\t` for tabs:
 
 ```bash
-"obsidian" create path="note.md" content="# Title\n\nBody text\n\n- Item 1\n- Item 2" silent
+"obsidian" create path="note.md" content="# Title\n\nBody text\n\n- Item 1\n- Item 2"
 ```

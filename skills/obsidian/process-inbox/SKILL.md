@@ -1,27 +1,24 @@
 ---
 name: process-inbox
 description: >-
-  Processes every note in the Obsidian inbox — reads each one, uses the
-  para-organizer agent to suggest the right PARA destination, confirms with
-  the user, and moves or deletes on approval. Make sure to use this skill
-  whenever the user says "process my inbox", "clear my inbox", "triage inbox
-  notes", "sort inbox", or runs /process-inbox. Execute the workflow — do not
-  describe it.
+  Processes every note in the Obsidian inbox — reads each one, uses the para-organizer agent to
+  suggest the right PARA destination, confirms with the user, and moves or deletes on approval. Make
+  sure to use this skill whenever the user says "process my inbox", "clear my inbox", "triage inbox
+  notes", "sort inbox", or runs /process-inbox. Execute the workflow — do not describe it.
 user-invocable: true
 ---
 
 # Process Inbox
 
-Work through every note in `0 - Inbox/` one by one. The para-organizer agent
-suggests placement; the user confirms each move. Nothing moves without
-explicit approval.
+Work through every note in `0 - Inbox/` one by one. The para-organizer agent suggests placement; the
+user confirms each move. Nothing moves without explicit approval.
 
 **Execute this workflow — do not describe it.**
 
 ## Obsidian Access
 
-Use Obsidian CLI via Bash. On failure: "Obsidian CLI isn't working — update
-Obsidian with CLI enabled."
+Use Obsidian CLI via Bash. On failure: "Obsidian CLI isn't working — update Obsidian with CLI
+enabled."
 
 ## Step 1 — List Inbox
 
@@ -45,9 +42,8 @@ Show: `[N/TOTAL] Note: "[filename]"` + first 15 lines.
 
 ### 2.2 Suggest Destination
 
-Use the **para-organizer agent** to analyze the note content. The agent
-applies the PARA decision tree and returns a specific folder path, reasoning,
-and suggested tags.
+Use the **para-organizer agent** to analyze the note content. The agent applies the PARA decision
+tree and returns a specific folder path, reasoning, and suggested tags.
 
 ### 2.3 Confirm with User
 
@@ -55,12 +51,12 @@ Present the para-organizer's suggestion, then use `AskUserQuestion`:
 
 ```yaml
 options:
-  - label: "Move to [suggested location]"
-    description: "(Recommended)"
-  - label: "Move to different location"
-  - label: "Skip for now"
-  - label: "Delete note"
-  - label: "Stop processing"
+  - label: 'Move to [suggested location]'
+    description: '(Recommended)'
+  - label: 'Move to different location'
+  - label: 'Skip for now'
+  - label: 'Delete note'
+  - label: 'Stop processing'
 ```
 
 **Wait for response before continuing.**
@@ -68,9 +64,10 @@ options:
 ### 2.4 Execute the Choice
 
 **Move (suggested location):**
+
 ```bash
-obsidian create path="[target]/[filename]" content="[CONTENT]" silent
-obsidian delete path="0 - Inbox/[filename]" silent
+obsidian create path="[target]/[filename]" content="[CONTENT]"
+obsidian delete path="0 - Inbox/[filename]"
 ```
 
 **Different location:** Ask where, then move using the same commands.
@@ -78,8 +75,9 @@ obsidian delete path="0 - Inbox/[filename]" silent
 **Skip:** Leave in inbox, continue to next note.
 
 **Delete:** Confirm once explicitly, then:
+
 ```bash
-obsidian delete path="0 - Inbox/[filename]" silent
+obsidian delete path="0 - Inbox/[filename]"
 ```
 
 **Stop:** Show summary and end.

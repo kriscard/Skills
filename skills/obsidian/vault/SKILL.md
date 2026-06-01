@@ -53,14 +53,14 @@ the existing vault structure.
 ```bash
 obsidian read path="<path>"                      # Read a note
 obsidian create path="<path>" template="<name>"  # Create from template
-obsidian patch path="<path>" section="<h>" content="..."  # Update section
-obsidian move path="<src>" newPath="<dst>"       # Move/rename note
+obsidian create path="<path>" content="..." overwrite  # Overwrite a whole note
+obsidian append path="<path>" content="..."      # Append to end of note
+obsidian prepend path="<path>" content="..."     # Prepend to top of note
+obsidian move path="<src>" to="<dst>"            # Move/rename note
 obsidian files folder="<path>" format=json       # List files
-obsidian search "<query>"                        # Full-text search
+obsidian search query="<q>"                      # Full-text search
 obsidian search:context query="<q>" limit=10     # Search with surrounding lines
-obsidian simple_search "<query>"                 # Simpler search
-obsidian tasks todo daily                        # Today's open tasks
-obsidian tasks todo path="<path>" total          # Task count in folder
+obsidian tasks todo path="<daily-note path>"     # Today's open tasks (path, not folder)
 obsidian task path="<path>" line=N done          # Mark a task done
 obsidian orphans                                 # Orphaned notes
 obsidian deadends                                # Notes with no outgoing links
@@ -68,16 +68,24 @@ obsidian unresolved verbose counts               # Broken links
 obsidian backlinks path="<path>" counts          # Backlinks to a note
 obsidian links path="<path>"                     # Outgoing links from a note
 obsidian vault info=files                        # Vault stats
-obsidian tags all counts sort=count              # All tags with usage counts
+obsidian tags counts sort=count                  # All tags with usage counts
 obsidian property:read path="<path>" name="<k>"  # Read a frontmatter property
 obsidian property:set path="<path>" name="<k>" value="<v>"  # Set a property
-obsidian daily:path                              # Get today's daily note path
-obsidian daily:read                              # Read today's daily note
-obsidian daily:append content="..." silent       # Append to daily note
-obsidian daily:prepend content="..." silent      # Prepend to daily note
 obsidian template:read name="<name>" resolve title="<t>"  # Render template
 obsidian base:query path="<path>" format=json    # Query a .base file
 ```
+
+**No `patch` command.** The CLI cannot edit a specific section in place. To write to
+a note: `append`/`prepend` when landing the content anywhere in the note is fine. When
+it must update or replace a *named section*, ask the user: use the MCP
+`obsidian_patch_content` tool (supports heading/block/frontmatter targeting), or
+recreate the note via `read` + `create ... overwrite`.
+
+**No `daily:*` commands.** `daily` is only a flag on `task`/`tasks`, and that flag needs the
+Daily Notes core plugin enabled (currently disabled). Work the daily note by its path:
+`TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"`, then `obsidian read path="$TODAY"`
+/ `append` / `prepend`. Today's open tasks: `obsidian tasks todo path="$TODAY"` (note `tasks
+path=` takes a file, not a folder).
 
 If any `obsidian` command fails: tell the user "Obsidian CLI isn't working —
 update Obsidian with CLI enabled."
