@@ -8,13 +8,6 @@ description: >-
   React code good", mentions useEffect, re-renders, memoization, React Compiler,
   Server Components, Server Actions, SSR vs CSR, hydration, waterfalls, or
   bundle size — even casually. Triggers on any React code review.
-paths:
-  - "**/*.tsx"
-  - "**/*.jsx"
-  - "**/page.tsx"
-  - "**/layout.tsx"
-  - "**/use*.ts"
-user-invocable: true
 ---
 
 # React Best Practices Audit

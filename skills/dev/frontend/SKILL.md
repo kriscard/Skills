@@ -9,18 +9,6 @@ description: >-
   Server Components, build UI components, set up Tailwind, handle accessibility,
   prevent XSS/CSP/token storage issues, or ask anything about frontend
   architecture — even casually.
-paths:
-  - "**/*.ts"
-  - "**/*.tsx"
-  - "**/*.jsx"
-  - "**/tsconfig.json"
-  - "**/next.config.*"
-  - "**/tailwind.config.*"
-  - "**/vite.config.*"
-  - "**/page.tsx"
-  - "**/layout.tsx"
-  - "**/use*.ts"
-user-invocable: true
 ---
 
 # Frontend Engineering
