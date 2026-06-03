@@ -1,9 +1,9 @@
 ---
 name: close-day
 description: >-
-  Runs the end-of-day processing ritual for the Obsidian vault — parses the daily note, merges
-  Claude session insights, updates active project notes in place, surfaces vault connections, and
-  writes carry-forward items for tomorrow. Make sure to use this skill whenever the user says "close
+  Runs the end-of-day processing ritual for the Obsidian vault — parses the daily note, updates
+  active project notes in place, surfaces vault connections, and writes carry-forward items for
+  tomorrow. Make sure to use this skill whenever the user says "close
   my day", "end of day", "wrap up today", "process today's notes", "what did I do today", or runs
   /close-day. Five minutes of structured closing prevents a week of lost context.
 user-invocable: true
@@ -11,8 +11,8 @@ user-invocable: true
 
 # Close Day
 
-End-of-day ritual. Parses today's daily note + Claude sessions, updates project notes in-place,
-surfaces vault connections, and sets up tomorrow. **A 5-minute ritual — not a lengthy report.**
+End-of-day ritual. Parses today's daily note, updates project notes in-place, surfaces vault
+connections, and sets up tomorrow. **A 5-minute ritual — not a lengthy report.**
 
 ## Ask, Don't Assume
 
@@ -39,28 +39,7 @@ obsidian read path="AGENTS.md" 2>/dev/null || echo "(AGENTS.md not found)"
 Parse all captured content from today's daily note: free-form writing, meeting notes, ideas, tasks,
 people referenced, decisions made.
 
-## Step 2 — Process Claude Session Log
-
-```bash
-obsidian read path="2 - Areas/Daily Ops/$(date +%Y)/Claude Sessions/$(date +%Y-%m-%d).md"
-```
-
-Session blocks: `## HH:MM — <project>` → **Decisions / Lessons / Action items / Files touched**.
-
-Split into two buckets:
-
-**Bucket A — On-project** (project header matches an active project): Ingest fully. Feed Decisions,
-Lessons, Action items into Step 4.
-
-**Bucket B — Off-project** (dotfiles, neovim, plugin work, etc.): Present as one-liners:
-`[HH:MM — project] <takeaway>` Ask: "Capture any of these as TIL / resource notes?" — only on
-explicit pick.
-
-After bucketing, surface items from on-project sessions **not** reflected in the daily note
-(decisions made, action items committed to). Propose additions — do not auto-write to the daily
-note.
-
-## Step 3 — Vault Connection Discovery
+## Step 2 — Vault Connection Discovery
 
 Run searches per theme from today, then trace backlinks:
 
@@ -73,9 +52,9 @@ obsidian backlinks file="<today's note>"
 Surface: "Today you wrote about X. This connects to [[note]] from [date] — worth revisiting?" Flag
 themes recurring 3+ times in the past two weeks.
 
-## Step 4 — Extract & Categorize
+## Step 3 — Extract & Categorize
 
-Sources: today's daily note (Step 1) + on-project sessions (Step 2, Bucket A).
+Source: today's daily note (Step 1).
 
 Four categories to extract:
 
@@ -92,7 +71,7 @@ obsidian tasks todo path="$TODAY"
 
 Flag any action items missing from the task list.
 
-## Step 5 — Update Project Notes In-Place
+## Step 4 — Update Project Notes In-Place
 
 Match active projects to today's work (explicit mentions + implied work). For each match, read the
 project note first:
@@ -134,7 +113,7 @@ Propose — never write without approval:
 Approve any to append to 🔗 Links & References?
 ```
 
-## Step 6 — Carry Forward
+## Step 5 — Carry Forward
 
 ```bash
 TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"
@@ -148,41 +127,15 @@ If the Quick Wrap section is empty, draft answers:
 - What bottleneck became obvious?
 - One thing to carry into tomorrow?
 
-## Step 7 — Wiki Distillation (optional, always ask)
-
-> Want to distill today's session log into wiki concept notes? Runs a dry-run first so you can
-> review before any writes. ~$0.02–0.05. [y/N]
-
-If yes, dry-run first:
-
-```bash
-uv run ~/.dotfiles/.claude/scripts/memory_compile.py --date $(date +%Y-%m-%d) 2>&1 | tail -60
-```
-
-Surface: concepts extracted, new-note vs moc-backlink split, flagged false-positive matches (qmd
-0.88–0.95). Then ask: "Apply? Skip backlinks? [y / skip-backlinks / N]"
-
-Apply:
-
-```bash
-uv run ~/.dotfiles/.claude/scripts/memory_compile.py --date $(date +%Y-%m-%d) --apply --yes
-# skip-backlinks variant: add --skip-backlinks
-```
-
-If no: note that the plan is saved at `~/.claude/state/memory-compile-plans/$(date +%Y-%m-%d).json`.
-
 ## Output Format
 
 Keep output concise. Focus on filing what matters, not summarizing the day.
 
 ```
 Today's Extraction — [categories with items]
-Session Off-Project Highlights — [one-liners; user picks any to capture]
-Session ↔ Daily Note Gaps — [decisions/actions not yet in daily note]
 Vault Connections — [recurring themes, links to older notes]
 Project Notes Updated — [list with what changed per project]
 Related Notes (proposed) — [per-project candidates; awaiting approval]
 Carry Forward — [what matters tomorrow]
 Quick Wrap — [draft answers if section empty]
-Wiki Distillation — [if opted in: plan summary, applied paths, skipped]
 ```
