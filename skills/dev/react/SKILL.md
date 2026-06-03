@@ -14,6 +14,7 @@ paths:
   - "**/page.tsx"
   - "**/layout.tsx"
   - "**/use*.ts"
+user-invocable: true
 ---
 
 # React Best Practices Audit

@@ -20,6 +20,7 @@ paths:
   - "**/page.tsx"
   - "**/layout.tsx"
   - "**/use*.ts"
+user-invocable: true
 ---
 
 # Frontend Engineering
