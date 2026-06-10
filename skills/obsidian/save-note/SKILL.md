@@ -32,7 +32,7 @@ Default subfolders in `3 - Resources/`:
 ## Step 2 — Search Before Writing
 
 ```bash
-qmd query "<topic>" --json -n 8
+qmd query "<topic>" --json -n 8 2>/dev/null
 ```
 
 - Score ≥ 0.7 → append a dated section to the existing page

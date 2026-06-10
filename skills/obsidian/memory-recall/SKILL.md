@@ -54,12 +54,26 @@ If the index skim is ambiguous, returns nothing obvious, or the topic might live
 reflected in summaries, search content:
 
 ```bash
-qmd query "<topic>" --json -n 8
+qmd query "<topic>" --json -n 8 2>/dev/null
 ```
 
-Add the qmd hits to the candidate set. Score bands: ≥ 0.7 strong, 0.5–0.7 probable, < 0.5 weak. (qmd
-gotcha: in `lex`/`vec`/`hyde` lines a hyphen inside a word like `re-render` is parsed as `-negation`
-and errors; drop the hyphen or rephrase.)
+The single-line form auto-expands (qmd generates lex/vec/hyde internally). Escalate for harder
+cases:
+
+- **Ambiguous term** — this vault mixes domains, so "performance" could be React render perf, Hyrox
+  fitness, or team health. Add `intent` to steer expansion and reranking toward the sense you mean.
+- **Unknown vocabulary** — add a `hyde:` line: 50–100 words of the answer you expect.
+- **Max recall** — structured `lex:` + `vec:`; put the best guess first (it gets 2x fusion weight).
+
+```bash
+qmd query $'intent: react render performance, not fitness\nlex: useEffect rerender\nvec: how to avoid unnecessary renders' --json -n 8 2>/dev/null
+```
+
+Add the qmd hits to the candidate set. Score bands: ≥ 0.7 strong, 0.5–0.7 probable, < 0.5 weak.
+
+qmd gotchas: (1) progress goes to **stderr**, so always append `2>/dev/null` to keep `--json` output
+clean for parsing. (2) In `lex`/`vec`/`hyde` lines a hyphen inside a word like `re-render` is parsed
+as `-negation` and errors; drop the hyphen or rephrase.
 
 ### Step 3 — Drill into the actual pages (navigation = obsidian CLI)
 
@@ -90,7 +104,7 @@ wiki page via the save-note skill. Good answers compound into the wiki.
 When the user asks to connect two domains ("connect A and B", "bridges between"):
 
 1. **Map each domain index-first**: read `index.md`, collect the pages under each domain by
-   title/tag; augment with `qmd query "<domain>"` if the catalog is thin.
+   title/tag; augment with `qmd query "<domain>" --json 2>/dev/null` if the catalog is thin.
 2. **Pull hubs and follow backlinks** 2–3 hops via obsidian CLI. If one domain has far fewer notes,
    go 3–4 hops deep on the sparse side — that is where surprises are.
 3. **Find overlaps**: shared references (notes in both backlink chains), shared themes (same concept

@@ -45,7 +45,7 @@ Surface for conversation — don't skip this step:
 1. **2–3 most important ideas** from the source, in your own words
 2. **Existing wiki pages this connects to** — search for related notes:
    ```bash
-   qmd query "<key concept>" --json -n 8
+   qmd query "<key concept>" --json -n 8 2>/dev/null
    ```
 3. **Any contradictions** with existing knowledge worth flagging
 
@@ -142,7 +142,7 @@ this to my notes", "save what we just discussed"):
 2. Search before writing:
 
    ```bash
-   qmd query "<topic>" --json -n 8
+   qmd query "<topic>" --json -n 8 2>/dev/null
    ```
 
    Score ≥ 0.7 → append dated section. Score < 0.5 → create new page.
