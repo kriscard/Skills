@@ -32,7 +32,7 @@ Default subfolders in `3 - Resources/`:
 ## Step 2 — Search Before Writing
 
 ```bash
-obsidian search query="<topic>"
+qmd query "<topic>" --json -n 8
 ```
 
 - Score ≥ 0.7 → append a dated section to the existing page
@@ -59,9 +59,14 @@ Frontmatter for new pages:
 ---
 source: claude-memory
 created: YYYY-MM-DD
+aliases: [<acronyms, alternate names, spelling/casing variants>]
 tags: [claude-memory, <topic-tags>]
 ---
 ```
+
+Generate 2–6 `aliases`: off-title terms someone would search to find this page (acronyms, alternate
+names, "X vs Y" framings). This is what makes the page recall-able from queries that don't match the
+title. Skip only when the title is the sole term anyone would use.
 
 Body: the synthesized answer from this session. Neutral, reference-focused voice — no "I learned
 that..." framing. Should make sense to a reader with no context.

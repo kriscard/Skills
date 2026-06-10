@@ -45,8 +45,7 @@ Surface for conversation — don't skip this step:
 1. **2–3 most important ideas** from the source, in your own words
 2. **Existing wiki pages this connects to** — search for related notes:
    ```bash
-   obsidian search query="<key concept>"
-   obsidian search:context query="<topic>" limit=10
+   qmd query "<key concept>" --json -n 8
    ```
 3. **Any contradictions** with existing knowledge worth flagging
 
@@ -81,9 +80,14 @@ New page frontmatter:
 ---
 source: claude-memory
 created: YYYY-MM-DD
+aliases: [<acronyms, alternate names, spelling/casing variants>]
 tags: [claude-memory, <topic-tags>]
 ---
 ```
+
+Generate 2–6 `aliases`: the off-title terms someone would search to find this page (acronyms,
+alternate names, "X vs Y" framings). This is what makes the page recall-able from queries that don't
+match the title verbatim. Skip only when the title is the sole term anyone would use.
 
 Write in wiki style: neutral, reference-focused, no "I learned that..." framing. This is reference
 material, not a diary. Target 3–10 pages per source — focus on durable concepts, not summaries of
@@ -138,13 +142,13 @@ this to my notes", "save what we just discussed"):
 2. Search before writing:
 
    ```bash
-   obsidian search query="<topic>"
+   qmd query "<topic>" --json -n 8
    ```
 
    Score ≥ 0.7 → append dated section. Score < 0.5 → create new page.
 
-3. Write the note (use `source: claude-memory` frontmatter), then update `index.md` under
-   `## Concept notes (claude-memory)` and append to `log.md`.
+3. Write the note (use `source: claude-memory` frontmatter with `aliases`), then update `index.md`
+   under `## Concept notes (claude-memory)` and append to `log.md`.
 
 Body must be self-contained — no references to "the conversation above."
 
