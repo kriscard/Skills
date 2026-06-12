@@ -9,10 +9,6 @@ description: >-
   working", "neovim performance", "nvim keymaps", "validate my neovim setup", or
   anything about configuring or troubleshooting Neovim — even if they just say
   "my neovim is slow" or "how do I add X to neovim".
-paths:
-  - "**/*.lua"
-  - "**/nvim/**"
-  - "**/.config/nvim/**"
 ---
 
 # Neovim Configuration

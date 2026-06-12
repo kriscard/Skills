@@ -8,12 +8,6 @@ description: >-
   prompt", "ghostty", "sesh", "yabai", "add to my dotfiles", "update my shell",
   stow a package, or anything about configuring their terminal or shell
   environment — even if they just say "how do I add this to my config".
-paths:
-  - "**/.dotfiles/**"
-  - "**/.zshrc"
-  - "**/zsh.d/**"
-  - "**/tmux.conf"
-  - "**/starship.toml"
 ---
 
 # Shell & Terminal Environment
