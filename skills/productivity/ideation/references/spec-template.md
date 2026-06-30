@@ -1,3 +1,5 @@
+> **Read this when:** A PRD phase is approved and you are writing a `spec-phase-N.md` implementation artifact.
+
 # Spec Template
 
 Use this template when generating `spec-phase-{n}.md` for each approved PRD.

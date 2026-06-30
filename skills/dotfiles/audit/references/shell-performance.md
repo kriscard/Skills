@@ -1,3 +1,5 @@
+> **Read this when:** Shell startup is slow or zsh plugin/init profiling needs deeper optimization patterns.
+
 # Shell Performance Optimization
 
 Strategies for keeping shell startup fast and responsive.

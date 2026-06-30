@@ -1,3 +1,5 @@
+> **Read this when:** The user is changing Git identity, signing, aliases, pager/diff tooling, or multi-config setup in shell dotfiles.
+
 # Git Configuration Patterns
 
 Multi-identity setup, useful aliases, and git tool integrations.

@@ -1,3 +1,5 @@
+> **Read this when:** Dotfiles audit finds Git identity, signing, alias, permission, or multi-config issues.
+
 # Git Configuration Patterns
 
 Multi-identity setup, useful aliases, and git tool integrations.

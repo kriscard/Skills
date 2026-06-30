@@ -1,3 +1,5 @@
+> **Read this when:** Pipeline confidence is at least 95% and you are ready to write `contract.md`.
+
 # Contract Template
 
 Use this template when generating `contract.md` after reaching >=95% confidence.
@@ -34,6 +36,14 @@ Use this template when generating `contract.md` after reaching >=95% confidence.
 - [ ] {Criterion 2 - specific and testable}
 - [ ] {Criterion 3 - specific and testable}
 
+## V1 Done When
+
+{Concrete completion bar for the first usable version. Keep this narrower than the full product vision.}
+
+- [ ] {Core user-visible capability works end to end}
+- [ ] {Required data/auth/integration path is functional}
+- [ ] {Validation command or manual acceptance flow passes}
+
 ## Scope Boundaries
 
 ### In Scope
@@ -59,5 +69,6 @@ Use this template when generating `contract.md` after reaching >=95% confidence.
 1. **Problem Statement**: Be specific about WHO and WHAT impact. Avoid vague statements.
 2. **Goals**: Use measurable language with specific metrics.
 3. **Success Criteria**: Write as pass/fail verifiable test cases.
-4. **Scope Boundaries**: When in doubt, list as out of scope.
-5. **Future Considerations**: Park good ideas that are out of scope here.
+4. **V1 Done When**: Define the smallest usable version, not the whole roadmap.
+5. **Scope Boundaries**: When in doubt, list as out of scope.
+6. **Future Considerations**: Park good ideas that are out of scope here.

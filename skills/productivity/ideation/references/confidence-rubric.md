@@ -1,3 +1,5 @@
+> **Read this when:** You are scoring pipeline confidence before deciding whether to ask more questions or write the contract.
+
 # Confidence Assessment Rubric
 
 Use this rubric to score brain dump clarity before generating a contract.

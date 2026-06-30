@@ -1,3 +1,5 @@
+> **Read this when:** The user is adding aliases or replacing classic CLI tools with eza, bat, fd, rg, zoxide, fzf, lazygit, or related terminal tools.
+
 # Modern CLI Tools
 
 Modern alternatives for common Unix tools — faster, more ergonomic, better defaults.

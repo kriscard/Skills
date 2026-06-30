@@ -1,6 +1,8 @@
+> **Read this when:** The user is changing terminal emulator, tmux/sesh, Starship, yabai, or cross-tool theme configuration. Route Neovim-specific work to the neovim skill.
+
 # Terminal Configuration
 
-Terminal emulators, tmux, neovim, and theme consistency patterns.
+Terminal emulators, tmux, Starship, yabai, and theme consistency patterns.
 
 ## Kitty Best Practices
 
@@ -81,49 +83,6 @@ set -s escape-time 0
 set -g history-limit 10000
 ```
 
-## Neovim Configuration
-
-### Lua-Based Modern Config
-
-Use Lazy.nvim for plugin management:
-
-```lua
--- lazy.nvim bootstrap
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git", "clone", "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable",
-    lazypath,
-  })
-end
-vim.opt.rtp:prepend(lazypath)
-
-require("lazy").setup("plugins")
-```
-
-### LSP Setup
-
-Modern LSP configuration with Mason:
-
-```lua
--- In plugins/lsp.lua
-return {
-  "neovim/nvim-lspconfig",
-  dependencies = {
-    "williamboman/mason.nvim",
-    "williamboman/mason-lspconfig.nvim",
-  },
-  config = function()
-    require("mason").setup()
-    require("mason-lspconfig").setup({
-      ensure_installed = { "lua_ls", "tsserver", "pyright" }
-    })
-  end
-}
-```
-
 ## Theme Consistency
 
 ### Catppuccin Integration
@@ -134,7 +93,6 @@ Maintain consistent theming across all tools:
 - Terminal (Kitty, Ghostty, iTerm2)
 - Bat (syntax highlighting)
 - Tmux
-- Neovim
 - Starship (prompt)
 - Delta (git diffs)
 

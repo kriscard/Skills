@@ -1,13 +1,10 @@
 ---
 name: audit
 description: >-
-  Audits the entire dotfiles setup: shell startup time, zsh plugin weight, stow
-  symlink health, Neovim startup, installed tool inventory, and orphan configs.
-  Produces a prioritized cleanup report. Make sure to use this skill whenever the
-  user says "audit my dotfiles", "clean up my dotfiles", "optimize my shell",
-  "what's slowing my terminal", "review my dotfiles", or runs /audit. Also
-  triggers when the user asks why their terminal or Neovim is slow and they want
-  a full investigation rather than a targeted fix.
+  Dotfiles health baseline and triage. Use when the user wants a whole-system
+  audit of ~/.dotfiles: credential leaks, shell startup, Stow symlinks, Neovim
+  startup, missing tools, or orphan config. Do not use for targeted Neovim or
+  shell edits; route those to neovim or shell-env.
 user-invocable: true
 ---
 
@@ -31,12 +28,16 @@ grep -rE "(ghp_|sk-|AKIA|-----BEGIN.*PRIVATE KEY-----)" ~/.dotfiles/ 2>/dev/null
 Flag any findings as **CRITICAL** — credentials in dotfiles can leak via git.
 
 **File permission check** — these should be 600:
+
 ```bash
 stat -f "%A %N" ~/.dotfiles/.gitconfig-work ~/.dotfiles/.gitconfig-personal 2>/dev/null
 ```
 
 **Git safety** — verify `.gitignore` in the dotfiles repo includes:
+
 - `.env`, `*_token`, `*_secret`, `99-local.zsh`, `**/*.local.*`
+
+Done when credential findings, sensitive-file permissions, and gitignore coverage are recorded as clean or listed as Critical findings with file paths.
 
 ## Step 1: Shell Startup Time
 
@@ -56,14 +57,19 @@ for f in ~/.zsh.d/*.zsh; do
 done
 ```
 
+Done when one cold interactive startup measurement is recorded, the result is classified OK/SLOW against target, and any SLOW result names a likely zsh.d culprit or next profiling command.
+
 ## Step 2: Zsh Plugins Audit
 
 Check `~/.dotfiles/zsh/.zshrc` and `~/.dotfiles/zsh/zsh.d/` for plugin loading (zinit, antigen, oh-my-zsh, etc.).
 
 Flag heavy plugins:
+
 - Large completion frameworks loaded synchronously
 - `nvm` / `rbenv` / `pyenv` with eager shell integration (use lazy variants)
 - Any plugin that makes network calls or spawns subprocesses at init
+
+Done when each plugin/init integration is classified keep, lazy-load, remove, or needs profiling.
 
 ## Step 3: Stow Symlink Health
 
@@ -73,6 +79,8 @@ find ~ -maxdepth 3 -type l ! -e 2>/dev/null
 ```
 
 A broken symlink means the stow source file was deleted or moved without re-stowing. Fix: either restore the source file or `stow -D <package>` to remove the dead link.
+
+Done when every broken symlink is listed with its expected source or the report states none found.
 
 ## Step 4: Neovim Startup Time
 
@@ -84,6 +92,8 @@ nvim --headless --startuptime /tmp/nvim-startup.log +q && sort -k2 -n /tmp/nvim-
 
 Check which plugins are loading eagerly: the top entries after sorting are the slowest. Cross-reference against the plugin list to find candidates for lazy-loading.
 
+Done when startup time is recorded, classified OK/SLOW, and SLOW results name top slow entries. For targeted repair, stop and route to the neovim skill.
+
 ## Step 5: Tool Inventory Check
 
 Verify tools referenced in dotfiles are actually installed:
@@ -93,8 +103,11 @@ which sesh tmux yabai starship lazygit gh bat fd rg zoxide fzf
 ```
 
 Any `not found` means either:
+
 - The tool was uninstalled but its config is still in dotfiles (orphan config)
 - The tool isn't installed yet on this machine (new machine setup)
+
+Done when every referenced tool checked is listed as installed, missing-but-needed, or missing-and-orphaned.
 
 ## Step 6: Orphan Config Detection
 
@@ -106,11 +119,17 @@ ls ~/.dotfiles/
 
 Review each package: if the tool it configures isn't installed and you're not planning to use it, consider archiving the package or adding a note.
 
+Done when every package is classified active, setup-required, or orphan candidate.
+
+## Completion Gate
+
+Do not produce the final report until each step has either a captured result or an explicit reason it could not run. Security issues rank first regardless of other findings.
+
 ## Report Format
 
 After running all steps, produce a report:
 
-```
+```text
 DOTFILES AUDIT REPORT
 =====================
 
@@ -137,14 +156,11 @@ Recommended Cleanups (priority order)
   2. ...
 ```
 
-Security issues always rank first regardless of other findings.
-
 ## References
 
 | Priority | Load when | Reference |
-|----------|-----------|-----------|
+|---|---|---|
 | High | Security scan finds issues or credential patterns need review | `references/security-patterns.md` |
 | High | Shell startup is slow and needs profiling strategies | `references/shell-performance.md` |
-| High | Deep component-by-component analysis needed | `references/component-analysis.md` |
-| Medium | Broad pattern reference for security, perf, and tool integration | `references/analysis-patterns.md` |
-| Low | Git config issues found (permissions, multi-identity) | `references/git-config.md` |
+| Medium | Auditing a specific package/component after the baseline identifies it | `references/component-analysis.md` |
+| Low | Git config issues found: permissions, signing, aliases, or multi-identity | `references/git-config.md` |

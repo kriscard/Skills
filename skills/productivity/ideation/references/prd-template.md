@@ -1,3 +1,5 @@
+> **Read this when:** A contract is approved and you are writing a `prd-phase-N.md` artifact.
+
 # PRD Template
 
 Use this template when generating `prd-phase-{n}.md` for each implementation phase.

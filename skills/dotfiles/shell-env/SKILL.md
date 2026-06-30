@@ -1,13 +1,10 @@
 ---
 name: shell-env
 description: >-
-  Manages and edits the terminal/shell environment: zsh config, aliases, tmux,
-  sesh session manager, starship prompt, Ghostty terminal, yabai window manager,
-  and GNU Stow dotfile management. Make sure to use this skill whenever the user
-  mentions "zsh config", "shell alias", "dotfiles", "tmux config", "starship
-  prompt", "ghostty", "sesh", "yabai", "add to my dotfiles", "update my shell",
-  stow a package, or anything about configuring their terminal or shell
-  environment — even if they just say "how do I add this to my config".
+  Stow-first shell environment editing for zsh, aliases, tmux/sesh, Starship,
+  Ghostty, yabai, Git, and dotfiles packages. Use when the user wants to add or
+  change terminal config, aliases, shell startup, or Stow-managed symlinks.
+  Route Neovim-specific work to neovim and whole-system health checks to audit.
 ---
 
 # Shell & Terminal Environment
@@ -17,13 +14,29 @@ All config is managed with **GNU Stow** from `~/.dotfiles`. Never edit files dir
 ## Config Locations
 
 | Tool | Source path | Symlinked to |
-|------|-------------|-------------|
+|---|---|---|
 | Zsh | `~/.dotfiles/zsh/.zshrc` | `~/.zshrc` |
 | Zsh modules | `~/.dotfiles/zsh/zsh.d/` | `~/.zsh.d/` |
 | Ghostty | `~/.dotfiles/.config/ghostty/config` | `~/.config/ghostty/config` |
 | Tmux | `~/.dotfiles/.config/tmux/tmux.conf` | `~/.config/tmux/tmux.conf` |
 | Starship | `~/.dotfiles/.config/starship.toml` | `~/.config/starship.toml` |
-| Neovim | `~/.dotfiles/.config/nvim/` | `~/.config/nvim/` |
+| yabai | `~/.dotfiles/.config/yabai/yabairc` | `~/.config/yabai/yabairc` |
+
+## Stow-first edit loop
+
+1. Locate the source file under `~/.dotfiles`.
+2. Inspect the current config before changing it; do not rely on remembered theme/font values.
+3. Edit only the source file, never the symlink target in `~`.
+4. Run the safest verification for the tool:
+   - zsh: `zsh -n <file>` or open a new interactive shell
+   - tmux: `tmux source ~/.config/tmux/tmux.conf`
+   - Starship: `starship explain` or `starship timings`
+   - Ghostty: inspect/reload config, then restart or use the app reload command when available
+   - yabai: `yabai --restart-service`
+   - Stow: `cd ~/.dotfiles && stow -n <package>` before relinking or restructuring
+5. Report the source path changed, reload command, and verification result.
+
+Done when the config change is live or the remaining manual reload step is explicit.
 
 ## GNU Stow Workflow
 
@@ -32,7 +45,6 @@ cd ~/.dotfiles
 
 # Symlink a package (creates symlinks in home dir)
 stow zsh
-stow nvim
 
 # Remove symlinks for a package (does NOT delete source files)
 stow -D zsh
@@ -45,16 +57,17 @@ stow -n zsh
 ```
 
 **When adding a new tool:**
-1. Create a package directory: `mkdir ~/.dotfiles/<toolname>`
-2. Mirror the target directory structure inside it (e.g., `.config/ghostty/` for `~/.config/ghostty/`)
-3. Add the config file
-4. Run `stow <toolname>` from `~/.dotfiles`
+
+1. Create a package directory: `mkdir ~/.dotfiles/<toolname>`.
+2. Mirror the target directory structure inside it (e.g., `.config/ghostty/` for `~/.config/ghostty/`).
+3. Add the config file.
+4. Run `stow -n <toolname>` from `~/.dotfiles`, then `stow <toolname>` if the dry run is clean.
 
 ## Zsh: Modular Config
 
 `~/.dotfiles/zsh/zsh.d/` holds modular files, sourced automatically by `.zshrc`. Add new functionality as separate files rather than growing `.zshrc`:
 
-```
+```text
 zsh.d/
 ├── aliases.zsh       # all aliases
 ├── exports.zsh       # PATH and environment variables
@@ -65,13 +78,7 @@ zsh.d/
 
 ## Ghostty
 
-Config at `~/.dotfiles/.config/ghostty/config`. Current theme: **Catppuccin Macchiato**, font: **MonoLisa**.
-
-```
-# Key config fields
-theme = catppuccin-macchiato
-font-family = MonoLisa
-```
+Config at `~/.dotfiles/.config/ghostty/config`. Inspect the file for current theme and font before changing them.
 
 Changes take effect on Ghostty restart (or `Cmd+Shift+,` to reload config on macOS).
 
@@ -106,10 +113,10 @@ yabai --restart-service
 ## References
 
 | Priority | Load when | Reference |
-|----------|-----------|-----------|
-| 1 — High | Modern CLI tools or shell aliases (eza, bat, fd, rg, zoxide) | `references/modern-cli-tools.md` |
-| 2 — High | Terminal emulator, tmux, Neovim, or Catppuccin theme config | `references/terminal-config.md` |
-| 3 — Medium | Git identity setup, multi-config, or git aliases | `references/git-config.md` |
+|---|---|---|
+| High | Modern CLI tools or shell aliases: eza, bat, fd, rg, zoxide, fzf, lazygit | `references/modern-cli-tools.md` |
+| High | Terminal emulator, tmux/sesh, Starship, yabai, or theme consistency config | `references/terminal-config.md` |
+| Medium | Git identity setup, multi-config, signing, or git aliases | `references/git-config.md` |
 
 ## Quick Reference
 

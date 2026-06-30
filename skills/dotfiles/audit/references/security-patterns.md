@@ -1,3 +1,5 @@
+> **Read this when:** Dotfiles security scan finds possible credentials, unsafe permissions, history risks, or gitignore gaps.
+
 # Security Patterns
 
 Credential management, file permissions, and history security for dotfiles.

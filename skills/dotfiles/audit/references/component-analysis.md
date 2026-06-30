@@ -1,3 +1,5 @@
+> **Read this when:** A dotfiles audit identifies a specific package or component that needs deeper targeted analysis.
+
 # Component-Specific Analysis Reference
 
 Detailed analysis guidance for each dotfiles component. Referenced by the dotfiles-optimizer skill during targeted or full-scope analysis.
