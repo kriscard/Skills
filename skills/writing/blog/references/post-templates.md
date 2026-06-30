@@ -1,5 +1,7 @@
 # Blog Post Templates
 
+> **Read this when:** the post shape is chosen and you need a concrete section structure.
+
 ## Tutorial Post (1200-2500 words)
 
 ```markdown

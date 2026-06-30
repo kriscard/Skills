@@ -1,5 +1,7 @@
 # Story Circle Framework
 
+> **Read this when:** shaping a narrative arc, choosing a story structure, or turning a lesson/project into a post with tension and resolution.
+
 Eight-step narrative framework adapted from Dan Harmon's storytelling technique.
 
 ## The Structure

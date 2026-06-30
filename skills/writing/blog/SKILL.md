@@ -1,122 +1,143 @@
 ---
 name: blog
 description: >-
-  Writes technical blog posts for developers: researches current state, drafts
-  outlines for approval, then writes in an authentic voice with a clear "aha
-  moment", strong hook, and concrete code examples. Make sure to use this skill
-  whenever the user says "write a blog post", "draft a post about", "blog post
-  on", "technical article", or runs /blog. Also triggers when the user wants to
-  publish something they've learned or share an opinion — even if they just say
-  "I want to write about X".
+  Blog post writer for developer-facing technical posts. Use when the user wants
+  to write, draft, outline, revise, or publish a blog post, technical article,
+  opinion piece, project writeup, TIL, or post about something they learned.
 user-invocable: true
 argument-hint: "[topic or title]"
 ---
 
 # Blog Post Writer
 
-Writing for developers who've read too much mediocre content. The goal is one "aha moment" the reader will actually share.
+Writing for developers who've read too much mediocre content. The goal is one sharp **aha** the reader will actually share.
 
-## Writing Philosophy
+## Boundary
 
-**One insight, clearly stated, well supported.** Not a survey. Not a tutorial in disguise. Not "here's everything I know about X."
+A blog post may teach, but it must still have an angle. If the user wants pure step-by-step instruction, use the tutorial skill instead. If they want a publishable article with a lesson, story, opinion, or project narrative, continue here.
 
-The test: can you describe the post in one sentence that makes someone say "oh, I've been doing that wrong"? If not, the angle isn't sharp enough yet.
+## Philosophy
+
+**One insight, clearly stated, well supported.** Not a survey. Not "here's everything I know about X."
+
+The angle test:
+
+> Readers think/do X, but they should think/do Y because Z.
+
+If that sentence is weak, the post is not ready to outline.
 
 ## Workflow
 
-### 1. Research (if topic provided)
+### 1. Find the angle
 
-Before drafting, check the current state:
-- Use Context7 for library/framework documentation (catches outdated advice)
-- Use WebSearch for recent discussions, benchmarks, or counterarguments
-- Find 2-3 concrete examples or data points that support the insight
+Identify the post's one-sentence angle before researching or outlining.
 
-### 2. Identify Post Type
+Complete when:
+- the angle fits `Readers think/do X, but they should think/do Y because Z`
+- the reader, misconception, and payoff are specific
+- the post has one primary **aha**, not a pile of related points
 
-| Type | Use When |
-|------|----------|
-| Tutorial | Step-by-step instructions |
-| Project Showcase | Sharing what you built |
-| Opinion | Your take on a topic |
-| TIL | Quick, focused insight |
-| Comparison | X vs Y analysis |
+If the angle is missing or mushy, ask follow-up questions before continuing.
 
-### 3. Draft Outline First
+### 2. Research only what the angle needs
 
-Present the outline before writing the full post. Get explicit approval. Map to the Story Circle narrative:
+Check current facts before drafting technical claims. Use available research tools for official docs, recent discussions, benchmarks, counterarguments, and examples.
 
-```
-Title: [specific and direct — avoid "A Guide to X" or "Everything about X"]
-Hook: [why this matters right now — 1-2 sentences]
-Tension: [the common mistake or misconception — reader nods, feels called out]
+Complete when:
+- current docs or source material have been checked for any library/framework/API claims
+- 2-3 concrete examples, data points, or counterarguments support the angle
+- outdated or common-but-wrong advice is identified when relevant
+
+Skip external research only when the post is explicitly personal, reflective, or based entirely on user-provided material.
+
+### 3. Choose the post shape
+
+Pick the smallest structure that serves the angle:
+
+| Shape | Use when |
+|-------|----------|
+| Tutorial article | Teaching a process with a publishable lesson, not just instructions |
+| Project writeup | Sharing what was built and what it proves |
+| Opinion | Arguing for a clear technical judgment |
+| TIL | Capturing one small useful discovery |
+| Comparison | Helping readers choose between options |
+
+Complete when the shape is named and every planned section supports the angle.
+
+### 4. Draft the outline and wait
+
+Present an outline before writing the full post. Do not draft the article until the user approves.
+
+Outline format:
+
+```markdown
+Title: [specific and direct; avoid "A Guide to X" / "Everything about X"]
+Angle: Readers think/do X, but they should think/do Y because Z.
+Hook: [why this matters now]
+Tension: [the common mistake or misconception]
 Resolution: [the insight with evidence]
-Code example: [the concrete thing they can use today]
-Takeaway: [one sentence they'll remember]
+Example: [the concrete code/example/story that proves it]
+Takeaway: [one sentence readers remember]
 ```
 
-**Story Circle mapping** (for longer posts): You (reader's situation) → Need (problem) → Go (decision to change) → Search (exploring) → Find (the insight) → Take (implementation) → Return (results) → Change (reader transforms).
+Complete when the user explicitly approves the outline or asks for changes and those changes are incorporated.
 
-### 4. Write the Full Draft
+### 5. Write the draft
 
-Follow the approved outline. Writing rules:
+Follow the approved outline. Keep the reader moving toward the **aha**.
 
-**Voice and tone:**
-- First-person, direct, no corporate hedging ("it may be worth considering" → "do this")
-- Short paragraphs — 3 sentences max before a break
-- Specific over vague ("200ms slower" not "noticeably slower")
-- Don't explain things the reader already knows — they're developers
+Rules:
+- start with the interesting part, not "In this post..."
+- write first-person and direct; avoid corporate hedging
+- use short paragraphs, usually 1-3 sentences
+- prefer concrete numbers, examples, and trade-offs over vague claims
+- assume intermediate developer knowledge; do not explain basics unless the angle requires it
+- show the wrong way before the right way when contrast teaches the insight
+- keep code examples runnable, focused, and under 20 lines unless length is the point
 
-**What to kill:**
-- "In this post, I will..." — start with the interesting part
-- "As we can see..." — if it needs pointing out, the code isn't clear enough
-- "Simply" / "just" / "easy" — condescending and often wrong
-- Passive voice for user actions — "you call" not "it is called"
-- Throat-clearing in the intro — get to the hook in sentence one
+Complete when the draft includes:
+- suggested title
+- body with evidence or examples
+- code blocks with languages when code is present
+- one-sentence ending that lands the insight
 
-**Code examples:**
-- Must be runnable and focused on the key insight (not a complete app)
-- Show the wrong way, then the right way — the contrast is what teaches
-- Keep them under 20 lines unless the length itself is the point
-- Include the import/setup only if it's non-obvious
+### 6. Review before delivering
 
-## Post Structure
+Review the draft for technical correctness, voice, and angle discipline.
 
-**Hook** — why this matters now. A failing production story, a surprising benchmark, a question the reader can't answer yet. Makes them commit to reading.
+Complete when:
+- every section supports the angle
+- technical claims are sourced, verified, or clearly framed as experience/opinion
+- filler phrases and AI-sounding transitions are removed
+- the hook, tension, resolution, and takeaway are visible
 
-**Tension** — the common mistake. "Most people do X. Here's why that's wrong." This is where readers nod and feel called out.
+### 7. Add publishing metadata only when needed
 
-**Resolution** — the insight with evidence. Code, benchmarks, or examples. Not just the conclusion — the reasoning that makes it stick.
+Run SEO checks only when the user intends to publish publicly, asks for SEO, or the post targets search traffic.
 
-**Takeaway** — one actionable thing they can do today: a code snippet, a mental model, a decision they can make differently.
+When SEO applies, include:
+- meta description
+- URL slug
+- primary keyword
+- 2-3 internal/external link suggestions
 
-## SEO Checklist
-
-Before delivering any draft, run:
-- [ ] Primary keyword in title and first paragraph
-- [ ] Meta description (150-160 chars)
-- [ ] URL slug is short and clean
-- [ ] 2-3 internal/external links
-- [ ] Code blocks specify language
-- [ ] Headings use proper hierarchy (H2, H3)
-
-SEO should be subtle — don't keyword-stuff or write for search engines over humans.
+SEO must stay subordinate to the human reader.
 
 ## Output
 
-1. Outline (wait for approval)
-2. Full draft with:
-   - Suggested title (direct and specific)
-   - Body with code examples
-   - One-sentence ending that lands the insight
-   - SEO metadata (description, keywords)
+Default sequence:
 
-Estimated length: 800-1500 words. Longer only if the insight requires it.
+1. Outline and approval request
+2. Full draft after approval
+3. Optional publishing metadata when SEO applies
+
+Default length: 800-1500 words. Use shorter for TILs and longer only when the angle genuinely needs it.
 
 ## References
 
-| Priority | Stage | Load when | Reference |
-|----------|-------|-----------|-----------|
-| 1 | Outline | Choosing post type, narrative arc, or story structure | `references/story-circle.md` |
-| 2 | Draft | Need a concrete post format or section structure to follow | `references/post-templates.md` |
-| 3 | Review | Voice, tone, or style questions | `references/voice-tone.md` |
-| 4 | Publish | SEO metadata, keyword placement, or URL structure | `references/seo-checklist.md` |
+| Priority | Load when | Reference |
+|----------|-----------|-----------|
+| 1 | The angle needs a narrative arc, personal story, migration story, or before/after transformation | `references/story-circle.md` |
+| 2 | A post shape has been chosen and a concrete section template is needed | `references/post-templates.md` |
+| 3 | Revising a draft for voice, clarity, authenticity, or AI-slop removal | `references/voice-tone.md` |
+| 4 | User wants SEO, public publishing metadata, or search traffic | `references/seo-checklist.md` |
