@@ -1,8 +1,3 @@
-> **Priority: MEDIUM-HIGH** — Client-side data fetching without TanStack Query
-> patterns creates race conditions, duplicate requests, and manual loading state
-> that TanStack handles automatically. Apply after CRITICAL waterfall and bundle
-> issues are resolved.
->
 > **Read this when:** user mentions TanStack Query, React Query, `useQuery`,
 > `useMutation`, `queryOptions`, `queryClient`, `staleTime`, `gcTime`,
 > optimistic updates, query invalidation, or asks "how do I fetch data in React"
@@ -10,6 +5,12 @@
 >
 > **Not the right file?** RSC + Next.js data fetching → `waterfalls.md`.
 > Sequential fetches / waterfall chains → `waterfalls.md`.
+
+> **Priority: MEDIUM-HIGH** — Client-side data fetching without TanStack Query
+> patterns creates race conditions, duplicate requests, and manual loading state
+> that TanStack handles automatically. Apply after CRITICAL waterfall and bundle
+> issues are resolved.
+>
 
 # TanStack Query Patterns
 

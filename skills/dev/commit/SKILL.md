@@ -1,12 +1,11 @@
 ---
 name: commit
 description: >-
-  Creates semantic git commits with conventional commit format, stages changes,
-  and pushes to remote. Handles pre-commit hooks and writes meaningful commit
-  messages. Make sure to use this skill whenever the user says "commit", "push
-  changes", "save to git", "commit this", or wants to create a git commit —
-  even if they just say "save my work." Also proactively offer after any
-  implementation task wraps up.
+  Creates semantic git commits with conventional commit format, stages selected
+  changes safely, and optionally pushes to remote after explicit approval.
+  Handles pre-commit hooks and writes meaningful commit messages. Use when the
+  user says "commit", "push changes", "save to git", "commit this", or wants
+  to create a git commit — even if they just say "save my work."
 user-invocable: true
 ---
 
@@ -16,7 +15,14 @@ user-invocable: true
 
 **Step 1 — Check for changes**
 
-Run `git status` and `git diff` in parallel. If there's nothing to commit, stop and say so.
+Run in parallel:
+
+- `git status --short`
+- `git diff`
+- `git diff --staged`
+
+If there's nothing to commit, stop and say so. Review both unstaged and already
+staged diffs before writing the message.
 
 **Step 2 — Stage thoughtfully**
 
@@ -50,9 +56,21 @@ EOF
 
 If a hook fails (lint, typecheck, tests), the commit did NOT happen. Fix the issue, re-stage the modified files, then create a NEW commit. Never use `--amend` after a hook failure — that would modify the previous commit, potentially losing work.
 
-**Step 5 — Ask about pushing**
+**Step 5 — Verify the commit**
 
-Use AskUserQuestion: "Push to remote?" — don't push silently.
+Do not claim success until `git log -1 --oneline` shows the new commit. Include
+the commit hash in the final response.
+
+**Step 6 — Ask about pushing**
+
+Use AskUserQuestion: "Push to remote?" with options:
+
+- "Push now"
+- "Do not push"
+
+Before pushing, check branch/upstream with `git status -sb`. If no upstream is
+configured, ask before setting one. After an approved push, verify with
+`git status -sb`; do not claim the push succeeded if the branch is still ahead.
 
 ## Safety
 
@@ -60,6 +78,15 @@ Use AskUserQuestion: "Push to remote?" — don't push silently.
 - Never force push without an explicit request
 - Never amend commits on shared branches (`main`, `master`, `develop`)
 - Never add AI/Claude attribution to commit messages
+
+## Verification Gate
+
+Do not finish until:
+
+- staged and unstaged diffs were reviewed
+- the commit exists in `git log -1 --oneline`
+- the final response includes the commit hash
+- if pushed, `git status -sb` confirms the branch is not ahead of upstream
 
 ## Conventional Commit Types
 

@@ -1,9 +1,3 @@
-> **Priority: CRITICAL** — Waterfalls add hundreds of milliseconds to every page
-> load and compound with each nested request. A single sequential `await` where
-> `Promise.all` would work doubles the time to data. Fix waterfalls before
-> re-render or JS performance optimizations — the impact ratio is orders of
-> magnitude higher.
->
 > **Read this when:** the user mentions sequential awaits, waterfalls, parallel
 > fetching, "why is this slow", Suspense streaming, `React.cache`, `after()`,
 > or data fetching chains in React/Next.js.
@@ -11,6 +5,13 @@
 > **Not the right file?** If the issue is a `useEffect` smell →
 > `useeffect-antipatterns.md`. If the issue is rendering model choice →
 > `rendering-models.md`.
+
+> **Priority: CRITICAL** — Waterfalls add hundreds of milliseconds to every page
+> load and compound with each nested request. A single sequential `await` where
+> `Promise.all` would work doubles the time to data. Fix waterfalls before
+> re-render or JS performance optimizations — the impact ratio is orders of
+> magnitude higher.
+>
 
 # Waterfalls and Parallel Fetching
 

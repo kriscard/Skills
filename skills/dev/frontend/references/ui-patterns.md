@@ -1,10 +1,3 @@
-> **Priority: MEDIUM** — UI pattern issues are rarely bugs; they're readability,
-> maintainability, and accessibility debt. Exception: accessibility violations
-> (missing keyboard nav, wrong ARIA roles, no focus management) are correctness
-> issues — a component a screen reader user can't operate is broken, not just
-> suboptimal. Resolve accessibility issues at HIGH priority, visual/pattern
-> issues at MEDIUM.
->
 > **Read this when:** the user asks about component composition, compound
 > components, render props, Tailwind classes, `cn()`, animations,
 > `prefers-reduced-motion`, Framer Motion, accessibility (WCAG, ARIA, focus
@@ -12,6 +5,14 @@
 >
 > **Not the right file?** Next.js-specific rendering → `nextjs.md`.
 > TypeScript type-level patterns → `type-system.md`. XSS and CSP → `security.md`.
+
+> **Priority: MEDIUM** — UI pattern issues are rarely bugs; they're readability,
+> maintainability, and accessibility debt. Exception: accessibility violations
+> (missing keyboard nav, wrong ARIA roles, no focus management) are correctness
+> issues — a component a screen reader user can't operate is broken, not just
+> suboptimal. Resolve accessibility issues at HIGH priority, visual/pattern
+> issues at MEDIUM.
+>
 
 # UI Patterns — Composition, Tailwind, Animation, Accessibility, Forms
 

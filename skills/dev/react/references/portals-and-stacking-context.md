@@ -1,14 +1,15 @@
-> **Priority: MEDIUM** — Stacking context bugs are invisible until a user reports
-> "my modal is hidden behind the sidebar." They're not performance issues but they
-> are correctness issues — a modal that isn't visible is broken. Resolve CRITICAL
-> and HIGH issues first; load this when overlays, z-index, or portals are the topic.
->
 > **Read this when:** user mentions modals, dialogs, tooltips, popovers,
 > dropdowns, `z-index` not working, "appears behind", "covered by header",
 > `createPortal`, or asks why their overlay renders under another element.
 >
 > **Not the right file?** Animation transitions → `re-renders.md`.
 > Accessibility deep-dive → `ui-patterns.md`.
+
+> **Priority: MEDIUM** — Stacking context bugs are invisible until a user reports
+> "my modal is hidden behind the sidebar." They're not performance issues but they
+> are correctness issues — a modal that isn't visible is broken. Resolve CRITICAL
+> and HIGH issues first; load this when overlays, z-index, or portals are the topic.
+>
 
 # Portals and Stacking Contexts
 

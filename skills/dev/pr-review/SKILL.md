@@ -1,12 +1,12 @@
 ---
 name: pr-review
 description: >-
-  Reviews pull requests and diffs with parallel specialist analysis: security,
+  Reviews pull requests and diffs with specialist analysis for security,
   correctness, architecture, React patterns, and accessibility. Use when the
   user says "review this PR", "review my changes", "review the diff", or
-  mentions a PR number. Also use when the user invokes /pr-review directly.
+  mentions a PR number.
 user-invocable: true
-argument-hint: "[PR number or branch — omit for current branch vs main]"
+argument-hint: "[PR number or branch — omit for current branch vs PR/default base]"
 ---
 
 # PR Review
@@ -15,24 +15,35 @@ argument-hint: "[PR number or branch — omit for current branch vs main]"
 
 ```bash
 # If PR number given:
-gh pr view <number> --json title,body,files,baseRefName,headRefName
+gh pr view <number> --json title,body,files,baseRefName,headRefName,commits
 gh pr diff <number>
-git log main..<branch> --oneline
 
-# If no PR number (current branch):
-git diff main..HEAD
-git log main..HEAD --oneline
+# If reviewing current branch, determine base first:
+git status -sb
+git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || true
+git merge-base HEAD origin/<base-branch>
+git diff "$(git merge-base HEAD origin/<base-branch>)"..HEAD
+git log "$(git merge-base HEAD origin/<base-branch>)"..HEAD --oneline
 ```
+
+Use the PR's `baseRefName` when available. Do not assume `main` if the PR or
+repository reports a different base branch.
+
+Done only when you have: base branch, head branch, file list, full diff, commit
+list, and PR description. If any item is unavailable, state why before review.
 
 ## Step 2 — Profile the Diff
 
-Check what the diff touches to decide which specialists to spawn:
+Check what the diff touches to decide which specialist passes to run:
 
 - `HAS_REACT` — diff contains `.tsx`, `.jsx`, `use*.ts`, `components/`, or similar
 - `HAS_ARCH` — diff touches `services/`, `schemas/`, `api/`, `routes/`, `migrations/`, `prisma/`
 - `HAS_UI` — diff contains CSS, Tailwind classes, styled-components, or design tokens
 
-## Step 3 — Spawn Specialist Agents (parallel via Task tool)
+## Step 3 — Run Specialist Passes
+
+Run in parallel via Task tool when available. If agents are unavailable, run the
+same specialist passes sequentially yourself.
 
 **Always run:**
 - Security + correctness: auth flows, SQL injection, data loss paths, type safety gaps, unhandled errors
@@ -55,7 +66,7 @@ Check what the diff touches to decide which specialists to spawn:
    - **P2** — fix soon (performance, maintainability)
    - **P3** — nice to have (style, minor cleanup)
    - **P4** — nit / preference
-3. If specialists contradict each other on the same finding, surface the conflict via AskUserQuestion rather than silently choosing one
+3. Resolve contradictions by source evidence first: diff, tests, docs, and runtime behavior. Ask the user only when product intent is required.
 
 ## Output Format
 

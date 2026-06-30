@@ -1,15 +1,17 @@
 ---
 name: review
 description: >-
-  Reviews code for security vulnerabilities, performance issues, correctness bugs, and
-  production reliability concerns. Use after writing or modifying code, when reviewing
-  PRs, when the user asks "review this", "check this code", mentions code quality,
-  security review, or performance audit. Covers all languages and frameworks.
+  Security-first triage for code changes: inspect security vulnerabilities,
+  correctness bugs, production reliability risks, performance issues, and
+  maintainability concerns. Use after writing or modifying code, when reviewing
+  PRs, or when the user asks "review this", "check this code", mentions code
+  quality, security review, or performance audit.
 ---
 
 # Code Review
 
-Security, correctness, and production reliability — in that priority order.
+Security-first triage: inspect security, correctness, and production reliability
+in that priority order.
 
 ## Priority Order
 
@@ -21,29 +23,36 @@ Security, correctness, and production reliability — in that priority order.
 
 ## Review Checklist
 
-**Security (block on any of these):**
-- [ ] No SQL injection vectors (parameterized queries used)
-- [ ] No XSS — user input sanitized before rendering
-- [ ] Auth checks on all sensitive operations
-- [ ] No secrets or credentials in code
-- [ ] Input validation at system boundaries
+**Security (block on evidenced issues):**
+- [ ] Inspect query construction for SQL injection and missing parameterization
+- [ ] Inspect rendering paths for XSS and unsanitized user input
+- [ ] Inspect sensitive operations for missing or bypassable auth checks
+- [ ] Inspect changed files/config for secrets or credentials
+- [ ] Inspect system boundaries for input validation
 
 **Correctness:**
-- [ ] Error paths handled — no silent failures
-- [ ] Edge cases covered (empty, null, zero, large values)
-- [ ] Async operations properly awaited
-- [ ] No data mutation where immutability expected
+- [ ] Inspect error paths for silent failures or swallowed exceptions
+- [ ] Inspect edge cases: empty, null, zero, large values, duplicate requests
+- [ ] Inspect async operations for missing awaits, races, and stale state
+- [ ] Inspect mutation/immutability assumptions
 
 **Performance:**
-- [ ] No N+1 queries in loops
-- [ ] Database queries have appropriate indexes
-- [ ] No memory leaks (event listeners, timers cleaned up)
-- [ ] Expensive operations cached where appropriate
+- [ ] Inspect loops and serializers for N+1 queries or repeated I/O
+- [ ] Inspect database queries for missing indexes or unbounded scans
+- [ ] Inspect event listeners, timers, and subscriptions for cleanup
+- [ ] Inspect expensive operations for appropriate caching or batching
 
 **Tests:**
-- [ ] Tests exist for new code
-- [ ] Tests cover error paths, not just happy path
-- [ ] No over-mocking that makes tests pass while real code breaks
+- [ ] Inspect whether new behavior has tests
+- [ ] Inspect whether tests cover error paths, not just happy path
+- [ ] Inspect mocks for over-mocking that hides real integration bugs
+
+## Completion Gate
+
+Complete the review only after inspecting changed code, relevant config, tests,
+and routed references when applicable. Report only evidenced issues with
+`file:line`, impact, and a concrete fix. If no issues are found, state what was
+inspected.
 
 ## Output Format
 
@@ -55,6 +64,7 @@ Issues: N critical · N high · N medium · N low
 ## 🔴 Critical (block)
 1. `file:line` — [issue]
    **Problem:** ...
+   **Impact:** ...
    **Fix:** ...
 
 ## 🟠 High (should fix)

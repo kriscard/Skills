@@ -1,15 +1,16 @@
-> **Priority: MEDIUM** — Architecture debt from a flat structure shows up as
-> shotgun surgery: one feature change touches 8 files across the codebase. The
-> feature-based pattern makes that one change touch one directory. Apply when
-> the current structure is already causing pain, not as a preemptive refactor
-> on a small project.
->
 > **Read this when:** user asks how to structure a React project, mentions
 > feature folders, asks "where should this file go", reports that changes to one
 > feature break another, or is starting a new mid-to-large-scale React app.
 >
 > **Not the right file?** Barrel file bundle performance → `bundle-and-perf-investigation.md`.
 > Component composition within a feature → `ui-patterns.md`.
+
+> **Priority: MEDIUM** — Architecture debt from a flat structure shows up as
+> shotgun surgery: one feature change touches 8 files across the codebase. The
+> feature-based pattern makes that one change touch one directory. Apply when
+> the current structure is already causing pain, not as a preemptive refactor
+> on a small project.
+>
 
 # Feature-Based Architecture
 

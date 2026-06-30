@@ -1,21 +1,21 @@
 ---
 name: spec
 description: >-
-  Turns requirements into structured specs before implementation. Accepts a
-  Linear URL, GitHub issue URL, Jira URL, or plain text description. Use when
-  the user says "write a spec for", "create a spec", "turn this into a spec",
-  or pastes an issue URL (linear.app, github.com/*/issues/*, atlassian.net/browse/*).
-  Always spec before implementing — rushing to code before aligning on scope is
-  the #1 cause of rework.
+  Creates an approval-gated spec for non-trivial feature work from an issue URL
+  or requirements text. Use when the user asks for a spec/PRD, pastes a Linear,
+  GitHub issue, or Jira URL, or requests implementation where scope is ambiguous
+  enough to need acceptance criteria before coding.
 user-invocable: true
 argument-hint: "[linear-url, github-issue-url, or description]"
 ---
 
 # Spec
 
-## Two-Step Flow: Spec → Approve → Implement
+## Approval-Gated Flow: Spec → Approve → Implement
 
-The point of this skill is the pause. Generating a spec and waiting for approval before implementing ensures you and the user are aligned on scope before writing a line of code. Don't skip to implementation.
+The point of this skill is the pause. Generating a spec and waiting for
+approval before implementing ensures you and the user are aligned on scope
+before writing code. Do not skip to implementation.
 
 ## Step 1 — Detect Source and Fetch Context
 
@@ -34,7 +34,11 @@ Use WebFetch to retrieve the page content.
 
 **Plain text**: treat the input as the raw requirement and proceed.
 
-Display a brief summary (2–3 sentences) of what you fetched so the user can confirm you're working from the right source.
+Display a brief summary (2–3 sentences) of what you fetched so the user can
+confirm you're working from the right source.
+
+If the source cannot be fetched or key scope details are missing, stop with the
+missing facts and proposed assumptions; do not invent acceptance criteria.
 
 ## Step 2 — Generate the Spec
 
@@ -60,11 +64,24 @@ Dependencies, migration needs, API contracts, performance constraints.
 Leave empty if there's nothing notable.
 ```
 
+Done only when the spec includes problem, solution, testable acceptance
+criteria, out-of-scope boundaries, and technical notes or an explicit "none".
+
 ## Step 3 — Wait for Approval
 
 Present the spec and ask: "Does this capture what you need? Any changes before I implement?"
 
 Only offer to implement after the user explicitly approves. If they request changes, revise and re-present before offering to implement.
+
+## Missing Context Stop Criteria
+
+Stop and ask for clarification when:
+
+- the issue/source cannot be fetched
+- the user pain or success condition is unclear
+- acceptance criteria would require inventing product behavior
+- out-of-scope boundaries are material but unknown
+- dependencies, migrations, or API contracts are likely but unspecified
 
 ## Tips for Good Acceptance Criteria
 

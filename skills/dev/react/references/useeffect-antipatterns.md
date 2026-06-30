@@ -1,9 +1,3 @@
-> **Priority: HIGH** — Effect bugs (race conditions, stale closures, infinite
-> loops) are hard to reproduce and often ship to production. An effect that
-> fetches without cleanup creates a race condition on every unmount. An effect
-> that syncs state is derived-state in disguise. Apply before MEDIUM re-render
-> optimization — correctness before performance.
->
 > **Read this when:** the user mentions `useEffect`, "should I use useEffect
 > for...", side effects, stale closures, double renders in dev mode,
 > `useLayoutEffect`, flickering after a measurement, or data fetching that
@@ -12,6 +6,13 @@
 > **Not the right file?** If the issue is *why this re-renders too often* →
 > `re-renders.md`. If it's *slow initial load or bundle* → open the
 > `frontend` skill's `references/nextjs.md`.
+
+> **Priority: HIGH** — Effect bugs (race conditions, stale closures, infinite
+> loops) are hard to reproduce and often ship to production. An effect that
+> fetches without cleanup creates a race condition on every unmount. An effect
+> that syncs state is derived-state in disguise. Apply before MEDIUM re-render
+> optimization — correctness before performance.
+>
 
 # useEffect Anti-Patterns
 

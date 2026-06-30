@@ -1,8 +1,3 @@
-> **Priority: CRITICAL** — Breaking changes fail silently. `defaultProps` on
-> function components is ignored in React 19 without a warning. Suspense siblings
-> no longer pre-render in parallel, creating hidden waterfalls. Apply this
-> reference before any MEDIUM/HIGH reference when React 19 is the context.
->
 > **Read this when:** user mentions React 19, `useActionState`, `useOptimistic`,
 > `use()` hook, ref as prop, action props, async transitions, `nuqs`, form
 > actions, or asks "why does `defaultProps` not work" / "do I still need
@@ -10,6 +5,12 @@
 >
 > **Not the right file?** Rendering model strategy → `rendering-models.md`.
 > Server Actions waterfalls → `waterfalls.md`.
+
+> **Priority: CRITICAL** — Breaking changes fail silently. `defaultProps` on
+> function components is ignored in React 19 without a warning. Suspense siblings
+> no longer pre-render in parallel, creating hidden waterfalls. Apply this
+> reference before any MEDIUM/HIGH reference when React 19 is the context.
+>
 
 # React 19 — Breaking Changes and New Patterns
 

@@ -4,9 +4,8 @@ description: >-
   Audits and improves CLAUDE.md files to make Claude more compliant and
   effective. Use when the user says "optimize my CLAUDE.md", "my claude.md
   is too long", "improve my claude instructions", "claude isn't following
-  my instructions", or any time they want to improve how Claude behaves
-  in their project. CLAUDE.md is loaded on every turn — bloated instructions
-  dilute the signal.
+  my instructions", or wants to improve how Claude behaves in a project.
+  CLAUDE.md is loaded on every turn — bloated instructions dilute the signal.
 ---
 
 # Claude Optimizer
@@ -17,16 +16,22 @@ CLAUDE.md is loaded into context on every single turn. Bloated or poorly structu
 
 ## Workflow
 
-**Step 1 — Read and measure**
+**Step 1 — Always read and measure**
 
 ```bash
+find . -name CLAUDE.md -print
 wc -w path/to/CLAUDE.md
+rg -n '(^|\s)@[^\s]+' $(find . -name CLAUDE.md -print)
 # Rough token estimate: word count ÷ 0.75
 ```
 
-Also check for nested `@`-referenced files — they count against context too.
+Also inspect nested `CLAUDE.md` files and `@`-referenced files because they may
+load into context too. Report any referenced file you did not inspect.
 
 **Step 2 — Analyze against these criteria**
+
+Use this inline table for the fast audit. Load `references/best-practices.md`
+when proposing a detailed restructure, token budget, or rewritten organization.
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
@@ -42,11 +47,14 @@ Also check for nested `@`-referenced files — they count against context too.
 
 **Step 3 — Propose changes with reasoning**
 
-Show the user what you'd change and why. Don't silently rewrite the file. The user knows their workflow better than you do — some verbosity is intentional.
+Show the user what you'd change and why. Never silently rewrite the file. The
+user knows their workflow better than you do — some verbosity is intentional.
 
-**Step 4 — Apply only after approval**
+**Step 4 — Stop after proposal unless approved**
 
-Rewrite the file after the user confirms. If the file is large, show a diff-style summary of what's changing rather than pasting the entire new version.
+Rewrite only after the user explicitly approves edits. If the file is large,
+show a diff-style summary of what's changing rather than pasting the entire new
+version.
 
 ## Structure Template
 
@@ -74,8 +82,20 @@ Available scripts, how to run them.
 - Commands that Claude genuinely needs to run (test, lint, build)
 - `@references` to files with deep context (they load lazily, low cost)
 
+## Completion Gate
+
+An audit is complete only after reporting:
+
+- word count and rough token estimate
+- nested `CLAUDE.md` files and `@` referenced files checked
+- top 5 highest-impact cuts or restructures
+- what must stay unchanged
+- estimated before/after token budget
+
+Stop after the proposal unless the user explicitly approves edits.
+
 ## References
 
 | Priority | Load when | Reference |
 |----------|-----------|-----------|
-| 1 — High | Need CLAUDE.md structure guidelines, what to include/exclude, or token budget rules | `references/best-practices.md` |
+| 1 — High | Proposing detailed CLAUDE.md structure, token budgets, include/exclude choices, or a rewrite plan | `references/best-practices.md` |

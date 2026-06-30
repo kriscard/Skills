@@ -1,9 +1,3 @@
-> **Priority: MEDIUM** — Re-render frequency rarely affects user-perceived
-> performance as much as bundle size or data waterfalls. With React Compiler 1.0
-> (GA Oct 2025), many re-render optimizations are automated. Measure with the
-> React Profiler before adding `useMemo` / `useCallback` — premature memoization
-> adds complexity without measurable benefit.
->
 > **Read this when:** the user mentions re-renders, "why does this re-render",
 > `useMemo`, `useCallback`, `React.memo`, React Compiler, memoization, prop
 > reference identity, or asks whether they need to memoize something.
@@ -11,6 +5,13 @@
 > **Not the right file?** If the issue is a `useEffect` smell →
 > `useeffect-antipatterns.md`. If the issue is SSR/CSR choice or hydration →
 > `rendering-models.md`.
+
+> **Priority: MEDIUM** — Re-render frequency rarely affects user-perceived
+> performance as much as bundle size or data waterfalls. With React Compiler 1.0
+> (GA Oct 2025), many re-render optimizations are automated. Measure with the
+> React Profiler before adding `useMemo` / `useCallback` — premature memoization
+> adds complexity without measurable benefit.
+>
 
 # Re-renders and Memoization
 

@@ -1,9 +1,3 @@
-> **Priority: HIGH** — The rendering model is the most expensive architectural
-> decision to reverse. Choosing CSR when SEO is required, or SSR when a static
-> page would do, has infrastructure and performance consequences that compound
-> over time. Apply when a new route or page is being designed; don't defer
-> until after the implementation is built.
->
 > **Read this when:** the user asks about SSR vs CSR vs SSG vs ISR vs RSC,
 > "when should I use a Server Component", "do I need SSR for SEO", hydration
 > mismatch, `suppressHydrationWarning`, or rendering model decision.
@@ -11,6 +5,13 @@
 > **Not the right file?** Server Actions authentication and CORS → the
 > `frontend` skill's `references/nextjs.md` (full detail). Data waterfall
 > patterns → `waterfalls.md`.
+
+> **Priority: HIGH** — The rendering model is the most expensive architectural
+> decision to reverse. Choosing CSR when SEO is required, or SSR when a static
+> page would do, has infrastructure and performance consequences that compound
+> over time. Apply when a new route or page is being designed; don't defer
+> until after the implementation is built.
+>
 
 # Rendering Models — Decision Framework
 

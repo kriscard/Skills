@@ -1,9 +1,3 @@
-> **Priority: CRITICAL** — Security issues are the only category where "works
-> correctly" and "safe" are separate bars. XSS via `dangerouslySetInnerHTML`,
-> tokens in `localStorage`, missing CSP — these ship silently, cause production
-> incidents, and can't be fixed retroactively for affected users. Apply this
-> reference before any other; no optimization matters if the app is insecure.
->
 > **Read this when:** the user mentions XSS, `dangerouslySetInnerHTML`,
 > DOMPurify, CSP headers, input sanitization, `localStorage` security,
 > auth tokens, JWT storage, `httpOnly` cookies, CORS, third-party scripts,
@@ -11,6 +5,13 @@
 >
 > **Not the right file?** TypeScript runtime validation at API boundaries →
 > `type-system.md`. Next.js Server Actions authentication → `nextjs.md`.
+
+> **Priority: CRITICAL** — Security issues are the only category where "works
+> correctly" and "safe" are separate bars. XSS via `dangerouslySetInnerHTML`,
+> tokens in `localStorage`, missing CSP — these ship silently, cause production
+> incidents, and can't be fixed retroactively for affected users. Apply this
+> reference before any other; no optimization matters if the app is insecure.
+>
 
 # Frontend Security
 

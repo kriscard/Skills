@@ -1,37 +1,33 @@
 ---
 name: refactor
 description: >-
-  Refactors code to improve readability, reduce complexity, and enhance maintainability
-  without altering functionality. Use when the user says "refactor", "simplify this
-  code", "clean up", "reduce complexity", "extract method", "this is too complex", or
-  asks to improve naming/structure without changing behavior. Preserves all public APIs
-  unless explicitly authorized.
+  Performs behavior-preserving refactors to improve readability, reduce
+  complexity, and enhance maintainability without altering functionality. Use
+  when the user says "refactor", "simplify this code", "clean up", "reduce
+  complexity", "extract method", "this is too complex", or asks to improve
+  naming/structure without changing behavior. Preserves all public APIs unless
+  explicitly authorized.
 ---
 
 # Refactor
 
-You are a refactoring specialist. Your core principle: improve code quality without
-changing externally observable behavior or public APIs — unless explicitly authorized.
+Behavior-preserving refactor: improve code quality without changing externally
+observable behavior or public APIs unless explicitly authorized.
 
 ## Methodology
 
-### Step 1 — Analyze Before Acting
+### Step 1 — Characterize Current Behavior
 
-Read the code fully. Identify its public interfaces and map its current behavior.
-Never assume — verify your understanding. Identify the specific problem:
-complexity? duplication? naming? coupling?
+Done when public interfaces, side effects, error behavior, performance
+assumptions, and available tests or characterization checks are listed. If
+behavior is ambiguous and untested, pause with the ambiguity instead of
+rewriting.
 
-### Step 2 — Preserve Behavior
+### Step 2 — Identify the Refactor Target
 
-Your refactorings must maintain:
-- All public method signatures and return types
-- External API contracts
-- Side effects and their ordering
-- Error handling behavior
-- Performance characteristics (unless explicitly improving them)
-
-Tests must still pass after every refactoring. If tests don't exist, flag this before
-proceeding — refactoring without tests is rewriting.
+Read the code fully and name the specific problem: complexity, duplication,
+naming, coupling, dead code, unclear data structure, or control flow. Done only
+when the intended improvement can be checked after the change.
 
 ### Step 3 — Apply Simplification Techniques (in priority order)
 
@@ -46,91 +42,52 @@ proceeding — refactoring without tests is rewriting.
 ### Step 4 — Quality Checks Per Refactoring
 
 For each change:
-- Verify the change preserves behavior
-- Confirm tests still pass (note if tests need updates)
+- Verify behavior is preserved with tests or characterization notes
+- Confirm tests still pass, or report why they could not be run
 - Check that complexity genuinely decreased
 - Confirm the code is more readable than before
 
 ### Step 5 — Communication Protocol
 
 - Explain each refactoring and its benefit
-- Highlight any risks or assumptions made
+- Highlight risks or assumptions
 - Provide before/after comparisons for significant changes
-- Note patterns or anti-patterns observed
 - If a public API change would significantly improve the code, ask for permission first
 
 ### Step 6 — Constraints and Boundaries
 
 - Never change public APIs without explicit permission
-- Maintain backward compatibility
-- Preserve all documented behavior
+- Maintain backward compatibility and documented behavior
 - Don't introduce new dependencies without discussion
 - Respect existing code style and conventions
-- Keep performance neutral or better
+- Keep performance neutral or better unless explicitly improving it
 - One concern per refactor — don't mix renaming, extraction, and logic changes
 
 ### Step 7 — When to Seek Clarification
 
 Pause and ask when:
 - Behavior is ambiguous and no tests document it
-- Potential bugs that refactoring would expose
+- A potential bug would be exposed or fixed by the refactor
 - A public API change would greatly simplify the code
 - Performance trade-offs exist
 - Architectural decisions affect the refactoring approach
 
-## Common Patterns
+## Completion Gate
 
-**Extract when intent is unclear:**
-```typescript
-// Before — what does this do?
-const result = items.filter(i => i.status === 'active' && i.createdAt > cutoff);
+Do not call a refactor complete until:
 
-// After — intent is obvious
-const recentActiveItems = items.filter(isRecentAndActive);
-```
-
-**Simplify conditionals:**
-```typescript
-// Before
-if (user !== null && user !== undefined && user.role === 'admin') { ... }
-
-// After
-if (user?.role === 'admin') { ... }
-```
-
-**Replace magic values:**
-```typescript
-// Before
-if (retries > 3) { ... }
-
-// After
-const MAX_RETRIES = 3;
-if (retries > MAX_RETRIES) { ... }
-```
-
-**Flatten nesting** — early returns reduce indent depth:
-```typescript
-// Before
-function process(data) {
-  if (data) {
-    if (data.valid) {
-      return transform(data);
-    }
-  }
-}
-
-// After
-function process(data) {
-  if (!data?.valid) return;
-  return transform(data);
-}
-```
+- behavior characterization is documented
+- tests or characterization checks were run, or the gap is explicitly reported
+- public API compatibility is confirmed
+- before/after complexity or readability improvement is stated
+- any behavior changes are separated and approved as non-refactor work
 
 ## Output Format
 
 Every refactoring response includes:
 - The refactored code
 - Summary of changes made and why each improves the code
+- Evidence that behavior was preserved
 - Any caveats or areas requiring attention
 - Suggestions for further improvements if applicable
 

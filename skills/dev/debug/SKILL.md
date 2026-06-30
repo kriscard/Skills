@@ -9,28 +9,38 @@ description: >-
 
 # Debug
 
-Systematic root-cause analysis — reproduce, isolate, hypothesize, fix, verify.
+Trace the failure before changing code. Systematic root-cause analysis:
+reproduce, isolate, hypothesize, fix, verify.
 
 ## Process
 
-1. **Read the error** — full message, stack trace, error code. Don't skip this.
-2. **Reproduce reliably** — minimal steps before touching any code.
-3. **Isolate** — binary search via `git bisect`, comment blocks, or minimal repro.
-4. **Hypothesize** — one specific theory. Don't change multiple things at once.
-5. **Test hypothesis** — add logging, use debugger, modify code.
-6. **Apply minimal fix** — smallest change that addresses root cause, not symptoms.
-7. **Verify** — confirm fix works and no regressions.
+1. **Trace the failure** — capture the exact error, stack trace, failing command,
+   and relevant logs. Done only when the failure can be quoted back verbatim.
+2. **Reproduce reliably** — identify the smallest command or action that fails.
+   Done only when it fails twice the same way, or is labeled intermittent with
+   evidence.
+3. **Gather evidence before hypothesis** — check recent changes, logs around the
+   failure, expected environment, config, versions, and whether timing/races are
+   plausible. Done only when each relevant item is recorded or ruled out.
+4. **Isolate** — binary search via `git bisect`, comment blocks, feature flags,
+   or a minimal repro. Done only when the failure is narrowed to a component,
+   commit, input, or condition.
+5. **Hypothesize** — state one specific theory and the observation that would
+   disprove it. Do not change multiple things at once.
+6. **Test hypothesis** — add temporary logging, use a debugger, or run a focused
+   experiment. Done only when the result supports or rejects the theory.
+7. **Apply minimal fix** — smallest change that addresses root cause, not symptoms.
+8. **Verify** — rerun the original reproduction and relevant regression checks.
+   Done only when the original failure no longer occurs and regressions are not
+   detected or are explicitly reported.
 
-## Diagnosis Checklist
+## Evidence to Gather Before Hypothesis
 
-**Start here before touching code:**
-
-- [ ] Read the full error message — it often tells you exactly what's wrong
-- [ ] Check recent changes: `git log --oneline -10` / `git diff HEAD~1`
-- [ ] Check logs around time of failure
-- [ ] Verify environment matches expected (versions, env vars, config)
-- [ ] Could this be a race condition or timing issue?
-- [ ] Is this intermittent or consistent?
+- Full error message, stack trace, and error code
+- Recent changes: `git log --oneline -10` / `git diff HEAD~1`
+- Logs around the time of failure
+- Environment: versions, env vars, config, external service state
+- Consistency: deterministic failure or intermittent pattern
 
 **Reproduction:**
 
@@ -60,7 +70,7 @@ console.log('[debug] functionName result', { result });
 
 ## Output
 
-```
+````markdown
 ## Root Cause
 [What actually caused the issue]
 
@@ -76,6 +86,9 @@ console.log('[debug] functionName result', { result });
 
 **Why this fixes it:** [reasoning]
 
+## Verification
+- [Command/repro rerun and result]
+
 ## Prevention
 - [Recommendation to avoid recurrence]
-```
+````

@@ -1,25 +1,28 @@
 ---
 name: research
 description: >-
-  Fetches fresh documentation and implementation guidance for any library,
-  framework, or API the user needs to work with. Use proactively whenever
-  the user asks "documentation for", "how does X work", "look up", "find
-  examples", "best practices for", or mentions a technology they need to
-  learn or reference. Don't rely on training data when live docs are
-  available — libraries release breaking changes regularly.
+  Fetches source-grounded, current docs for library/framework/API
+  implementation. Use when the user needs API syntax, config options,
+  examples, migration notes, or version-sensitive guidance. Do not invoke for
+  stable concepts or broad explanations that can be answered from memory.
 ---
 
 # Research
 
+Source-grounded docs research for implementation details that may be stale in
+training data.
+
 ## Strategy (priority order)
 
-Try these in order and stop at the first that returns useful results:
+Try these in order and stop at the first source that is authoritative, current
+enough for the requested version, and contains the API/config detail needed to
+answer.
 
 **1. Context7 MCP** — best for library/framework/SDK documentation
 ```
 mcp__context7__resolve-library-id  →  mcp__context7__query-docs
 ```
-Prefer this for npm packages, Python libraries, and popular frameworks. Training data goes stale; Context7 returns current docs.
+Prefer this for npm packages, Python libraries, and popular frameworks.
 
 **2. GitHub CLI** — for repos not indexed by Context7
 ```bash
@@ -30,6 +33,19 @@ gh api repos/<owner>/<repo>/contents/docs
 **3. WebFetch → WebSearch** — for everything else
 - WebFetch a specific URL if you have it
 - WebSearch when you need to find the right page first
+
+If a tool is unavailable, skip to the next available source and say which source
+could not be checked.
+
+## Completion Gate
+
+Stop only when:
+
+- the source is authoritative for the library/framework/API
+- the source is current enough for the requested version
+- the source contains the API syntax, config option, migration note, or example
+  needed to answer
+- unavailable tools or missing version information are disclosed
 
 ## Output Format
 

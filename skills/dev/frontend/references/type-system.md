@@ -1,8 +1,3 @@
-> **Priority: HIGH** — Type errors caught at compile time cost nothing. Type
-> errors that reach runtime (wrong `as` cast, missing runtime validation at API
-> boundary, `React.FC` implying children that don't exist) corrupt state silently.
-> Fix type correctness before UI pattern or accessibility issues.
->
 > **Read this when:** the user mentions TypeScript types, generics, branded
 > types, discriminated unions, `satisfies`, `using`, `NoInfer`, Zod, Valibot,
 > ArkType, runtime validation, `tsconfig` options, TypeScript 6.x, TypeScript
@@ -10,6 +5,12 @@
 >
 > **Not the right file?** Rendering model or Next.js-specific types →
 > `nextjs.md`. Component prop types and accessibility → `ui-patterns.md`.
+
+> **Priority: HIGH** — Type errors caught at compile time cost nothing. Type
+> errors that reach runtime (wrong `as` cast, missing runtime validation at API
+> boundary, `React.FC` implying children that don't exist) corrupt state silently.
+> Fix type correctness before UI pattern or accessibility issues.
+>
 
 # TypeScript Type System — Deep Dive
 
@@ -322,37 +323,10 @@ SWC). Prevents runtime errors from importing types as values.
 
 ---
 
-## React + TypeScript Patterns
+## TypeScript Patterns
 
-Patterns from react-typescript-cheatsheet.netlify.app and tkdodo.eu — things
-TypeScript alone doesn't warn about but consistently cause bugs or confusion
-in React codebases.
-
-### Never use `React.FC` — use plain function declarations
-
-```typescript
-// ❌ React.FC — deprecated (explicitly called out in react-typescript-cheatsheet)
-// Implies implicit children prop, forces return type, more verbose, no benefit
-const Button: React.FC<ButtonProps> = ({ label, onClick }) => (
-  <button onClick={onClick}>{label}</button>
-);
-
-// ✅ Plain function declaration — the standard
-function Button({ label, onClick }: ButtonProps) {
-  return <button onClick={onClick}>{label}</button>;
-}
-```
-
-### `defaultProps` is broken in React 19 for function components
-
-```typescript
-// ❌ React 19: defaultProps on function components is silently ignored
-function Card({ title }: CardProps) { ... }
-Card.defaultProps = { title: 'Untitled' }; // does nothing!
-
-// ✅ Destructuring defaults — works in all React versions
-function Card({ title = 'Untitled' }: CardProps) { ... }
-```
+Patterns from tkdodo.eu and TypeScript-heavy codebases — things TypeScript
+alone doesn't warn about but consistently cause bugs or confusion.
 
 ### `DistributiveOmit` — `Omit` on discriminated unions is not distributive
 

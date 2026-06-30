@@ -1,14 +1,15 @@
-> **Priority: CRITICAL** — A slow initial load loses users before they see any
-> content. Bundle size directly impacts LCP (Largest Contentful Paint) and every
-> user on a slow connection. Fix bundle issues before re-render optimizations —
-> a 200 KB reduction beats 50 `useMemo` calls in user-perceived impact.
->
 > **Read this when:** user mentions slow initial load, bundle size, "why is the
 > app slow", Web Vitals (LCP, INP, CLS), flame graphs, profiling, code splitting,
 > dynamic imports, tree-shaking, or asks "which library is causing this bloat?"
 >
 > **Not the right file?** React render performance (re-renders, useMemo) →
 > `re-renders.md`. Data-fetching waterfalls → `waterfalls.md`.
+
+> **Priority: CRITICAL** — A slow initial load loses users before they see any
+> content. Bundle size directly impacts LCP (Largest Contentful Paint) and every
+> user on a slow connection. Fix bundle issues before re-render optimizations —
+> a 200 KB reduction beats 50 `useMemo` calls in user-perceived impact.
+>
 
 # Bundle and Performance Investigation
 

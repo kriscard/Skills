@@ -1,9 +1,3 @@
-> **Priority: HIGH** — Next.js App Router patterns break in non-obvious ways
-> when misapplied: Server Components converted to Client Components for minor
-> interactivity, Server Actions used for reads (serializing parallel fetches),
-> missing `React.cache` causing duplicate DB queries per request. Wrong choices
-> here have structural consequences that get more expensive to fix over time.
->
 > **Read this when:** the user mentions Next.js, App Router, Pages Router, RSC,
 > Server Components, Server Actions, hydration mismatch, `suppressHydrationWarning`,
 > `React.cache`, `after()`, or asks how to choose between SSR/SSG/ISR/CSR/RSC.
@@ -11,6 +5,13 @@
 > **Not the right file?** TypeScript types in Next.js → `type-system.md`.
 > Component composition and Tailwind → `ui-patterns.md`. Token storage and
 > CSP in Next.js → `security.md`.
+
+> **Priority: HIGH** — Next.js App Router patterns break in non-obvious ways
+> when misapplied: Server Components converted to Client Components for minor
+> interactivity, Server Actions used for reads (serializing parallel fetches),
+> missing `React.cache` causing duplicate DB queries per request. Wrong choices
+> here have structural consequences that get more expensive to fix over time.
+>
 
 # Next.js — App Router, Rendering Models, Data Fetching
 

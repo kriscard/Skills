@@ -1,124 +1,67 @@
 ---
 name: react
 description: >-
-  Audits React and Next.js code for the seven highest-leverage pitfalls, then
-  routes to deep-dive references on useEffect anti-patterns, re-render causes,
-  rendering model selection, and waterfall chains. Make sure to use this skill
-  whenever a .tsx or .jsx file is opened or reviewed, the user asks "is my
-  React code good", mentions useEffect, re-renders, memoization, React Compiler,
-  Server Components, Server Actions, SSR vs CSR, hydration, waterfalls, or
-  bundle size — even casually. Triggers on any React code review.
+  Audits React and Next.js code for high-leverage runtime and rendering
+  pitfalls, then routes to deep-dive references on useEffect anti-patterns,
+  re-render causes, rendering model selection, React 19 APIs, and waterfall
+  chains. Use when a .tsx or .jsx file is opened or reviewed, the user asks
+  "is my React code good", mentions useEffect, re-renders, memoization, React
+  Compiler, Server Components, Server Actions, SSR vs CSR, hydration,
+  waterfalls, or bundle size. Triggers on React runtime/rendering reviews.
 ---
 
 # React Best Practices Audit
 
-Focused audit layer for React and Next.js. Start with the six universal checks
-— these are the highest-leverage bugs and appear in almost every codebase. Then
-route to the reference that matches the user's specific question.
+Focused audit layer for React and Next.js runtime/rendering issues. Start with
+the universal checks, then route to the reference that matches the user's
+specific question.
 
 ## Universal Checks (no exceptions — run these every time)
 
-These six checks take seconds to scan for and catch the most common,
-highest-impact mistakes. Skip them only if you have already verified them in
-the same session.
+These checks take seconds to scan for and catch common high-impact mistakes.
+Skip them only if you have already verified them in the same session.
 
 1. **Components defined inside other components**
-   They are re-created on every render. Their state resets. All memoization is
-   lost. `React.memo` on them does nothing. Extract to module scope.
+   They are re-created on every render; state resets and memoization is lost.
+   Extract to module scope.
 
 2. **Array index as `key` in dynamic lists**
-   `key` is React's identity anchor. When the list reorders, inserts, or
-   deletes, an index-based key reassigns identity to the wrong element — causing
-   visual artifacts, wrong focus, and lost form state. Use a stable ID from the
-   data. Exception: truly static, never-reordered lists where index is fine.
+   `key` is React's identity anchor. When lists reorder, insert, or delete, an
+   index key reassigns identity to the wrong element. Use a stable ID from the
+   data. Exception: truly static, never-reordered lists.
 
 3. **Derived state via `useState` + `useEffect`**
-   ```typescript
-   // ❌ Two state variables + an Effect that syncs them
-   const [filteredItems, setFilteredItems] = useState(items);
-   useEffect(() => { setFilteredItems(items.filter(f)); }, [items, f]);
-
-   // ✅ One variable, computed during render — no Effect, no lag
-   const filteredItems = useMemo(() => items.filter(f), [items, f]);
-   // or just: const filteredItems = items.filter(f); (if not expensive)
-   ```
+   If state is only a calculation from props/state, compute it during render
+   (optionally `useMemo` for expensive work) instead of syncing with an Effect.
 
 4. **Data fetching in `useEffect` without cleanup**
-   Without cleanup, a slow request that resolves after a faster one will
-   overwrite the fresh data with stale data (race condition):
-   ```typescript
-   // ❌ Race condition
-   useEffect(() => {
-     fetchUser(id).then(setUser);
-   }, [id]);
-
-   // ✅ Cleanup flag
-   useEffect(() => {
-     let ignore = false;
-     fetchUser(id).then(data => { if (!ignore) setUser(data); });
-     return () => { ignore = true; };
-   }, [id]);
-
-   // ✅ Best — use TanStack Query or RSC. Handles this automatically.
-   ```
+   Slow responses can overwrite fresh data. Use cleanup/cancellation, TanStack
+   Query, or Server Components so stale requests cannot win the race.
 
 5. **Unmemoized Context provider value**
-   Every time the parent re-renders, a new object reference is created, and
-   every consumer re-renders even if the data hasn't changed:
-   ```typescript
-   // ❌ New object every parent render
-   <UserContext.Provider value={{ user, login, logout }}>
-
-   // ✅ Stable reference
-   const value = useMemo(() => ({ user, login, logout }), [user, login, logout]);
-   <UserContext.Provider value={value}>
-
-   // ✅ Or split data and API into separate contexts (API never changes)
-   <UserDataContext.Provider value={user}>
-     <UserAPIContext.Provider value={api}> {/* stable — defined outside render */}
-   ```
+   New object/function references make every consumer re-render. Memoize the
+   provider value or split data and API contexts.
 
 6. **Server Actions for client-side data reads**
-   Server Actions serialize calls — they can't run in parallel. Using them for
-   reads kills the performance of any page that needs multiple data sources:
-   ```typescript
-   // ❌ Server Action reads — serialize even under Promise.all
-   const [user, posts] = await Promise.all([getUser(id), getPosts(id)]);
-   // These still serialize because Server Actions are not parallelizable
+   Server Actions serialize calls and are for mutations. Reads should use RSC,
+   route handlers, or a client data layer that can parallelize and dedupe.
 
-   // ✅ Server Actions for mutations only. Reads via RSC, API routes,
-   //    or TanStack Query.
-   ```
+7. **`React.FC` and `forwardRef` as default patterns**
+   Prefer plain function components. `React.FC` adds noise and misleading
+   children behavior; React 19 makes `ref` a normal prop for new code. Load the
+   React 19 reference for version-specific migration details.
 
-7. **`React.FC` and `forwardRef` — both deprecated patterns**
-   `React.FC` adds an implicit `children` prop (wrong in React 18+), forces a
-   return type annotation, and provides no benefit over plain functions. In React
-   19, `ref` is a regular prop — `forwardRef` still works but is unnecessary for
-   new code:
-   ```typescript
-   // ❌ React.FC — adds noise, implies children, removed from CRA defaults
-   const Button: React.FC<ButtonProps> = ({ label }) => <button>{label}</button>;
+## Ownership Boundary with Frontend
 
-   // ✅ Plain function declaration
-   function Button({ label }: ButtonProps) {
-     return <button>{label}</button>;
-   }
-
-   // ❌ forwardRef — React 18 boilerplate, unnecessary in React 19+
-   const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => (
-     <input ref={ref} {...props} />
-   ));
-
-   // ✅ React 19 — ref as a plain prop
-   function Input({ ref, ...props }: InputProps & { ref?: React.Ref<HTMLInputElement> }) {
-     return <input ref={ref} {...props} />;
-   }
-   ```
-
+`react` owns React runtime/rendering issues: Effects, re-renders, Context,
+keys, Server Actions, hydration, React 19 APIs, waterfalls, and bundle/runtime
+performance. `frontend` owns broader TypeScript, UI accessibility, browser
+security, Next.js file boundaries, Tailwind/component API patterns, and frontend
+file structure.
 
 ## Priority Checklist (run after universal checks)
 
-Use this for full audits. The six universal checks above catch the most common bugs;
+Use this for full audits. The universal checks above catch the most common bugs;
 this checklist catches the rest.
 
 **CRITICAL — Eliminating Waterfalls:**
@@ -213,16 +156,16 @@ or `@tanstack/react-router` → Vite SPA.
 Load the reference that matches the issue. Higher-priority references fix more
 users / cause more damage when missed — resolve CRITICAL before MEDIUM.
 
-| Priority | Impact | Load when | Reference |
-|----------|--------|-----------|-----------|
-| 1 | **CRITICAL** | `React.FC`, `forwardRef`, `defaultProps`, React 19 APIs (`useActionState`, `useOptimistic`, `use()`), ref as prop, action props, `nuqs`, async transitions, Suspense sibling change | `references/react-19.md` |
-| 2 | **CRITICAL** | sequential `await`, waterfall chains, `Promise.all`, Suspense streaming, `React.cache`, `after()`, parallel fetching | `references/waterfalls.md` |
-| 3 | **CRITICAL** | slow initial load, bundle size, barrel file imports, code splitting, `rollup-plugin-visualizer`, Web Vitals, dynamic import | `references/bundle-and-perf-investigation.md` |
-| 4 | **HIGH** | `useEffect` questions, "should I use an effect", stale closure, race condition, flickering UI, `useLayoutEffect` | `references/useeffect-antipatterns.md` |
-| 5 | **HIGH** | SSR/CSR/SSG/ISR/RSC choice, "when should I use a Server Component", hydration mismatch, `suppressHydrationWarning` | `references/rendering-models.md` |
-| 6 | **MEDIUM-HIGH** | TanStack Query, `useQuery`, `queryOptions`, `select`, `staleTime`, `gcTime`, mutations, optimistic updates, query keys | `references/tanstack-query.md` |
-| 7 | **MEDIUM** | `useMemo`, `useCallback`, `React.memo`, "why does this re-render", React Compiler, memoization decision | `references/re-renders.md` |
-| 8 | **MEDIUM** | modal, dialog, tooltip, popover, z-index, "appears behind", portal, stacking context | `references/portals-and-stacking-context.md` |
+| Priority | Load when | Reference |
+|----------|-----------|-----------|
+| 1 — Critical | React 19 APIs (`useActionState`, `useOptimistic`, `use()`), ref as prop, action props, `nuqs`, async transitions, Suspense sibling change | `references/react-19.md` |
+| 2 — Critical | sequential `await`, waterfall chains, `Promise.all`, Suspense streaming, `React.cache`, `after()`, parallel fetching | `references/waterfalls.md` |
+| 3 — Critical | slow initial load, bundle size, barrel file imports, code splitting, `rollup-plugin-visualizer`, Web Vitals, dynamic import | `references/bundle-and-perf-investigation.md` |
+| 4 — High | `useEffect` questions, "should I use an effect", stale closure, race condition, flickering UI, `useLayoutEffect` | `references/useeffect-antipatterns.md` |
+| 5 — High | SSR/CSR/SSG/ISR/RSC choice, "when should I use a Server Component", hydration mismatch, `suppressHydrationWarning` | `references/rendering-models.md` |
+| 6 — Medium-High | TanStack Query, `useQuery`, `queryOptions`, `select`, `staleTime`, `gcTime`, mutations, optimistic updates, query keys | `references/tanstack-query.md` |
+| 7 — Medium | `useMemo`, `useCallback`, `React.memo`, "why does this re-render", React Compiler, memoization decision | `references/re-renders.md` |
+| 8 — Medium | modal, dialog, tooltip, popover, z-index, "appears behind", portal, stacking context | `references/portals-and-stacking-context.md` |
 
 ### When to load a reference
 

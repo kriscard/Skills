@@ -1,11 +1,11 @@
 ---
 name: test
 description: >-
-  Writes and fixes tests at the right layer (unit, integration, E2E) for any
-  framework. Use when the user says "write tests", "add tests", "TDD", "test
-  coverage", "this test is failing", or mentions Jest/Vitest/pytest/RSpec/
-  Playwright/Cypress. Also use proactively when the user implements a feature
-  without tests — good coverage is part of the work, not an afterthought.
+  Applies test-pyramid, red-green-refactor, and behavioral testing practices for
+  common JS/Python/Ruby stacks and other projects after detecting the runner.
+  Use when the user says "write tests", "add tests", "TDD", "test coverage",
+  "this test is failing", or mentions Jest/Vitest/pytest/RSpec/Playwright/
+  Cypress. Also use when a feature is implemented without tests.
 ---
 
 # Test
@@ -20,7 +20,8 @@ Writing tests at the wrong layer is the most common testing mistake. A unit test
 | **Integration** | Service boundaries, DB queries, API contracts | ~seconds | Repository layer, HTTP handlers, queue consumers |
 | **E2E** | User flows in a real browser | ~minutes | Critical paths only (checkout, auth, onboarding) |
 
-The pyramid holds: many units, fewer integrations, minimal E2E.
+The pyramid holds: many units, fewer integrations, minimal E2E. Done only when
+the selected layer is named and justified.
 
 ## Detect the Framework
 
@@ -32,7 +33,9 @@ cat pyproject.toml | grep -E 'pytest|unittest'
 cat Gemfile | grep rspec
 ```
 
-Don't assume Jest. Vitest is increasingly common in Vite/Next.js projects. Mixing test runners in a project is rarely intentional.
+Don't assume Jest. Vitest is increasingly common in Vite/Next.js projects.
+Mixing test runners in a project is rarely intentional. For unfamiliar stacks,
+inspect project config and docs before writing tests.
 
 ## Universal Quality Checks
 
@@ -42,18 +45,19 @@ Don't assume Jest. Vitest is increasingly common in Vite/Next.js projects. Mixin
 - [ ] Test names read like specs: `should return 404 when user is not found` beats `test user endpoint`
 - [ ] AAA pattern: Arrange → Act → Assert, with a blank line between sections
 
-## TDD Flow (when requested)
+## Red-Green-Refactor Flow (when requested)
 
-1. **Red** — write a failing test that describes the desired behavior
-2. **Green** — write the minimal code to make it pass
-3. **Refactor** — clean up while keeping tests green
-
-The discipline is writing the test first. It forces you to think about the interface before the implementation.
+1. **Red** — write a failing behavioral test that describes the desired behavior;
+   done only when the relevant test command fails for the expected reason
+2. **Green** — write the minimal code to make it pass; done only when the same
+   command passes
+3. **Refactor** — clean up while keeping tests green; done only when the command
+   still passes after cleanup
 
 ## Integration Test Methodology
 
-Integration tests validate service boundaries — not business logic (that's unit tests)
-and not full user flows (that's E2E).
+Integration tests validate service boundaries — not business logic (that's unit
+tests) and not full user flows (that's E2E).
 
 **What to test at this layer:**
 - API endpoints: request/response structure, auth, error codes
@@ -64,105 +68,54 @@ and not full user flows (that's E2E).
 **Data isolation — non-negotiable:**
 - Wrap each test in a transaction and roll back, or reset the test DB between runs
 - Tests that share state cause order-dependent failures — the hardest class of flakiness to debug
-- Use test containers (Docker) or in-memory DBs for fast, isolated test environments
+- Mock third-party APIs, not your own services
 
-**MSW v2 for API mocking in Node:**
-```typescript
-// v1 syntax is gone — use http.* and HttpResponse
-import { http, HttpResponse } from 'msw';
-import { setupServer } from 'msw/node';
-
-const server = setupServer(
-  http.get('/api/user', () => HttpResponse.json({ id: 1 }))
-);
-
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
-```
-
-**Mock only what's external to your system.** In integration tests, mock third-party
-APIs (Stripe, SendGrid), not your own services — that defeats the purpose.
+Load references for runner-specific APIs, mocks, environments, MSW, Browser
+Mode, snapshots, type testing, coverage, and configuration.
 
 ## E2E Test Methodology
 
-E2E tests are expensive. Use them only for critical paths: checkout, auth, onboarding,
-file upload. Cover edge cases in unit/integration tests, not E2E.
-
-**Playwright patterns:**
-```typescript
-// Prefer accessible selectors — layout-independent and documents intent
-await page.getByRole('button', { name: 'Submit order' }).click();
-// Not: page.click('.btn-primary:nth-child(2)')  ← breaks on any layout change
-
-// Page Object Model — separates test logic from page structure
-class CheckoutPage {
-  constructor(private page: Page) {}
-  async submitOrder() { await this.page.getByRole('button', { name: 'Submit order' }).click(); }
-}
-
-// Smart waits — never sleep()
-await page.waitForLoadState('networkidle');
-await expect(page.getByRole('status')).toHaveText('Order confirmed');
-```
-
-**Data isolation in E2E:**
-- Use unique identifiers (UUID, timestamp) for test data so tests don't collide
-- Clean up via API teardown calls or DB resets, not manual state management
-- Never use production data or real payment credentials
-
-**Vitest 3 Browser Mode** — for components that need real browser APIs (clipboard,
-`sessionStorage`, geolocation) but don't need full user-journey orchestration. Runs in
-real Chromium via Playwright provider, ~30% faster than full E2E for component-level:
-```typescript
-// vitest.config.ts
-export default { test: { browser: { enabled: true, provider: 'playwright', name: 'chromium' } } }
-// Per-file: // @vitest-environment browser
-```
+E2E tests are expensive. Use them only for critical paths: checkout, auth,
+onboarding, file upload. Prefer accessible selectors, smart waits, unique test
+data, and cleanup via API or DB reset. Cover edge cases in unit/integration
+tests, not E2E.
 
 ## Common Pitfalls
 
-**Testing the mock, not the code**
-If your test only asserts that a mock was called, it's not testing behavior. Ask: "would this test catch a bug in the real implementation?"
+- **Testing the mock, not the code** — if the test only asserts a mock was called, it may not test behavior
+- **Fragile E2E selectors** — use roles or stable test IDs instead of layout selectors
+- **No cleanup in integration tests** — shared DB state causes order-dependent failures
+- **Snapshot tests as a crutch** — use snapshots only for stable, serializable outputs
 
-**RTL `userEvent` without a session**
-```typescript
-// ❌ No session — stateless clicks, no pointer/keyboard state tracking
-await userEvent.click(btn);
+## Completion Gate
 
-// ✅ Setup first — maintains pointer and keyboard state across chained interactions
-const user = userEvent.setup();
-await user.click(btn);
-```
+Complete test work only after:
 
-**Fragile selectors in E2E**
-`page.click('.btn-primary:nth-child(2)')` breaks on any layout change. Use accessible roles or `data-testid` attributes: `page.getByRole('button', { name: 'Submit' })`.
-
-**No cleanup in integration tests**
-Tests that leave data in a shared DB cause order-dependent failures. Wrap each test in a transaction and roll back, or use a test database that resets between runs.
-
-**Snapshot tests as a crutch**
-Snapshot tests catch *something* changed but don't tell you if the change was correct. Use them for stable, serializable outputs (CLI output, generated SQL). Avoid for React component trees — they fail on every styling change.
+- the selected layer is named
+- the relevant test command has been run
+- failures are either fixed or reported with evidence
+- new tests would fail against the old behavior when that can be checked
+- red/green command output is reported for TDD work
 
 ## References
 
-| Priority | Category | Load when | Reference |
-|----------|----------|-----------|-----------|
-| 1 — High | Core API | Writing test blocks, `test.each`, modifiers (skip/only/concurrent) | `references/core-test-api.md` |
-| 1 — High | Assertions | Specific `expect` matchers, soft assertions, spy assertions, custom matchers | `references/core-expect.md` |
-| 1 — High | Mocking | `vi.mock`, `vi.spyOn`, `vi.hoisted`, module mocking, partial mocks | `references/features-mocking.md` |
-| 2 — High | Config | `vitest.config.ts`, `defineConfig`, pool options, environments, globals | `references/core-config.md` |
-| 2 — High | Hooks | `beforeEach`/`afterEach`/`beforeAll`/`afterAll`, `aroundEach`, `onTestFinished` | `references/core-hooks.md` |
-| 3 — Medium | Coverage | V8 vs Istanbul, thresholds, reporters, ignore comments | `references/features-coverage.md` |
-| 3 — Medium | Browser Mode | Real browser testing via Playwright provider, per-file override | `references/browser-mode.md` |
-| 3 — Medium | Snapshots | `toMatchSnapshot`, inline snapshots, custom serializers, updating | `references/features-snapshots.md` |
-| 3 — Medium | Filtering | CLI filters, `--changed`, tags, `test.only`/`test.skip` | `references/features-filtering.md` |
-| 4 — Low | Describe API | Nested suites, `describe.concurrent`, `describe.each` | `references/core-describe.md` |
-| 4 — Low | CLI | Watch mode, sharding, package.json scripts | `references/core-cli.md` |
-| 4 — Low | Concurrency | `test.concurrent`, file parallelism, sequence/shuffle | `references/features-concurrency.md` |
-| 4 — Low | Context/Fixtures | `test.extend`, fixture scopes, auto fixtures | `references/features-context.md` |
-| 4 — Low | Environments | `jsdom` vs `happy-dom` vs `node`, custom environments, CSS handling | `references/advanced-environments.md` |
-| 4 — Low | Type Testing | `expectTypeOf`, `assertType`, `.test-d.ts`, `vitest typecheck` | `references/advanced-type-testing.md` |
-| 4 — Low | Vi Utilities | Fake timers, `vi.waitFor`, `vi.mocked` deep dive | `references/advanced-vi.md` |
-| 4 — Low | Multi-project | Monorepo setups, different environments per project | `references/advanced-projects.md` |
-| 4 — Low | MSW v2 | `http.*`/`HttpResponse` handlers, Node setup, v1→v2 migration | `references/msw-v2.md` |
+| Priority | Load when | Reference |
+|----------|-----------|-----------|
+| 1 — High | Writing Vitest test blocks, `test.each`, or test modifiers | `references/core-test-api.md` |
+| 1 — High | Writing Vitest assertions, spies, soft assertions, or custom matchers | `references/core-expect.md` |
+| 1 — High | Mocking modules, timers, globals, or partial implementations in Vitest | `references/features-mocking.md` |
+| 2 — High | Configuring Vitest projects, pools, environments, globals, or `defineConfig` | `references/core-config.md` |
+| 2 — High | Using Vitest hooks such as `beforeEach`, `afterEach`, `beforeAll`, `afterAll`, `aroundEach`, or `onTestFinished` | `references/core-hooks.md` |
+| 3 — Medium | Coverage providers, thresholds, reporters, or ignore comments | `references/features-coverage.md` |
+| 3 — Medium | Real browser testing via Vitest Browser Mode / Playwright provider | `references/browser-mode.md` |
+| 3 — Medium | Snapshots, inline snapshots, custom serializers, or updating snapshots | `references/features-snapshots.md` |
+| 3 — Medium | CLI filtering, `--changed`, tags, `test.only`, or `test.skip` | `references/features-filtering.md` |
+| 4 — Low | Nested suites, `describe.concurrent`, or `describe.each` | `references/core-describe.md` |
+| 4 — Low | Vitest CLI watch mode, sharding, or package.json scripts | `references/core-cli.md` |
+| 4 — Low | `test.concurrent`, file parallelism, sequence, or shuffle | `references/features-concurrency.md` |
+| 4 — Low | `test.extend`, fixture scopes, or auto fixtures | `references/features-context.md` |
+| 4 — Low | `jsdom` vs `happy-dom` vs `node`, custom environments, or CSS handling | `references/advanced-environments.md` |
+| 4 — Low | `expectTypeOf`, `assertType`, `.test-d.ts`, or `vitest typecheck` | `references/advanced-type-testing.md` |
+| 4 — Low | Fake timers, `vi.waitFor`, or `vi.mocked` deep dive | `references/advanced-vi.md` |
+| 4 — Low | Monorepo or multi-project Vitest setups | `references/advanced-projects.md` |
+| 4 — Low | MSW v2 `http.*`/`HttpResponse` handlers, Node setup, or v1→v2 migration | `references/msw-v2.md` |
