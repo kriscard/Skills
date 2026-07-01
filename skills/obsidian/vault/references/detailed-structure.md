@@ -1,3 +1,5 @@
+> **Read this when:** complete folder tree, metadata patterns, naming conventions, or path details are needed.
+
 # Detailed Vault Structure
 
 Comprehensive breakdown of the vault's folder hierarchy, files, and organizational patterns.
@@ -18,7 +20,7 @@ obsidian-vault-kriscard/
 │   │       └── 2 - February 2026/
 │   ├── Goals/                  # OKR tracking
 │   │   ├── Monthly/            # Monthly goals
-│   │   ├── Quarterly/          # Quarterly OKRs
+│   │   ├── Quaterly/           # Quarterly OKRs (vault typo preserved)
 │   │   └── Yearly/             # Annual goals
 │   ├── Health and self care/   # Health tracking
 │   └── Relationships/          # People notes
@@ -183,9 +185,9 @@ Example: `2 - Areas/Goals/Monthly/2 - February 2026.md`
 
 ### Quarterly Goals
 ```
-2 - Areas/Goals/Quarterly/Quaterly Goals - QN YYYY.md
+2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md
 ```
-Note: Typo "Quaterly" is preserved for compatibility
+Note: Typo "Quaterly" is preserved for compatibility in both folder and filename
 
 ### TIL Notes
 ```

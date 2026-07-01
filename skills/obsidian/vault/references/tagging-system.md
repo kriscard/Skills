@@ -1,3 +1,5 @@
+> **Read this when:** choosing tags, consolidating tags, or applying vault tag taxonomy and best practices.
+
 # Tagging System
 
 Tags complement PARA folders — they cut **across** folder structure for cross-category discovery.

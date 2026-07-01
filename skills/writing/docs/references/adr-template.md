@@ -1,3 +1,5 @@
+> **Read this when:** writing an ADR for a decision that has already been made and needs durable context, consequences, and alternatives.
+
 # Architecture Decision Record (ADR) Template
 
 An ADR captures a decision **after it's made**. Audience: future engineers who need to understand why something was done a certain way — including future-you in 6 months.

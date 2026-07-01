@@ -1,10 +1,9 @@
 ---
 name: goals
 description: >-
-  Reviews, updates, and sets goals at quarterly, monthly, or weekly level in the Obsidian vault.
-  Make sure to use this skill whenever the user says "review my goals", "OKR check-in", "quarterly
-  review", "am I on track", "update my goals", "set monthly goals", or runs /goals. Works across all
-  three goal levels — choose based on the argument or ask if unclear.
+  Obsidian goals review for quarterly, monthly, or weekly goal notes. Use when the user asks to
+  review goals, run an OKR check-in, update goals, set monthly goals, check whether goals are on
+  track, or runs /goals.
 user-invocable: true
 argument-hint: '[quarterly | monthly | weekly — omit to choose]'
 ---
@@ -25,7 +24,8 @@ to invent.
 
 ## Step 1 — Determine Review Level
 
-If `$ARGUMENTS` is provided, use it. Otherwise ask via `AskUserQuestion`:
+If `$ARGUMENTS` is provided, validate it against `quarterly`, `monthly`, or `weekly`. If it is
+missing or anything else, ask via `AskUserQuestion`:
 
 > "Which goals review would you like?"
 >
@@ -47,10 +47,13 @@ obsidian files folder="1 - Projects/" format=json
 
 ### Weekly Review
 
-Read this week's note:
+Read this week's note using the same path logic as the `weekly` skill. Derive the month folder and
+ISO week from the week being reviewed, not hardcoded placeholders:
 
 ```bash
-obsidian read path="2 - Areas/Daily Ops/Weekly/M - Month YYYY/YYYY-Www.md"
+WEEK="<ISO week-year>-W<week>"          # e.g. 2026-W01; use ISO week-year for cross-year weeks
+MONTH="M - <Month YYYY from reviewed week>"
+obsidian read path="2 - Areas/Daily Ops/Weekly/$MONTH/$WEEK.md"
 ```
 
 Check: are this week's planned priorities covered by monthly goals? Identify any monthly goals with
@@ -66,8 +69,9 @@ obsidian read path="$MONTHLY" 2>/dev/null || \
   obsidian create path="$MONTHLY" template="Monthly Goals"
 ```
 
-Check quarterly progress: which quarterly objectives is this month advancing? Flag at-risk goals —
-objectives with less than expected progress given the month's position in the quarter.
+Check quarterly progress: which quarterly objectives is this month advancing? Flag at-risk goals
+only when source-bound evidence exists: a missed milestone, elapsed due date, explicit blocker, or
+user-confirmed concern. Otherwise frame it as a question to verify.
 
 Update with: progress status per goal, adjustments, and next month's focus.
 
@@ -76,12 +80,14 @@ Update with: progress status per goal, adjustments, and next month's focus.
 Read the current quarterly note:
 
 ```bash
-# Note: folder name uses "Quaterly" spelling — preserve exactly
-QTR_PATH="2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md"
+# Note: folder and file use "Quaterly" spelling — preserve exactly.
+# Derive Q<N> and YYYY from the review date.
+QTR_PATH="2 - Areas/Goals/Quaterly/Quaterly Goals - Q<N> YYYY.md"
 obsidian read path="$QTR_PATH" 2>/dev/null
 ```
 
-For a **mid-quarter check-in**: assess progress, flag at-risk objectives, surface blockers.
+For a **mid-quarter check-in**: assess progress, flag at-risk objectives only from missed milestones,
+elapsed due dates, explicit blockers, or user-confirmed concerns, and surface blockers.
 
 For a **quarter wrap + new quarter**: review previous quarter outcomes (hit / partial / missed),
 extract learnings, then set new quarterly objectives broken into monthly milestones.
@@ -99,13 +105,13 @@ obsidian create path="2 - Areas/Goals/Quaterly/Quaterly Goals - Q<N> YYYY.md" \
 
 Update the relevant note with:
 
-- Progress status per objective
+- Progress status per objective, with source evidence
 - Adjustments to goals (if circumstances changed)
 - Next actions tied to each objective
 
 The CLI has no `patch`. If the update can append to the note, use `obsidian append`. If it must
 change a specific section, ask the user: MCP `obsidian_patch_content` (heading-targeted) or `read` +
-`create ... overwrite`. Always show a preview before writing.
+`create ... overwrite`. Always show a preview before writing and wait for explicit approval.
 
 ## Gotchas
 

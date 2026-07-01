@@ -1,11 +1,9 @@
 ---
 name: daily
 description: >-
-  Runs the daily startup ritual for the Obsidian vault — creates today's periodic notes, surfaces
-  carry-forward items, checks inbox, and sets the day's focus. Make sure to use this skill whenever
-  the user says "start my day", "daily startup", "morning routine", "what's my focus today", "set up
-  today's note", or runs /daily. A 5-minute structured startup beats 30 minutes of reactive
-  context-switching.
+  Daily startup ritual for the Obsidian vault: create today's periodic notes, surface exact
+  carry-forward items, check inbox, and set focus. Use when the user says "start my day", "daily
+  startup", "morning routine", "today's focus", "set up today's note", or runs /daily.
 user-invocable: true
 ---
 
@@ -60,10 +58,10 @@ Run these checks in parallel based on today's date, then create all missing note
 | Daily     | always                     | `2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md`                | `Daily Notes`     |
 | Weekly    | Monday                     | `2 - Areas/Daily Ops/Weekly/M - Month YYYY/YYYY-Www.md` | `Weekly Planning` |
 | Monthly   | 1st of month               | `2 - Areas/Goals/Monthly/M - Month YYYY.md`             | `Monthly Goals`   |
-| Quarterly | Jan 1, Apr 1, Jul 1, Oct 1 | `2 - Areas/Goals/Quarterly/Quaterly Goals - QN YYYY.md` | `Quarterly Goals` |
+| Quarterly | Jan 1, Apr 1, Jul 1, Oct 1 | `2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md` | `Quarterly Goals` |
 
-**Note:** The quarterly FOLDER is `Quarterly/` but the FILE name uses the typo
-`Quaterly Goals - QN YYYY.md` — preserve this to match existing vault structure.
+**Note:** The quarterly folder and file both preserve the vault typo `Quaterly`. Derive `QN` and
+`YYYY` from today's real date.
 
 ## Step 2 — Yesterday's Carry-Forward
 
@@ -76,14 +74,15 @@ YESTERDAY=$(date -v-1d +%Y/%Y-%m-%d)
 obsidian read path="2 - Areas/Daily Ops/$YESTERDAY.md" 2>/dev/null
 ```
 
-Extract any items marked "Carry Forward → Tomorrow" or similar. Prepend them to today's note
-immediately:
+Extract items explicitly marked "Carry Forward → Tomorrow" or similar. Exact carry-forward items
+can be prepended automatically:
 
 ```bash
 obsidian prepend path="$TODAY" content="**Carry forward from yesterday:**\n- [ ] Item 1\n- [ ] Item 2"
 ```
 
-These are the first candidates for today's focus.
+If an item is inferred from prose rather than explicitly marked, show the source line and ask before
+adding it. These are the first candidates for today's focus.
 
 ## Step 3 — Gather Context (run in parallel)
 

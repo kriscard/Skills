@@ -1,3 +1,5 @@
+> **Read this when:** using obsidian-utils script commands or needing their invocation syntax.
+
 # obsidian-utils Reference
 
 Shared utility script that wraps Obsidian CLI operations. Available as a bare command (on PATH) when the plugin is enabled:

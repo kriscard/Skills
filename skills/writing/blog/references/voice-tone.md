@@ -1,6 +1,6 @@
-# Voice and Tone Guide
-
 > **Read this when:** revising a draft for voice, clarity, authenticity, or removing generic AI-sounding prose.
+
+# Voice and Tone Guide
 
 ## Core Voice Characteristics
 

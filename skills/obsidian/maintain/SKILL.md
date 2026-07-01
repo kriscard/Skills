@@ -54,11 +54,8 @@ Cross-check each against `index.md` sections.
 **W6. Missing cross-references** — related concept pages that don't link each other. Use
 `obsidian search` on page titles to find semantic neighbors, check if wikilinked.
 
-After wiki lint, append findings summary to `log.md` (chronological — append is fine):
-
-```bash
-obsidian append path="3 - Resources/log.md" content="\n## $(date +%Y-%m-%d)\nlint | <summary of findings>"
-```
+After wiki lint, keep findings in the report only. Do not append to `log.md`; this skill is
+read-only until the user explicitly asks for a fix.
 
 ## Step 2 — Link Health
 
@@ -136,10 +133,12 @@ Priority fixes: [top 3 issues]
 - **Needs Attention**: 10–30 issues
 - **Critical**: > 30 issues or many broken links in active notes
 
-After the report, ask: "Want me to fix any of these?" Only then act.
+After the report, ask: "Want me to fix any of these?" Only then act. Completion: no notes have
+been modified, every issue in the report includes a source/path or command output summary, and the
+top 3 priority fixes are listed.
 
 ## References
 
-| Load when                                            | Reference                              |
-| ---------------------------------------------------- | -------------------------------------- |
-| Need weekly/monthly/quarterly maintenance checklists | `references/maintenance-checklists.md` |
+| Priority | Load when | Reference |
+| --- | --- | --- |
+| Optional | Need weekly/monthly/quarterly maintenance checklists | `references/maintenance-checklists.md` |

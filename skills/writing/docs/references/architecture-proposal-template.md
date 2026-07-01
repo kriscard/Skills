@@ -1,3 +1,5 @@
+> **Read this when:** proposing a system design or architecture pattern change with trade-offs, migration, and risk analysis.
+
 # Architecture Proposal Template
 
 An architecture proposal proposes a change to **how systems are built** — a pattern, a service boundary, an infrastructure shift. Audience: engineers and architects who need to evaluate the design and migration cost.

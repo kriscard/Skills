@@ -1,17 +1,18 @@
 ---
 name: process-inbox
 description: >-
-  Processes every note in the Obsidian inbox — reads each one, uses the para-organizer agent to
-  suggest the right PARA destination, confirms with the user, and moves or deletes on approval. Make
-  sure to use this skill whenever the user says "process my inbox", "clear my inbox", "triage inbox
-  notes", "sort inbox", or runs /process-inbox. Execute the workflow — do not describe it.
+  PARA triage for Obsidian Inbox notes: read each raw inbox note, suggest the correct PARA
+  destination, confirm with the user, and move only on approval. Use when the user asks to process,
+  clear, sort, or triage inbox notes, or runs /process-inbox.
 user-invocable: true
 ---
 
 # Process Inbox
 
-Work through every note in `0 - Inbox/` one by one. The para-organizer agent suggests placement; the
-user confirms each move. Nothing moves without explicit approval.
+Work through every note in `0 - Inbox/` one by one. This is PARA triage, not source synthesis and
+not conversation-answer saving. Use `ingest` for synthesizing selected source material into wiki
+notes, and `save-note` for filing the current answer. The user confirms each move; nothing moves
+without explicit approval.
 
 **Execute this workflow — do not describe it.**
 
@@ -42,8 +43,17 @@ Show: `[N/TOTAL] Note: "[filename]"` + first 15 lines.
 
 ### 2.2 Suggest Destination
 
-Use the **para-organizer agent** to analyze the note content. The agent applies the PARA decision
-tree and returns a specific folder path, reasoning, and suggested tags.
+Use the **para-organizer agent** to analyze the note content when available. The agent applies the
+PARA decision tree and returns a specific folder path, reasoning, and suggested tags.
+
+If the agent is unavailable, apply the fallback PARA decision tree:
+
+- outcome + deadline → `1 - Projects/`
+- ongoing responsibility/standard → `2 - Areas/`
+- reference material with no action required → `3 - Resources/`
+- inactive or no longer useful → `4 - Archives/`
+
+If the category is still ambiguous, ask instead of guessing.
 
 ### 2.3 Confirm with User
 
@@ -66,11 +76,10 @@ options:
 **Move (suggested location):**
 
 ```bash
-obsidian create path="[target]/[filename]" content="[CONTENT]"
-obsidian delete path="0 - Inbox/[filename]"
+obsidian move path="0 - Inbox/[filename]" to="[target]/[filename]"
 ```
 
-**Different location:** Ask where, then move using the same commands.
+**Different location:** Ask where, then move with `obsidian move`.
 
 **Skip:** Leave in inbox, continue to next note.
 
@@ -92,4 +101,5 @@ After each note: `Progress: X/Y processed (Z remaining)`
 Inbox Processing Complete!
 Processed: X | Projects: X | Areas: X | Resources: X | Archives: X | Deleted: X | Skipped: X
 Remaining in inbox: X
+Every moved note used obsidian move; every delete had explicit confirmation.
 ```

@@ -1,3 +1,5 @@
+> **Read this when:** scoping product work with goals, non-goals, user stories, success metrics, risks, and dependencies.
+
 # Product Design Doc Template
 
 A product design doc defines **what to build and why**. The audience is engineers, PMs, and designers who need to align on scope and approach before implementation.

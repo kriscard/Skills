@@ -1,6 +1,6 @@
-# Blog Post Templates
-
 > **Read this when:** the post shape is chosen and you need a concrete section structure.
+
+# Blog Post Templates
 
 ## Tutorial Post (1200-2500 words)
 

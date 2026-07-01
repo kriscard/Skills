@@ -1,3 +1,5 @@
+> **Read this when:** the user needs weekly, monthly, or quarterly vault maintenance checklist details after the read-only health report.
+
 # Vault Maintenance & Common Operations
 
 ## Weekly Tasks

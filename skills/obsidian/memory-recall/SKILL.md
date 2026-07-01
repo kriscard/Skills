@@ -125,6 +125,11 @@ Surface the strongest bridge and any **missing links** (connections that should 
 been made). The test: the best output makes you see both domains differently. Do not force
 connections; if the domains genuinely do not connect, say so.
 
+Completion: each domain has been mapped index-first, candidate pages from both domains were read,
+2–3 backlink hops were attempted or explicitly skipped as unavailable, and every bridge cites at
+least one source note from each domain. If those criteria cannot be met, report the gap instead of
+forcing a connection.
+
 ## How to Report Findings
 
 - **Cite the source** with the file path / `[[wikilink]]` so the user can navigate.

@@ -36,6 +36,7 @@ qmd query "<topic>" --json -n 8 2>/dev/null
 ```
 
 - Score ≥ 0.7 → append a dated section to the existing page
+- Score 0.5–0.7 → show candidates and ask whether to append, create a distinct page, or cancel
 - Score < 0.5 → create a new page
 
 ## Step 3 — Write the Note
@@ -69,7 +70,9 @@ names, "X vs Y" framings). This is what makes the page recall-able from queries 
 title. Skip only when the title is the sole term anyone would use.
 
 Body: the synthesized answer from this session. Neutral, reference-focused voice — no "I learned
-that..." framing. Should make sense to a reader with no context.
+that..." framing. Should make sense to a reader with no context. Completion: the note has a title,
+chosen folder, duplicate-search result, self-contained body, aliases for likely search terms, and no
+references to "above" or "this conversation."
 
 ## Step 4 — Update Index and Log
 

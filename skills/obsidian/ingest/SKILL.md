@@ -1,20 +1,19 @@
 ---
 name: ingest
 description: >-
-  Processes items from the Obsidian Inbox into the knowledge base — reads the source, discusses the
-  key ideas before writing anything, then files synthesized notes into 3 - Resources/ and moves the
-  original. Also saves conversation answers as permanent wiki pages. Make sure to use this skill
-  whenever the user says "process inbox", "ingest this article", "add to my wiki", "save this to my
-  knowledge base", "save what we discussed", "save this answer to my notes", or runs /ingest. Also
-  fires when the Inbox has items and the user wants to clear it. The value is the synthesis
-  conversation, not the filing.
+  Source synthesis for Obsidian: ingest an article, URL, video, book note, or selected Inbox source
+  into durable Resources notes after discussing the key ideas. Use when the user asks to ingest a
+  source, add source material to the wiki, synthesize an article, or runs /ingest.
 user-invocable: true
 ---
 
 # Ingest
 
-Process inbox items into the vault's knowledge layer. Ingesting without synthesis just creates noise
-— the value is the conversation that happens before anything gets written.
+Synthesize source material into the vault's knowledge layer. Ingesting without synthesis just
+creates noise — the value is the conversation that happens before anything gets written.
+
+Boundaries: use `process-inbox` for PARA triage of raw inbox notes, and `save-note` for saving the
+current conversation answer as a standalone wiki page.
 
 **Rule: always discuss before writing.** Never silently file a note.
 
@@ -67,6 +66,9 @@ obsidian read path="3 - Resources/<subfolder>/<existing-page>.md"
 obsidian append path="3 - Resources/<subfolder>/<existing-page>.md" \
   content="\n## Update — $(date +%Y-%m-%d)\n\n<synthesized content>"
 ```
+
+**Ambiguous match** (score 0.5–0.7): show the candidate pages and ask whether to append, create a
+distinct page, or cancel. Do not decide silently.
 
 **Create new page** (score < 0.5, genuinely new territory):
 
@@ -128,41 +130,19 @@ obsidian move path="0 - Inbox/[filename]" \
 
 Never delete inbox items — always move to the appropriate Resources subfolder.
 
-## Save Conversation Answer as Note
-
-When the user wants to save this session's answer/synthesis as a permanent wiki page (trigger: "save
-this to my notes", "save what we just discussed"):
-
-1. Ask for title and target subfolder if not clear. Default subfolders:
-   - `3 - Resources/Coding/` — engineering patterns, technical decisions
-   - `3 - Resources/Concepts/` — general concepts and frameworks
-   - `3 - Resources/Reflections/` — personal insights, mental models
-   - `3 - Resources/Communication/` — leadership, writing, comms
-
-2. Search before writing:
-
-   ```bash
-   qmd query "<topic>" --json -n 8 2>/dev/null
-   ```
-
-   Score ≥ 0.7 → append dated section. Score < 0.5 → create new page.
-
-3. Write the note (use `source: claude-memory` frontmatter with `aliases`), then update `index.md`
-   under `## Concept notes (claude-memory)` and append to `log.md`.
-
-Body must be self-contained — no references to "the conversation above."
-
 ## What NOT to do
 
 - Don't silently file without discussing — synthesis is the whole point
+- Don't process a whole inbox queue — use `process-inbox` for PARA triage
+- Don't save the current conversation answer — use `save-note`
 - Don't create duplicate pages — always search first
 - Don't use diary voice in wiki pages — write for reference, not narrative
 - Don't move the source before the knowledge is captured
 
 ## References
 
-| Priority   | Load when                                                                 | Reference                          |
-| ---------- | ------------------------------------------------------------------------- | ---------------------------------- |
+| Priority | Load when | Reference |
+| --- | --- | --- |
 | 1 — High   | Creating or linking wiki pages — block refs, aliases, evergreen structure | `references/advanced-workflows.md` |
 | 2 — Medium | User wants Dataview queries or dynamic MOC views inside a note            | `references/dataview-patterns.md`  |
 | 3 — Medium | Creating a MOC or deciding MOC vs standalone note                         | `references/moc-advanced.md`       |

@@ -1,169 +1,90 @@
 ---
 name: docs
 description: >-
-  Writes technical documentation: READMEs, API docs, architecture docs,
-  how-to guides, RFCs, design docs, and ADRs. Applies type-specific rules for
-  each format to ensure docs are actually useful — not just technically correct.
-  Make sure to use this skill whenever the user says "write documentation",
-  "document this", "create a README", "API docs", "technical docs", "write an
-  RFC", "design doc", "architecture proposal", "write up a proposal", "draft a
-  decision record", "share this with the team", "document this function/
-  component/service", or asks to explain how something works for other
-  developers. Also triggers when existing docs need a quality review.
+  Reader-job technical documentation: READMEs, API docs, architecture docs, how-tos, RFCs,
+  design docs, and ADRs. Use when writing, revising, or reviewing docs for other developers.
 user-invocable: true
 ---
 
 # Technical Documentation Writer
 
-Different documentation types serve different purposes. The format rules exist because readers come to each type with a specific goal — give them what they came for immediately.
+Write for the reader's job: what they came to understand, decide, or do. A technically correct doc
+that does not serve that job is still a failed doc.
 
-## Documentation Types and Rules
+## Boundaries
 
-### README
-
-The README answers: "what is this and can I use it in 2 minutes?"
-
-**Rules:**
-- First sentence: what this IS, not what it will do someday. "A CLI for syncing Obsidian vaults" not "This project aims to..."
-- Installation in <5 commands. If it takes more, show the most common path and link to full setup
-- One working example before any explanation — show before you tell
-- Link to full docs, don't duplicate them
-
-**Structure:**
-```
-# Project Name
-One sentence description.
-
-## Install
-[<5 commands]
-
-## Quick Start
-[One working example]
-
-## [Links to deeper docs if needed]
-```
-
-### API Docs
-
-**Rules:**
-- Describe behavior, not implementation — "Returns paginated results sorted by createdAt" not "Calls the database with a LIMIT clause"
-- Every parameter: name, type, required/optional, default, what it does
-- Every return value: type, shape, what it contains
-- One realistic example per endpoint — not a toy example, something close to real usage
-- Document the error cases: what fails, what you get back, what to do about it
-
-**Parameter format:**
-```
-name (string, required) — The user's display name. Max 50 characters.
-limit (number, optional, default: 20) — Results per page. Max 100.
-```
-
-### Architecture Docs
-
-**Rules:**
-- Explain decisions (WHY), not just structure (WHAT). Structure can be read from code. Decisions cannot.
-- For each major architectural choice: what was considered, what was chosen, why, what tradeoffs were accepted
-- C4 diagrams for system context (level 1: system in its environment) and container diagrams (level 2: major components)
-- Keep current — an outdated architecture doc is actively harmful (misleads more than no doc)
-
-**Structure:**
-```
-## Context
-[What problem this system solves, who uses it]
-
-## Key Decisions
-[Decision record format: what, why, alternatives considered, tradeoffs]
-
-## System Diagram
-[C4 context or container diagram]
-
-## Data Flow
-[How data moves through the system for the main use cases]
-```
-
-### How-To Guides
-
-**Rules:**
-- Task-oriented title: "How to add authentication" not "Authentication"
-- Assumes the reader has the prerequisite knowledge — link to it, don't re-teach it
-- Steps are ordered by dependency: step N builds on step N-1
-- Each step has one action and one expected result
-
-### RFC / Design Doc / ADR
-
-For team-facing proposals and records. Ask which type before starting — each has a different section convention.
-
-| Type | Use When |
-|------|----------|
-| RFC | Change isn't decided yet — soliciting feedback before committing |
-| Product design doc | Scoping new work — goals, non-goals, user stories, success metrics |
-| Architecture proposal | System design or pattern change — current state, proposed design, trade-offs, migration |
-| ADR | Decision already made — capture context, decision, consequences |
-
-**Workflow for proposals/records:**
-1. Confirm doc type and primary audience (specific team, eng leads, whole org)
-2. Ask for context dump — problem, background, constraints, stakeholder concerns
-3. Follow the brainstorm → curate → draft → refine loop for each section
-4. Start with the section that has the most unknowns; save TL;DR for last
-5. After 3 iterations with no changes, ask "what can be removed without losing value?"
-6. Reader test: predict 5 questions a reader with no context would ask — does the doc answer them?
-
-**RFC/design doc structure:**
-```
-## TL;DR
-[Summary — write last]
-
-## Problem
-[What's painful, with real data]
-
-## Proposed Solution
-[Scoped, not "change everything"]
-
-## Why Now?
-[What triggered this]
-
-## Trade-offs
-[Pros AND cons — naming downsides builds trust]
-
-## Alternatives Considered
-[What you rejected and why]
-
-## Rollback Plan
-[Makes skeptics comfortable]
-
-## Open Questions
-[Decision points for the reader — silence in team chat means readers didn't know what to react to]
-```
-
-For docs going into team chat: include a TL;DR at the top suitable for pasting into Slack.
-
-## Quality Checklist
-
-Before delivering any docs, verify:
-
-- [ ] First sentence tells you what this IS, not what it does someday
-- [ ] Code examples run without modification (test them)
-- [ ] All required config / env vars are documented
-- [ ] Common errors documented with how to fix them
-- [ ] No passive voice for user actions ("you run" not "the command is run")
-- [ ] No "simply" / "just" / "easy" — the reader is here because it wasn't obvious
-- [ ] Links work (check any URLs referenced)
-- [ ] Consistent terminology throughout (pick one name per concept)
+- Use `blog` for publishable articles with an argument, story, or public-facing lesson.
+- Use `tutorial` for learning-oriented step-by-step teaching with checkpoints.
+- Use this skill for reference docs, team proposals, decision records, READMEs, API docs, and
+  how-to docs whose primary purpose is work, review, or operation.
 
 ## Workflow
 
-1. Identify the documentation type (README, API, architecture, how-to)
-2. Ask for any missing context: what's the audience, what do they already know, what do they need to do
-3. Draft with type-specific rules applied
-4. Run through the quality checklist before delivering
+### 1. Name the doc type and reader job
+
+Identify the document type before drafting: README, API docs, architecture docs, how-to, RFC,
+design doc, architecture proposal, or ADR.
+
+Complete when:
+
+- the doc type is named
+- the primary audience is named
+- the reader job is stated as `Reader needs to <do/decide/understand> so they can <outcome>`
+- missing inputs are requested before drafting
+
+### 2. Load the matching reference
+
+Use the routing table below. If a template or type-specific rule applies, load that reference before
+writing.
+
+Complete when the matching reference has been loaded, or no reference applies and that is stated.
+
+### 3. Gather the minimum context
+
+Ask only for context needed by the reader job:
+
+- current state and desired outcome
+- constraints, dependencies, and owners
+- concrete examples, commands, APIs, or decisions
+- known errors, risks, alternatives, or non-goals
+
+Complete when every required placeholder in the selected template has either source material or an
+explicit `TBD`/question for the user.
+
+### 4. Draft for use, review, or decision
+
+Lead with what the reader needs first. Show before explaining when the reader must do something;
+state the decision or proposal before deep rationale when the reader must decide.
+
+Complete when:
+
+- the opening answers the reader job
+- every section exists to help the reader do, decide, or understand something
+- examples are realistic and include required setup/config/error handling when relevant
+- uncertainties are marked instead of invented
+
+### 5. Run the quality gate
+
+Before delivering, verify:
+
+- [ ] First sentence says what this is or what decision/proposal is being made
+- [ ] Code examples or commands were run when an environment is available; otherwise marked unverified
+- [ ] Required config, inputs, env vars, and permissions are documented
+- [ ] Common errors or risks include what to do next
+- [ ] Links referenced in the doc were checked when accessible
+- [ ] Terminology is consistent: one name per concept
+- [ ] No "simple" / "just" / "easy" for user actions
+
+Complete when all applicable checks pass or failures are called out explicitly.
 
 ## References
 
-Load the template that matches the doc type — all are equal priority, triggered by type alone.
-
-| Doc Type | Load when | Reference |
-|----------|-----------|-----------|
-| ADR | Decision already made — need to capture context and consequences | `references/adr-template.md` |
-| RFC | Change not decided — soliciting team feedback before committing | `references/rfc-template.md` |
-| Architecture Proposal | System design or pattern change with trade-off analysis | `references/architecture-proposal-template.md` |
-| Design Doc | Scoping new work — goals, non-goals, user stories, success metrics | `references/design-doc-template.md` |
+| Priority | Load when | Reference |
+| --- | --- | --- |
+| 1 | Decision already made; capture context, decision, and consequences | `references/adr-template.md` |
+| 1 | Change not decided; solicit review before committing | `references/rfc-template.md` |
+| 1 | Scoping new product work with goals, non-goals, user stories, and metrics | `references/design-doc-template.md` |
+| 1 | System design or pattern change with trade-offs and migration concerns | `references/architecture-proposal-template.md` |
+| 2 | Creating or revising a README | `references/readme-guide.md` |
+| 2 | Creating or revising API documentation | `references/api-docs-guide.md` |
+| 2 | Creating or revising a task-oriented how-to guide | `references/how-to-guide.md` |

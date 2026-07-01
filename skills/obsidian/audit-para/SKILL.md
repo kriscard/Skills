@@ -1,12 +1,9 @@
 ---
 name: audit-para
 description: >-
-  Audits the Obsidian vault for PARA classification correctness — finds projects missing outcomes or
-  deadlines, done-but-not-archived projects, stalled notes, areas with deadlines, and archives that
-  got touched recently. Produces a structured report then offers an interactive fix flow. Make sure
-  to use this skill whenever the user says "audit my vault", "check PARA classification", "are my
-  notes in the right place?", "PARA audit", or runs /audit-para. Run weekly — daily noise dulls the
-  signal. Never auto-fixes: every vault write requires explicit approval.
+  Read-only PARA classification audit for the Obsidian vault, followed by an optional explicit-fix
+  flow. Use when the user asks to audit PARA, check whether notes are in the right place, find
+  projects missing outcomes/deadlines, or runs /audit-para.
 user-invocable: true
 ---
 
@@ -120,7 +117,7 @@ For each critical finding, propose a specific action:
 
 | Finding                                 | Proposed action                                                | Route to                           |
 | --------------------------------------- | -------------------------------------------------------------- | ---------------------------------- |
-| Project missing outcome/deadline        | Add fields or convert to Area                                  | `para-project` skill (UPDATE mode) |
+| Project missing outcome/deadline        | Add fields or convert to Area                                  | `project` skill (UPDATE mode) |
 | Project ✅ Done, not archived           | Move to `4 - Archives/Projects - YYYY/<name>.md`, prompt retro | Direct move + retro prompt         |
 | Project past due-date, Active           | Extend / mark done / archive / convert to Area                 | `AskUserQuestion` → branch         |
 | Area with due-date                      | Convert to Project or remove due-date                          | `para-organizer` agent + file move |
@@ -161,6 +158,6 @@ If yes: ask 3 questions via `AskUserQuestion`, then write the retrospective. The
 
 ## References
 
-| Load when                                                                 | Reference                      |
-| ------------------------------------------------------------------------- | ------------------------------ |
-| Deep theory on PARA categories, migration, variations, or troubleshooting | `references/para-deep-dive.md` |
+| Priority | Load when | Reference |
+| --- | --- | --- |
+| Optional | Need PARA theory, category edge cases, migration patterns, or troubleshooting beyond the hard-signal audit matrix | `references/para-deep-dive.md` |

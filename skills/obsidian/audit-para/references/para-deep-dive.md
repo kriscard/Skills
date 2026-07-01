@@ -1,3 +1,5 @@
+> **Read this when:** the user needs PARA theory, category edge cases, migration patterns, or troubleshooting beyond the hard-signal audit matrix.
+
 # PARA Method Deep Dive
 
 Comprehensive guide to implementing and optimizing the PARA method in Obsidian.

@@ -1,3 +1,5 @@
+> **Read this when:** deciding which vault template to use for a note type.
+
 # Templates Guide
 
 All templates live in the root-level `Templates/` folder.

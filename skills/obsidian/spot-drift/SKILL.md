@@ -1,12 +1,9 @@
 ---
 name: spot-drift
 description: >-
-  Compares stated intentions against actual vault behavior over the past 30 days — surfaces gaps
-  between what the user says matters and where time and energy actually go, and finds what's being
-  avoided. Make sure to use this skill whenever the user says "what am I avoiding?", "am I
-  drifting?", "check my priorities vs behavior", "what's getting neglected?", "spot drift", or runs
-  /spot-drift. Absence of vault data does not equal absence of action — verify gaps with the user
-  before concluding avoidance.
+  Drift check for Obsidian: compare stated intentions against 30 days of vault behavior and surface
+  verified priority gaps or avoidance questions. Use when the user asks "what am I avoiding?", "am I
+  drifting?", "check my priorities vs behavior", "what's getting neglected?", or runs /spot-drift.
 user-invocable: true
 ---
 
@@ -33,7 +30,7 @@ enabled."
 ### OKRs and Goals
 
 ```bash
-obsidian files folder="2 - Areas/Goals/Quarterly/" format=json
+obsidian files folder="2 - Areas/Goals/Quaterly/" format=json
 obsidian files folder="2 - Areas/Goals/Monthly/" format=json
 # Read the most recent quarterly and monthly goal notes
 obsidian base:query path="2 - Areas/Goals/OKR Dashboard.base" format=json
@@ -46,9 +43,12 @@ for investigation, projects in active/current status.
 
 ```bash
 TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"   # then read backwards
-obsidian read path="2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md"
-obsidian property:read path="2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md" name="energy_sleep"
+obsidian read path="2 - Areas/Daily Ops/<year-from-YYYY-MM-DD>/YYYY-MM-DD.md"
+obsidian property:read path="2 - Areas/Daily Ops/<year-from-YYYY-MM-DD>/YYYY-MM-DD.md" name="energy_sleep"
 ```
+
+Completion: attempt all 30 dates, list missing or sparse notes explicitly, and do not treat gaps as
+proof of inactivity.
 
 Look for: "I need to..." / "I should..." / "I want to..." statements, carry-forward items from
 reflections, recurring themes that keep appearing, things flagged as tomorrow's priority that never
@@ -77,13 +77,20 @@ obsidian property:read path="1 - Projects/<project>.md" name="status"
 
 ## Step 3 — The Drift Report
 
-### Alignment Score
+### Alignment Label
 
-For each stated priority, rate intention vs. action:
+For each stated priority, rate intention vs. action with an evidence-backed label:
 
-| Priority | Stated Importance | Actual Activity | Alignment | Drift       |
-| -------- | ----------------- | --------------- | --------- | ----------- |
-| ...      | High              | Low             | 3/10      | Significant |
+| Priority | Stated Importance | Actual Activity | Alignment | Drift |
+| -------- | ----------------- | --------------- | --------- | ----- |
+| ... | High | Low | Misaligned | Significant |
+
+Rubric:
+
+- **Aligned** — recent action, project movement, or tasks clearly match the stated priority
+- **Thin evidence** — some notes mention it, but action evidence is sparse or ambiguous
+- **Misaligned** — stated high importance plus low/no action evidence after missing-note gaps are checked
+- **Unknown** — vault data is insufficient; ask before concluding
 
 ### What's Getting Unplanned Attention
 
@@ -95,8 +102,8 @@ The uncomfortable list. For each avoided item:
 
 - **What**: the thing being avoided
 - **Evidence**: mentions vs. actions (cite specific dates and notes)
-- **Possible why**: fear, unclear next step, not actually important, too big, requires a difficult
-  conversation
+- **Possible explanations to verify**: ask whether it is blocked by ambiguity, priority mismatch,
+  size, dependency on someone else, or a difficult conversation
 - **The cost**: what happens if avoidance continues
 
 **Avoidance Decision Tree** — run for each avoided item:
@@ -117,7 +124,8 @@ Direct, compassionate summary — not judgmental, just clear. "Here's what you s
 what you actually did. Here's where they don't match."
 
 **Important:** Daily notes capture reflection, not everything done. When vault data is absent, use
-`AskUserQuestion` to verify before concluding avoidance.
+`AskUserQuestion` to verify before concluding avoidance. For each avoided item, list possible
+explanations as questions to verify, not psychological conclusions.
 
 ### Recommended Corrections
 
@@ -137,3 +145,4 @@ For each significant drift, exactly one of:
 - Don't conflate busyness with avoidance.
 - Distinguish "dropped and should stay dropped" from "dropped and it's costing you."
 - Absence of vault data ≠ absence of action. Verify with the user first.
+- Complete only when all 30 dates were attempted, missing notes were listed, and avoidance conclusions were verified with the user.

@@ -1,3 +1,5 @@
+> **Read this when:** a vault operation needs complete Obsidian CLI command syntax beyond the quick map in the vault skill.
+
 # Obsidian CLI Reference
 
 Complete command reference for Obsidian's native CLI. All commands use the `obsidian` binary.

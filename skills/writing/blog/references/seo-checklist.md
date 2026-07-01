@@ -1,6 +1,6 @@
-# SEO Checklist
-
 > **Read this when:** the user wants to publish publicly, target search traffic, or generate SEO metadata.
+
+# SEO Checklist
 
 ## Before Writing
 - [ ] Primary keyword identified

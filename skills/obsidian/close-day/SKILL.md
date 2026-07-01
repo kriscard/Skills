@@ -1,11 +1,9 @@
 ---
 name: close-day
 description: >-
-  Runs the end-of-day processing ritual for the Obsidian vault — parses the daily note, updates
-  active project notes in place, surfaces vault connections, and writes carry-forward items for
-  tomorrow. Make sure to use this skill whenever the user says "close
-  my day", "end of day", "wrap up today", "process today's notes", "what did I do today", or runs
-  /close-day. Five minutes of structured closing prevents a week of lost context.
+  End-of-day Obsidian ritual: parse today's daily note, update active project notes in place, surface
+  vault connections, and write tomorrow carry-forward items. Use when the user says "close my day",
+  "end of day", "wrap up today", "process today's notes", "what did I do today", or runs /close-day.
 user-invocable: true
 ---
 
@@ -49,8 +47,9 @@ obsidian search:context query="<theme 2>" limit=10
 obsidian backlinks file="<today's note>"
 ```
 
-Surface: "Today you wrote about X. This connects to [[note]] from [date] — worth revisiting?" Flag
-themes recurring 3+ times in the past two weeks.
+Surface: "Today you wrote about X. This connects to [[note]] from [date] — worth revisiting?"
+Flag themes recurring 3+ times in the past two weeks only after searching the date-bounded window,
+listing the source dates/notes, and distinguishing confirmed recurrences from possible matches.
 
 ## Step 3 — Extract & Categorize
 
@@ -115,10 +114,20 @@ Approve any to append to 🔗 Links & References?
 
 ## Step 5 — Carry Forward
 
+Today's daily note must end with exactly one `## Carry Forward` section. If the section already
+exists, update it in place instead of appending a duplicate heading. The CLI has no `patch`, so for
+section-targeted updates ask the user to choose MCP `obsidian_patch_content` or a `read` +
+`create ... overwrite` rewrite.
+
+If appending is safe because the section is absent:
+
 ```bash
 TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"
 obsidian append path="$TODAY" content="## Carry Forward\n- [item 1]\n- [item 2]"
 ```
+
+Completion: today's daily note has one Carry Forward section containing only confirmed tomorrow
+items.
 
 If the Quick Wrap section is empty, draft answers:
 

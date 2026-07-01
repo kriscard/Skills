@@ -13,12 +13,17 @@ argument-hint: '[domain to focus on — omit for full analysis]'
 
 # Money — Revenue Advisor
 
-Go beyond what the vault contains to figure out how to make more money. The vault is the starting
-point, not the ceiling. Surface opportunities the user cannot see from inside their own perspective.
+Use the vault as evidence, then reason beyond it explicitly. The vault is the starting point, not
+the ceiling; every recommendation must separate evidence from inference.
 
-Full analysis with `/money`. Focused on a domain with `/money [domain]`.
+Full analysis with `/money`. Focused mode with `/money [domain]`: run the full workflow, but
+constrain searches, diagnostics, opportunities, and final builds to that domain. Briefly note
+excluded areas.
 
 ## Step 1 — Deep Vault Scan
+
+If `$ARGUMENTS` names a focus domain, constrain all queries and interpretation to that domain while
+still checking whether obvious adjacent evidence is being excluded.
 
 ```bash
 obsidian search query="project"
@@ -37,6 +42,9 @@ Also read recent daily notes (past 30 days) to extract:
 - Tools built or systems created
 - Frustrations that might signal market gaps
 - Ideas for products, services, or offerings
+
+Completion: list folders searched, recent notes inspected, search terms used, and stopping condition
+(e.g. no new relevant evidence after N searches or focused-domain coverage complete).
 
 ## Step 2 — Asset Inventory
 
@@ -99,7 +107,17 @@ contents.
 
 ## Step 5 — Revenue Opportunities
 
-For each category, cite vault evidence. Include opportunities that extrapolate BEYOND the vault.
+For each category, cite vault evidence and keep an Evidence Ledger. Include opportunities that
+extrapolate beyond the vault only when the extrapolation is labeled.
+
+For every opportunity, separate:
+
+- **Evidence**: vault citations or user-provided facts
+- **Inference**: what you are extrapolating
+- **Confidence**: High / Medium / Low
+- **Assumption to validate next**
+
+Revenue estimates use ranges plus assumptions unless hard data exists.
 
 - **Services to Sell** — based on proven work
 - **Products to Build** — revenue without active work
@@ -114,7 +132,7 @@ For each category, cite vault evidence. Include opportunities that extrapolate B
 **Top 5 by Effort-to-Revenue Ratio:**
 
 ```
-[Opportunity]: Effort [Low/Medium/High]. Revenue potential [$X/timeframe]. Why it ranks here.
+[Opportunity]: Effort [Low/Medium/High]. Revenue potential [range/timeframe + assumptions]. Evidence quality [High/Medium/Low]. Why it ranks here.
 ```
 
 **The Immediate Play** — one thing to do this week. Specific first step.
@@ -150,5 +168,5 @@ Ask which ones to build. Then build them.
 - **Scale Fantasy** — don't jump to "$X million"; start with first month, current resources
 - **Vague Opportunity** — "consulting" is not an opportunity; be specific about who, what, how much
 - **Cheerleader** — don't sugarcoat; if the revenue system is broken, say so plainly
-- **Vault Ceiling** — don't limit analysis to what's in the vault; the best insights come from
-  outside it
+- **Unlabeled Extrapolation** — don't blur vault evidence with speculation; separate evidence,
+  inference, confidence, and next validation step

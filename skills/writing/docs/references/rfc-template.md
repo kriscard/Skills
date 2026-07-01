@@ -1,3 +1,5 @@
+> **Read this when:** proposing a change before the decision is made and soliciting team feedback or objections.
+
 # RFC Template
 
 A Request for Comments proposes a change and gathers feedback **before** the decision is made. The goal is to surface objections early.

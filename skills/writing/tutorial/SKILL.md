@@ -1,13 +1,10 @@
 ---
 name: tutorial
 description: >-
-  Creates step-by-step technical tutorials with progressive disclosure: shows
-  the end state first, builds through working checkpoints, and explains what
-  just happened after each one. Make sure to use this skill whenever the user
-  says "create a tutorial", "step-by-step guide", "onboarding guide", "teach
-  me how to", "how do I learn X", or runs /tutorial. Also triggers when someone
-  needs to write documentation that teaches a skill rather than just describing
-  an API — even if they don't use the word "tutorial".
+  Checkpointed tutorial writer for step-by-step technical teaching: visible end
+  state, dependency-ordered steps, working checkpoints, and mechanism
+  explanations. Use when the user asks to create, draft, revise, or outline a
+  tutorial, step-by-step guide, onboarding guide, or documentation that teaches a skill.
 user-invocable: true
 argument-hint: "[topic or technology]"
 ---
@@ -64,7 +61,7 @@ You should see:
 If you see X instead, [specific fix].
 ```
 
-### 5. "What Just Happened?" After Each Checkpoint
+### 5. Explain the Mechanism After Each Checkpoint
 
 A brief explanation of the mechanism — not re-explaining the steps, but the underlying concept. This is what turns a recipe-follower into someone who understands the system.
 
@@ -95,7 +92,7 @@ Include the 2-3 most common errors with exact error messages and fixes. Don't ig
 2. Identify the end state — what working thing will they have built?
 3. Map the dependency order of steps before writing any of them
 4. Write with checkpoints every 2-4 steps
-5. Test each code block mentally or actually run it — tutorials with broken code destroy trust immediately
+5. Validate every code block by running it when the environment is available. If it was not run, mark it as unverified and state the assumption.
 
 ## Output
 
@@ -104,6 +101,7 @@ A complete tutorial with:
 - Prerequisites list
 - Numbered steps with code blocks
 - Working checkpoints with expected output
-- "What just happened?" after each checkpoint
+- Mechanism explanation after each checkpoint
 - Common errors section
 - Extension exercises
+- Validation notes naming which code blocks were run and which remain unverified

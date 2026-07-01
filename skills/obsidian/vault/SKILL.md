@@ -61,32 +61,12 @@ principle is shared by every ritual skill (daily, close-day, weekly, goals, spot
 Note: the quarterly folder is spelled "Quaterly" — preserve this to match the existing vault
 structure.
 
-## Obsidian CLI Reference
+## Obsidian CLI Quick Map
 
-```bash
-obsidian read path="<path>"                      # Read a note
-obsidian create path="<path>" template="<name>"  # Create from template
-obsidian create path="<path>" content="..." overwrite  # Overwrite a whole note
-obsidian append path="<path>" content="..."      # Append to end of note
-obsidian prepend path="<path>" content="..."     # Prepend to top of note
-obsidian move path="<src>" to="<dst>"            # Move/rename note
-obsidian files folder="<path>" format=json       # List files
-obsidian search query="<q>"                      # Full-text search
-obsidian search:context query="<q>" limit=10     # Search with surrounding lines
-obsidian tasks todo path="<daily-note path>"     # Today's open tasks (path, not folder)
-obsidian task path="<path>" line=N done          # Mark a task done
-obsidian orphans                                 # Orphaned notes
-obsidian deadends                                # Notes with no outgoing links
-obsidian unresolved verbose counts               # Broken links
-obsidian backlinks path="<path>" counts          # Backlinks to a note
-obsidian links path="<path>"                     # Outgoing links from a note
-obsidian vault info=files                        # Vault stats
-obsidian tags counts sort=count                  # All tags with usage counts
-obsidian property:read path="<path>" name="<k>"  # Read a frontmatter property
-obsidian property:set path="<path>" name="<k>" value="<v>"  # Set a property
-obsidian template:read name="<name>" resolve title="<t>"  # Render template
-obsidian base:query path="<path>" format=json    # Query a .base file
-```
+Use the native `obsidian` CLI for concrete operations. Common verbs: `read`, `create`, `append`,
+`prepend`, `move`, `files`, `search`, `search:context`, `tasks`, `task`, `orphans`, `deadends`,
+`unresolved`, `backlinks`, `links`, `vault info=files`, `tags`, `property:read`, `property:set`,
+`template:read`, and `base:query`. Load `references/cli-reference.md` when exact syntax matters.
 
 **No `patch` command.** The CLI cannot edit a specific section in place. To write to a note:
 `append`/`prepend` when landing the content anywhere in the note is fine. When it must update or
@@ -113,8 +93,8 @@ CLI enabled."
 
 ## References
 
-| Priority   | Load when                                                      | Reference                          |
-| ---------- | -------------------------------------------------------------- | ---------------------------------- |
+| Priority | Load when | Reference |
+| --- | --- | --- |
 | 1 — High   | Full CLI command needed beyond the inline reference            | `references/cli-reference.md`      |
 | 2 — High   | obsidian-utils script commands or invocation syntax            | `references/obsidian-utils.md`     |
 | 3 — Medium | Complete folder tree, metadata patterns, or naming conventions | `references/detailed-structure.md` |

@@ -31,7 +31,7 @@ options:
   - label: "End of this quarter"
     description: "Auto-set to the last day of current quarter."
   - label: "End of this year"
-    description: "Auto-set to 2026-12-31."
+    description: "Auto-set to the last day of the current year."
   - label: "No deadline — ongoing"
     description: "Red flag — this is likely an Area, not a Project. Confirm before proceeding."
 multiSelect: false

@@ -1,3 +1,5 @@
+> **Read this when:** building the narrative arc or structuring the talk story.
+
 # Story Circle for Tech Talks
 
 Eight-step narrative framework for structuring conference presentations.

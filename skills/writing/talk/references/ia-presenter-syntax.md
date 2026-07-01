@@ -1,3 +1,5 @@
+> **Read this when:** generating iA Presenter slide markdown for a conference talk.
+
 # iA Presenter Markdown Syntax
 
 ## Critical: Tabbing Rules

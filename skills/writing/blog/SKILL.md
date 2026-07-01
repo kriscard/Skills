@@ -1,9 +1,9 @@
 ---
 name: blog
 description: >-
-  Blog post writer for developer-facing technical posts. Use when the user wants
-  to write, draft, outline, revise, or publish a blog post, technical article,
-  opinion piece, project writeup, TIL, or post about something they learned.
+  Use when writing or revising developer-facing blog posts: technical articles,
+  opinion pieces, project writeups, TILs, or learned-in-public posts that need
+  one sharp angle/aha.
 user-invocable: true
 argument-hint: "[topic or title]"
 ---
