@@ -40,6 +40,7 @@
     "./skills/productivity/prototype",
     "./skills/productivity/standup",
     "./skills/writing/blog",
+    "./skills/writing/tweet-today",
     "./skills/writing/docs",
     "./skills/writing/talk",
     "./skills/writing/tutorial"
