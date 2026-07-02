@@ -3,7 +3,6 @@
   "skills": [
     "./skills/dev/analyze-repo",
     "./skills/dev/architect",
-    "./skills/dev/claude-optimizer",
     "./skills/dev/commit",
     "./skills/dev/debug",
     "./skills/dev/frontend",
