@@ -1,11 +1,10 @@
 ---
 name: tweet-today
 description: >-
-  Tweet proposal skill for turning today's work, the current agent conversation,
-  or a technical topic into categorized Twitter/X post options. Use when the user
-  asks what to tweet today, to turn a convo/session into tweets, to draft an X
-  post, or to share a software dev, programming, UI/frontend, startup, tech,
-  project, bug, lesson, blog idea, or agent-session insight.
+  Tweet Today creates categorized Twitter/X post options from today's work, a
+  conversation, a draft, or a technical topic. Use when the user asks what to
+  tweet today or wants software dev, programming, UI/frontend, startup/product,
+  tech, code-snippet, or AI-agent tweet options.
 user-invocable: true
 argument-hint: "[topic, today summary, or conversation excerpt]"
 ---
@@ -22,9 +21,9 @@ If the user asks for a longer essay, use the blog skill. If they ask for a daily
 
 ## Workflow
 
-### 1. Locate the source
+### 1. Harvest receipts
 
-Use the nearest available source first:
+Use the nearest available source first, then extract concrete receipts:
 
 | Branch | Source |
 |--------|--------|
@@ -33,7 +32,9 @@ Use the nearest available source first:
 | Topic | The named topic plus any opinion, lesson, or example already provided |
 | Draft | The user's rough tweet or idea |
 
-Complete when the source has at least: subject, user's stance or lesson, and one concrete receipt. If any of those are missing, do a mini-grill before drafting.
+Receipts are shipped changes, bugs fixed, screenshots, code snippets, tools tried, decisions made, mistakes noticed, or opinion shifts.
+
+Complete when the source can support 3 distinct tweet options. For a full-day request, aim for 3-5 receipts. If the source lacks subject, stance/lesson, or a concrete receipt, do a mini-grill before drafting.
 
 ### 2. Mini-grill thin context
 
@@ -48,7 +49,15 @@ Ask only the smallest set of questions needed to make the tweet real. Prefer the
 
 Complete when the answer can support categorized tweets without inventing facts.
 
-### 3. Propose categories
+### 3. Safety gate
+
+Scan the source before drafting. Remove or generalize anything unsafe: secrets, credentials, tokens, API keys, private URLs, private repo names, customer data, unreleased metrics, `.env` values, config values, or copied logs.
+
+For code snippets, keep only public-safe examples. Replace sensitive values with placeholders like `YOUR_API_KEY`, `<internal-url>`, or `example.com`.
+
+Complete when every usable receipt is safe to publish, or unsafe receipts have been dropped.
+
+### 4. Propose categories
 
 Pick the 3 strongest tweet categories for the day. Start from the user's lane — software development, programming, UI/frontend craft, startup/product, AI/agent workflows, and broader tech — then choose what the source can actually support.
 
@@ -60,10 +69,11 @@ Useful categories:
 - **Programming take** — opinion about code structure, tools, abstractions, or workflow.
 - **Startup/product note** — user pain, positioning, distribution, pricing, scope, trade-off.
 - **Agent workflow** — what AI agents made easier/harder, prompt/process lessons, automation.
+- **Code snippet** — a tiny before/after, API shape, bug pattern, CSS detail, or command that makes the lesson concrete.
 
-Complete when each chosen category has a one-line reason tied to today's source.
+Complete when each chosen category has a one-line reason and at least one receipt tied to today's source.
 
-### 4. Extract the signal per category
+### 5. Extract the signal per category
 
 For each chosen category, find one tweetable idea. It should fit one of these frames:
 
@@ -74,13 +84,14 @@ For each chosen category, find one tweetable idea. It should fit one of these fr
 
 Complete when there are at least 3 distinct signals, not the same idea rewritten three times.
 
-### 5. Draft options
+### 6. Draft options
 
 Write at least 3 tweet candidates, one per chosen category. Use different shapes when possible:
 
 1. **Tiny lesson** — direct takeaway from the work.
 2. **Micro-story** — one concrete moment, then the lesson.
 3. **Point of view** — a crisp claim with a receipt.
+4. **Code snippet** — a tiny snippet only when code makes the insight sharper than prose.
 
 Rules:
 - keep each option under 280 characters unless the user requested X Premium length
@@ -88,18 +99,22 @@ Rules:
 - no engagement bait: "Agree?", "Thoughts?", "Hot take", "Here's the truth"
 - no generic AI cadence: "game-changer", "unlock", "dive into", "leveraging"
 - keep first-person only when the source is genuinely personal
+- when a code snippet helps, prefer 1-4 lines, real syntax, and enough surrounding prose to explain the point
+- if a useful snippet needs sensitive values, use the sanitized placeholders from the safety gate
 
-Complete when every option is sendable, grounded in the source, and clearly labeled with its category.
+Complete when every option is sendable, grounded in the source, clearly labeled with its category, and safe to publish.
 
-### 6. Voice pass
+### 7. Voice pass
 
-Before finalizing, read `../blog/references/voice-tone.md` and revise for the user's voice.
+Before finalizing, read `references/twitter-voice.md` and revise for the user's Twitter/X voice.
 
-Complete when the candidates sound like a technical peer: concrete, casual-professional, lightly first-person or inclusive when natural, and free of corporate gloss.
+Run the boring-tweet test: if a tweet could be posted by any generic AI/dev account, rewrite it around a sharper receipt, stronger opinion, or more specific wording.
 
-### 7. Present the choice
+Complete when the candidates sound like Chris's X voice: casual, technical, lightly opinionated, specific, non-boring, and free of generic AI/influencer cadence.
 
-Show the categories first, then the tweets. Pick the strongest option and say why in one short sentence, but make it easy for the user to choose another.
+### 8. Present the choice
+
+Show the categories first, then the tweets. Pick the strongest option by specificity, receipt quality, voice match, and conversation potential — not by safest/polished wording. Say why in one short sentence, but make it easy for the user to choose another.
 
 Output format:
 
@@ -125,4 +140,4 @@ If the context is too thin, output the mini-grill questions instead of weak draf
 
 | Priority | Load when | Reference |
 |----------|-----------|-----------|
-| 1 | Finalizing tweet candidates in the user's public writing voice | `../blog/references/voice-tone.md` |
+| 1 | Finalizing tweet candidates in the user's Twitter/X voice, choosing tweet shapes, or deciding whether a code snippet fits | `references/twitter-voice.md` |
