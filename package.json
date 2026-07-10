@@ -22,24 +22,5 @@
   },
   "dependencies": {
     "typebox": "^1.1.24"
-  },
-  "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*"
-  },
-  "peerDependenciesMeta": {
-    "@earendil-works/pi-coding-agent": {
-      "optional": true
-    }
-  },
-  "keywords": [
-    "pi-package"
-  ],
-  "pi": {
-    "skills": [
-      "skills/**"
-    ],
-    "extensions": [
-      "pi/extensions/*.ts"
-    ]
   }
 }
