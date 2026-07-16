@@ -4,19 +4,17 @@ Personal Claude Code skills — a curated collection used daily across developme
 
 ## Install
 
-**Via `npx skills`** (recommended — installs globally):
+Install globally with the Skills CLI:
 
 ```bash
-npx skills@latest add kriscard/Skills
+npx skills@latest add kriscard/Skills -g
 ```
 
-**Via symlink** (local dev — changes take effect immediately):
+Update installed skills with:
 
 ```bash
-bash scripts/link-skills.sh
+npx skills@latest update -g
 ```
-
-This symlinks each skill directory into `~/.claude/skills/` so Claude Code picks them up without reinstalling.
 
 ## Skills
 
@@ -99,9 +97,6 @@ This symlinks each skill directory into `~/.claude/skills/` so Claude Code picks
 ```bash
 # List all skills
 bash scripts/list-skills.sh
-
-# Symlink skills to ~/.claude/skills/
-bash scripts/link-skills.sh
 ```
 
 ## License

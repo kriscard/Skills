@@ -20,7 +20,6 @@ kriscard-skills/
 │   ├── productivity/            # Productivity and workflow skills
 │   └── writing/                 # Writing and content skills
 ├── scripts/
-│   ├── link-skills.sh           # Symlink skills to ~/.claude/skills/
 │   └── list-skills.sh           # List all SKILL.md paths
 └── package.json
 ```
@@ -48,7 +47,6 @@ skills/<category>/<name>/
 
 ```bash
 pnpm install                     # First-time setup
-bash scripts/link-skills.sh      # Symlink all skills to ~/.claude/skills/
 bash scripts/list-skills.sh      # List all SKILL.md paths
 pnpm run typecheck               # Type check TypeScript files
 pnpm run format                  # Format all files
@@ -59,13 +57,14 @@ pnpm run format:check            # Verify formatting (CI)
 
 1. Create `skills/<category>/<name>/SKILL.md`
 2. Add the path to `.claude-plugin/plugin.json` under `"skills"`
-3. Run `bash scripts/link-skills.sh` to pick it up locally
+3. Run `bash scripts/list-skills.sh` to verify it is discoverable
+4. Install or update the collection with `npx skills@latest add kriscard/Skills -g`
 
 ## Naming Conventions
 
 - Category directories: kebab-case (e.g., `developer-tools`)
 - Skill directories: kebab-case (e.g., `blog-writer/`)
-- Skill names must be unique across the entire `skills/` tree (the symlink target is just `~/.claude/skills/<name>`)
+- Skill names must be unique across the entire `skills/` tree and across globally installed skills
 
 ## Skill Architecture
 
@@ -83,5 +82,5 @@ Skills use progressive disclosure: lean SKILL.md body + lazy-loaded references.
 
 - **Test before committing non-trivial changes** — run `bash scripts/list-skills.sh` to verify all skills are discoverable. For skill routing changes, run an eval (spawn subagents with the skill loaded, verify each loads the expected reference).
 - **Keep SKILL.md bodies lean** — if you find yourself over 300 lines, extract into `references/`.
-- **Skill names are global** — since `link-skills.sh` symlinks by directory name, two skills with the same name would collide. Check before creating.
-- **link-skills.sh creates symlinks** — edits to SKILL.md files take effect immediately without re-running the script.
+- **Skill names are global** — two installed skills with the same name collide. Check before creating.
+- **Use the Skills CLI for installation** — install with `npx skills@latest add kriscard/Skills -g` and update with `npx skills@latest update -g`.
