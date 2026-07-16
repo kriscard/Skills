@@ -71,7 +71,7 @@ activity? Which are stale?
 
 ```bash
 obsidian files folder="1 - Projects/" format=json
-obsidian base:query path="MOCs/Active Projects.base" format=json
+obsidian base:query path="MOCs/bases/Active Projects.base" format=json
 obsidian property:read path="1 - Projects/<project>.md" name="status"
 ```
 

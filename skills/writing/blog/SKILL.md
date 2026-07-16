@@ -28,6 +28,8 @@ If that sentence is weak, the post is not ready to outline.
 
 ## Workflow
 
+When invoked with a structured receipt from `capture-receipt` or `close-day`, treat its proof as the starting evidence. Preserve receipt ID and daily/project/session backlinks as private draft metadata, run a public-safety gate, and never expose internal references in the article.
+
 ### 1. Find the angle
 
 Identify the post's one-sentence angle before researching or outlining.
@@ -122,6 +124,14 @@ When SEO applies, include:
 - 2-3 internal/external link suggestions
 
 SEO must stay subordinate to the human reader.
+
+### 8. Optionally save the approved artifact
+
+After outline approval—or after a later full-draft approval—offer to append the artifact under `## ✍️ Drafts` in `1 - Projects/Public Technical Presence/Public Technical Presence.md` with receipt ID and private source backlinks. Show the exact write and require approval.
+
+Use state `outline` or `draft`, never `published`. Only a user-confirmed public URL or explicit publication confirmation moves it to `## 🚀 Published`.
+
+Complete when the approved artifact is saved with metadata or deliberately left in chat.
 
 ## Output
 

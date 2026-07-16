@@ -72,8 +72,7 @@ obsidian-vault-kriscard/
 - **Structure**:
   - `Careers/` - Professional development
   - `Careers/1on1/` - Meeting notes
-  - `Daily Ops/` - Daily notes
-  - `Daily Ops/Weekly/` - Weekly planning
+  - `Daily Ops/` - Daily and weekly notes grouped in flat year folders
   - `Goals/` - OKRs (quarterly, monthly, yearly)
   - `Health and self care/` - Wellness tracking
   - `Relationships/` - People notes
@@ -173,9 +172,9 @@ Folder already handles these:
 
 ### Weekly Planning
 ```
-2 - Areas/Daily Ops/Weekly/M - Month YYYY/YYYY-Www.md
+2 - Areas/Daily Ops/YYYY/YYYY-Www.md
 ```
-Example: `2 - Areas/Daily Ops/Weekly/2 - February 2026/2026-W06.md`
+Example: `2 - Areas/Daily Ops/2026/2026-W06.md`
 
 ### Monthly Goals
 ```

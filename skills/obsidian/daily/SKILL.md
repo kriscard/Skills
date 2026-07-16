@@ -1,131 +1,86 @@
 ---
 name: daily
 description: >-
-  Daily startup ritual for the Obsidian vault: create today's periodic notes, surface exact
-  carry-forward items, check inbox, and set focus. Use when the user says "start my day", "daily
-  startup", "morning routine", "today's focus", "set up today's note", or runs /daily.
+  Daily startup ritual for the Obsidian vault: create today's workday note, surface exact context,
+  and require the user to choose one daily outcome and next action. Use for "start my day", "daily
+  startup", "today's focus", or /daily.
 user-invocable: true
 ---
 
 # Daily Startup
 
-Structured morning ritual that creates periodic notes, surfaces what carried forward from yesterday,
-checks the inbox, and locks in today's focus.
+A 5–10 minute workday startup. The note is a cockpit the user revisits, not an AI-generated report.
 
-## Ask, Don't Assume
+## 1. Workday gate
 
-Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
-assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
-counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
-note, show your draft with its source and get explicit confirmation. Missing data is not permission
-to invent.
+Derive the real local date and weekday.
 
-## Step 1 — Create Periodic Notes (no confirmation needed)
+- Monday–Friday: continue.
+- Saturday/Sunday: do not create a note. Say weekend notes are intentionally off by default and ask whether the user explicitly wants one.
 
-**Performance rule: batch all existence checks in parallel, then batch all template fetches in
-parallel, then create. Minimize round-trips.**
+Completion: the run has a confirmed workday date or explicit weekend override.
 
-Get today's path and check if the daily note exists:
+## 2. Create missing periodic notes
 
-```bash
-TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"
-obsidian read path="$TODAY" 2>/dev/null
-```
+Batch existence checks before creating anything.
 
-If missing, render from template and create:
+| Period | Condition | Path | Template |
+| --- | --- | --- | --- |
+| Daily | every confirmed workday | `2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md` | `Daily Notes` |
+| Weekly | Monday | `2 - Areas/Daily Ops/YYYY/YYYY-Www.md` | `Weekly Planning` |
+| Monthly | first workday on/after month start | `2 - Areas/Goals/Monthly/M - Month YYYY.md` | `Monthly Goals` |
+| Quarterly | first workday on/after quarter start | `2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md` | `Quarterly Goals` |
 
-```bash
-obsidian template:read name="Daily Notes" resolve title="$TODAY"
-obsidian create path="$TODAY" content="$PROCESSED_TEMPLATE"
-```
+Use `obsidian read`, then `obsidian template:read ... resolve`, then `obsidian create`. Never create an empty note. Preserve the `Quaterly` spelling.
 
-**Template variable substitution** — if `resolve` doesn't substitute all variables, replace
-manually:
+Completion: today's note exists and every due periodic note exists or a concrete CLI failure is reported.
 
-- `{{date}}` → `YYYY-MM-DD`
-- `{{title}}` → note title
-- `{{week}}` → `W05`
-- `{{month}}` → `January`
-- `{{quarter}}` → `Q1`
-- `{{year}}` → `YYYY`
+## 3. Gather context in parallel
 
-**NEVER create empty notes.** If template fetch fails, report the error.
+Read:
 
-Run these checks in parallel based on today's date, then create all missing notes:
+- today's note;
+- the current flat weekly note;
+- the most recent prior workday note, including its exact `## Carry Forward` section;
+- active projects from `MOCs/bases/Active Projects.base`, falling back to `1 - Projects/`;
+- today's open tasks;
+- Inbox count.
 
-| Period    | Condition                  | Path                                                    | Template          |
-| --------- | -------------------------- | ------------------------------------------------------- | ----------------- |
-| Daily     | always                     | `2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md`                | `Daily Notes`     |
-| Weekly    | Monday                     | `2 - Areas/Daily Ops/Weekly/M - Month YYYY/YYYY-Www.md` | `Weekly Planning` |
-| Monthly   | 1st of month               | `2 - Areas/Goals/Monthly/M - Month YYYY.md`             | `Monthly Goals`   |
-| Quarterly | Jan 1, Apr 1, Jul 1, Oct 1 | `2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md` | `Quarterly Goals` |
+Treat carry-forward items as **candidates**, never commitments. Detect overload when the weekly note contains more than one outcome in a lane or today's note already contains multiple competing outcomes.
 
-**Note:** The quarterly folder and file both preserve the vault typo `Quaterly`. Derive `QN` and
-`YYYY` from today's real date.
+Completion: the user can see the relevant weekly lanes, exact carry-forward candidates with sources, and any overload warning.
 
-## Step 2 — Yesterday's Carry-Forward
+## 4. Human commitment gate
 
-**Always check carry-forward before setting today's priorities.**
+Propose concise candidates from the gathered context, then ask the user to choose or write:
 
-Read yesterday's daily note:
+1. one **Daily Outcome**;
+2. what **Done when** means;
+3. one **Next Action**;
+4. the first **Active Focus Block** finish line.
 
-```bash
-YESTERDAY=$(date -v-1d +%Y/%Y-%m-%d)
-obsidian read path="2 - Areas/Daily Ops/$YESTERDAY.md" 2>/dev/null
-```
+Do not choose these silently. Do not prepend carry-forward automatically. The user may edit the AI proposal manually in Obsidian instead of answering in chat; reread the note before writing anything else.
 
-Extract items explicitly marked "Carry Forward → Tomorrow" or similar. Exact carry-forward items
-can be prepended automatically:
+Completion: the outcome and next action are explicitly user-confirmed.
 
-```bash
-obsidian prepend path="$TODAY" content="**Carry forward from yesterday:**\n- [ ] Item 1\n- [ ] Item 2"
-```
+## 5. Update named sections
 
-If an item is inferred from prose rather than explicitly marked, show the source line and ask before
-adding it. These are the first candidates for today's focus.
+Write only the confirmed values into `Daily Outcome`, `Next Action`, and `Active Focus Block`.
 
-## Step 3 — Gather Context (run in parallel)
+Prefer a heading-targeted Obsidian patch tool when available. Otherwise show the exact replacement and use a read + overwrite flow only after approval. Never append duplicate headings.
 
-```bash
-# Inbox count
-obsidian files folder="0 - Inbox/" format=json
+Leave `Parking Lot`, `Work Notes`, `Ideas Worth Sharing`, and `Ready to Resume` ready for manual use during the day.
 
-# Active projects
-obsidian base:query path="MOCs/Active Projects.base" format=json 2>/dev/null || \
-  obsidian files folder="1 - Projects/" format=json
-
-# Open tasks (from today's daily note; daily flag needs the Daily Notes plugin)
-obsidian tasks todo path="$TODAY"
-```
-
-## Step 4 — Focus Interview (interactive)
-
-Ask via `AskUserQuestion` with `multiSelect`:
-
-> "Which projects are you focusing on today?" (list active projects from Step 3)
-
-Then a single-select follow-up:
-
-> "What's the single most important thing to finish today?"
-
-## Step 5 — Update Daily Note
-
-Fill today's Focus and Carry Forward sections. The CLI has no `patch`, so it cannot edit a named
-section in place. Choose based on the note:
-
-- If the section is empty or appending is acceptable, write with `append`/`prepend`:
-  ```bash
-  obsidian append path="$TODAY" content="..."
-  ```
-- If the content must land in or replace a specific section, ask the user: use the MCP
-  `obsidian_patch_content` tool (heading-targeted), or recreate the note via
-  `obsidian read path="$TODAY"` + `obsidian create path="$TODAY" content="..." overwrite`.
+Completion: the daily note contains exactly one confirmed outcome, next action, and focus finish line.
 
 ## Report
 
-After completion, tell the user:
+Return only:
 
-- Which periodic notes were created (daily / weekly / monthly / quarterly)
-- Inbox count (and flag if > 10 items — might need an ingest session)
-- Carry-forward items surfaced from yesterday
-- Confirmed today's focus
+- notes created;
+- exact carry-forward candidates surfaced;
+- Inbox count;
+- confirmed outcome, next action, and focus block;
+- any overload warning.
+
+If Obsidian CLI fails, say: "Obsidian CLI isn't working — update Obsidian with CLI enabled."

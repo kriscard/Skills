@@ -31,6 +31,7 @@ Use the nearest available source first, then extract concrete receipts:
 | Today | User-provided bullets about today's work; if missing, ask for them or permission to inspect notes/git |
 | Topic | The named topic plus any opinion, lesson, or example already provided |
 | Draft | The user's rough tweet or idea |
+| Structured receipt | A public-safe receipt promoted by `capture-receipt` or `close-day`, including proof and private source backlinks |
 
 Receipts are shipped changes, bugs fixed, screenshots, code snippets, tools tried, decisions made, mistakes noticed, or opinion shifts.
 
@@ -56,6 +57,8 @@ Scan the source before drafting. Remove or generalize anything unsafe: secrets, 
 For code snippets, keep only public-safe examples. Replace sensitive values with placeholders like `YOUR_API_KEY`, `<internal-url>`, or `example.com`.
 
 Complete when every usable receipt is safe to publish, or unsafe receipts have been dropped.
+
+For a structured receipt, keep receipt ID, daily/project/session backlinks, and safety state as **private draft metadata**. Never include those internal references in the tweet text.
 
 ### 4. Propose categories
 
@@ -135,6 +138,14 @@ Other options:
 ```
 
 If the context is too thin, output the mini-grill questions instead of weak drafts.
+
+### 9. Optionally save the approved draft
+
+After the user chooses or edits a candidate, offer to append it under `## ✍️ Drafts` in `1 - Projects/Public Technical Presence/Public Technical Presence.md` with its receipt ID and private source backlinks. Show the exact write and require approval.
+
+Save state as `draft`, never `published`. Only a user-confirmed public URL or explicit publication confirmation may move it to `## 🚀 Published`.
+
+Complete when the approved draft is either saved with metadata or deliberately left in chat.
 
 ## References
 

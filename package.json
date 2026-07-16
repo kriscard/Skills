@@ -11,6 +11,7 @@
   "license": "MIT",
   "scripts": {
     "typecheck": "tsc --build",
+    "validate:operating-system": "tsx scripts/validate-operating-system-skills.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

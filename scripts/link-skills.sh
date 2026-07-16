@@ -1,38 +1,92 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Links all skills in the repository to ~/.claude/skills so they can be
-# used by the local Claude CLI without installing via the plugin system.
+# Links manifest-owned skills directly into Claude Code and Pi.
+# Run with --dry-run first. Real files/directories are never deleted or replaced.
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
-DEST="$HOME/.claude/skills"
+MODE="${1:-apply}"
+MANIFEST="$REPO/.claude-plugin/plugin.json"
 
-# If ~/.claude/skills is a symlink that resolves into this repo, we'd end up
-# writing the per-skill symlinks back into the repo's own skills/ tree. Detect
-# and bail out instead of polluting the working copy.
-if [ -L "$DEST" ]; then
-  resolved="$(readlink -f "$DEST")"
-  case "$resolved" in
-    "$REPO"|"$REPO"/*)
-      echo "error: $DEST is a symlink into this repo ($resolved)." >&2
-      echo "Remove it (rm \"$DEST\") and re-run; the script will recreate it as a real dir." >&2
-      exit 1
-      ;;
-  esac
+if [[ "$MODE" != "apply" && "$MODE" != "--dry-run" ]]; then
+  echo "usage: $0 [--dry-run]" >&2
+  exit 2
 fi
 
-mkdir -p "$DEST"
+DESTINATIONS=(
+  "$HOME/.claude/skills"
+  "$HOME/.pi/agent/skills"
+)
 
-find "$REPO/skills" -name SKILL.md -not -path '*/node_modules/*' -print0 |
-while IFS= read -r -d '' skill_md; do
-  src="$(dirname "$skill_md")"
-  name="$(basename "$src")"
-  target="$DEST/$name"
-
-  if [ -e "$target" ] && [ ! -L "$target" ]; then
-    rm -rf "$target"
+SOURCES=()
+while IFS= read -r relative; do
+  src="$REPO/${relative#./}"
+  if [[ ! -f "$src/SKILL.md" ]]; then
+    echo "error: manifest skill is missing SKILL.md: $relative" >&2
+    exit 1
   fi
+  SOURCES+=("$src")
+done < <(jq -r '.skills[]' "$MANIFEST")
 
-  ln -sfn "$src" "$target"
-  echo "linked $name -> $src"
+check_destination_root() {
+  local dest="$1"
+  if [[ ( -e "$dest" || -L "$dest" ) && ! -d "$dest" ]]; then
+    echo "error: $dest exists but is not a directory; leaving it untouched." >&2
+    return 1
+  fi
+  if [[ -L "$dest" ]]; then
+    local resolved
+    resolved="$(readlink -f "$dest")"
+    case "$resolved" in
+      "$REPO"|"$REPO"/*)
+        echo "error: $dest is a symlink into this repo ($resolved)." >&2
+        return 1
+        ;;
+    esac
+  fi
+}
+
+# Preflight the entire operation before changing anything.
+conflicts=0
+for dest in "${DESTINATIONS[@]}"; do
+  check_destination_root "$dest" || conflicts=$((conflicts + 1))
+  for src in "${SOURCES[@]}"; do
+    name="$(basename "$src")"
+    target="$dest/$name"
+    if [[ -e "$target" && ! -L "$target" ]]; then
+      echo "conflict: $target is a real file or directory; leaving it untouched." >&2
+      conflicts=$((conflicts + 1))
+    fi
+  done
+done
+
+if (( conflicts > 0 )); then
+  echo "error: found $conflicts conflict(s). Move or remove them manually, then rerun." >&2
+  exit 1
+fi
+
+if [[ "$MODE" == "--dry-run" ]]; then
+  for dest in "${DESTINATIONS[@]}"; do
+    [[ -d "$dest" ]] || echo "would create runtime directory: $dest"
+    for src in "${SOURCES[@]}"; do
+      name="$(basename "$src")"
+      target="$dest/$name"
+      if [[ -L "$target" ]]; then
+        echo "would relink $target -> $src (currently $(readlink "$target"))"
+      else
+        echo "would link $target -> $src"
+      fi
+    done
+  done
+  exit 0
+fi
+
+for dest in "${DESTINATIONS[@]}"; do
+  mkdir -p "$dest"
+  for src in "${SOURCES[@]}"; do
+    name="$(basename "$src")"
+    target="$dest/$name"
+    ln -sfn "$src" "$target"
+    echo "linked $target -> $src"
+  done
 done

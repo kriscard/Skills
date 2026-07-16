@@ -1,151 +1,128 @@
 ---
 name: weekly
 description: >-
-  Weekly Obsidian review: read the week's daily notes and TILs, check goal alignment before writing,
-  then synthesize confirmed highlights, learnings, carry-forward, and next-week focus. Also use for
-  weekly writing prep when the user asks to surface candidate topics.
+  Weekly Obsidian review and planning: close workday evidence, choose up to one outcome per lane,
+  schedule protected blocks, and prepare Markly, teaching, and publishing actions. Use for "weekly
+  review", "plan next week", writing prep, or /weekly.
 user-invocable: true
 ---
 
 # Weekly Review
 
-Synthesize the week into a single coherent note. The goal is not to log what happened — it's to
-extract what you'll actually remember and carry forward.
+Weekly portfolio review: decide, close, and prepare. Balance is weekly, not daily.
 
-## Ask, Don't Assume
+## 1. Resolve the week
 
-Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
-assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
-counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
-note, show your draft with its source and get explicit confirmation. Missing data is not permission
-to invent.
+Derive the requested ISO week. Ask only when the user could mean the current or previous partial week.
 
-## Step 1 — Read/Create This Week's Note
+Canonical path:
+
+`2 - Areas/Daily Ops/<ISO week year>/<YYYY-Www>.md`
+
+Read it or create it with template `Weekly Planning`. Review Monday–Friday daily notes by default; missing or sparse notes are gaps to ask about, not evidence of inactivity.
+
+Completion: the correct flat weekly note and workday range are confirmed.
+
+## 2. Gather evidence in parallel
+
+Read:
+
+- workday daily notes;
+- TIL notes and teach lesson/learning-record links from the week;
+- the active monthly and quarterly goals;
+- `1 - Projects/Public Technical Presence/Public Technical Presence.md`;
+- explicit project evidence linked from daily notes;
+- prior weekly outcomes and statuses.
+
+Extract accomplishments, decisions, blocked work, sharing receipts, and protected-block evidence. Cite source notes. Do not rank by activity volume.
+
+Completion: every proposed highlight or outcome state has a source.
+
+## 3. Close the current portfolio
+
+The four lanes are:
+
+1. Roofr Leverage
+2. Markly
+3. Learning
+4. Public Artifact
+
+For each lane:
+
+- no outcome → `not-planned`;
+- planned outcome → user chooses `complete`, `scheduled`, or `retired`.
+
+There is no automatic rollover. A scheduled item must have a real future week or calendar cue. Show the closure draft and require confirmation before writing.
+
+Completion: every lane has one allowed status and every planned lane has evidence or an explicit user correction.
+
+## 4. Choose next week's portfolio
+
+Ask the user to choose **up to one** outcome per lane. `not-planned` is valid.
+
+For each planned lane, require:
+
+- outcome;
+- done-when condition;
+- appetite;
+- first visible action.
+
+Challenge independent workstreams that can reuse the same evidence. Prefer one real problem producing work progress, a teach session, a durable note, and possibly a public post.
+
+Completion: no lane has more than one outcome and every planned lane has a first action.
+
+## 5. Protect personal blocks
+
+Prompt the user to place these in the personal calendar:
+
+- Wednesday Markly: 2–3 hours;
+- teach session completed by Thursday: 60–90 minutes;
+- publication block late week or early next week: about 60 minutes.
+
+Do not create events or claim they exist without an approved calendar integration. Workday gaps remain unscheduled bonus capacity.
+
+Teaching workspace:
+
+`/Users/kriscard/projects/learning/full-stack-through-markly`
+
+Before suggesting `/teach`, verify that the workspace exists. If the user asks to start the session, run `pwd` and compare its resolved path with the configured workspace. When they differ, stop without invoking `/teach` and provide exactly:
 
 ```bash
-# Derive these from the week being reviewed, not blindly from today's date if the user asks for a
-# prior week. ISO week years can differ from calendar years around New Year's.
-WEEK=$(date +%G-W%V)
-MONTH=$(date +"%B %Y" | sed 's/^/M - /')
-WEEKLY_PATH="2 - Areas/Daily Ops/Weekly/$MONTH/$WEEK.md"
-
-obsidian read path="$WEEKLY_PATH" 2>/dev/null || \
-  obsidian create path="$WEEKLY_PATH" template="Weekly"
+cd /Users/kriscard/projects/learning/full-stack-through-markly
 ```
 
-## Step 2 — Gather This Week's TIL Notes
+Then tell the user to start a new Pi/Claude session there and invoke `/teach`. Never run `/teach` from the vault root or another working directory.
 
-```bash
-obsidian files folder="3 - Resources/TIL/" format=json
-```
+Completion: block placement is confirmed or explicitly left unresolved, and any teach invocation is guarded by an exact working-directory match.
 
-Filter for files created or modified this week (ISO week number from filename `til-YYYY-MM-DD.md`).
-Read each matching TIL note.
+## 6. Prepare the next actions
 
-## Step 3 — Read Daily Notes for the Week
+Write:
 
-Compute the actual dates for this week and read each day's note (don't hardcode the year or assume a
-Mon–Fri week — derive the real dates):
+- Markly first action;
+- teach topic and workspace—the first pilot candidate is CodeRabbit AI customization for Markly;
+- publishing source receipt and first action.
 
-```bash
-# Resolve each YYYY-MM-DD in the target ISO week, then use that date's calendar year in the path:
-obsidian read path="2 - Areas/Daily Ops/<year-from-YYYY-MM-DD>/<YYYY-MM-DD>.md" 2>/dev/null
-```
+For writing prep, rank only evidence-backed receipts. Offer `tweet-today` for a small artifact or `blog` for an angle-first outline. One post per week is the commitment; optional extras never become debt.
 
-If you're unsure which date range to cover (e.g. the user means last week, or a partial week), **ask
-before reading.** If a day's note is missing or sparse, do not conclude the day was idle — note the
-gap and ask the user what happened.
+Completion: next week can start without re-deciding these actions.
 
-Extract from daily notes:
+## 7. Update the weekly note and publishing project
 
-- **Accomplishments**: things completed or shipped
-- **Carry-forward items**: anything marked for "next week" or unresolved
-- **Key decisions**: any choices made that shaped direction
-- **Energy/focus notes**: only if the user tracks these — don't invent them
+Write confirmed evidence, statuses, next outcomes, calendar confirmations, and Keep / Change / Remove into the existing named sections. Lane `Status` fields are the single source of closure state; do not create a second status list.
 
-## Step 4 — Check Goal Alignment Before Writing
+After the user chooses the public artifact, offer an exact approval-gated update to `## 📌 Current Weekly Artifact` in the LLM-owned Public Technical Presence project. Include week, outcome, source receipt, state, and published URL when available. When publication is explicitly confirmed, append one `## 🚀 Published` table row containing week, date, artifact, public URL, and source receipt. Do not alter other project sections without approval.
 
-Read active monthly/quarterly goals before drafting weekly synthesis:
-
-```bash
-MONTHLY_PATH="2 - Areas/Goals/Monthly/M - <Month Year from reviewed week>.md"
-QUARTERLY_PATH="2 - Areas/Goals/Quaterly/Quaterly Goals - Q<N> <YYYY>.md"
-obsidian read path="$MONTHLY_PATH" 2>/dev/null
-obsidian read path="$QUARTERLY_PATH" 2>/dev/null
-```
-
-Ask: are this week's accomplishments connected to monthly objectives?
-
-Flag goals with zero visible progress as questions to verify, not conclusions. Set **Next Week
-Focus** from the user's stated priorities — ask them directly which 1–3 things matter most next
-week. Don't infer focus from activity volume or what looks unfinished.
-
-Complete when daily notes, TIL notes, and goal notes have been gathered and the user has confirmed
-highlights, carry-forward, and 1–3 next-week priorities.
-
-## Step 5 — Synthesize into Weekly Note Sections
-
-Write these sections into the weekly note only after Step 4 confirmation:
-
-| Section             | Content                                                |
-| ------------------- | ------------------------------------------------------ |
-| **Highlights**      | 3–5 confirmed accomplishments worth remembering        |
-| **What I Learned**  | Distilled from TIL notes — key insights, not summaries |
-| **Carry Forward**   | Confirmed unfinished items moving to next week         |
-| **Next Week Focus** | User-confirmed top 1–3 priorities                      |
-
-Show the source for each item before writing anything. Don't decide what counts as a highlight or a
-priority on the user's behalf — propose, let them correct or cut, then write only the confirmed
-version.
-
-The CLI has no `patch`, so filling these named sections means either the MCP
-`obsidian_patch_content` tool (heading-targeted) or a `read` + `create ... overwrite` rewrite of the
-whole note. Ask the user which to use, then write each section's content.
+Prefer heading-targeted patching; otherwise show the exact rewrite before approval. Never duplicate headings.
 
 ## Report
 
-After synthesis:
+Return:
 
-- Confirm which weekly note was created/updated
-- List the TIL notes pulled in
-- Surface any goals with zero weekly progress
-- Show the carry-forward count for next week
+- current lane closures;
+- next week's planned and not-planned lanes;
+- block-placement confirmation;
+- prepared Markly, teach, and publishing actions;
+- any goal with no verified progress as a question, not a judgment.
 
-## Writing Prep Mode
-
-When the user wants candidate topics for writing (not note synthesis), output to terminal only — no
-file creation.
-
-Read previous weekly learnings for continuity:
-
-```bash
-obsidian search query="Weekly Learnings" format=json
-# Read the most recent one — extract threads opened but unresolved
-```
-
-Then present:
-
-```
-WEEKLY LEARNINGS PREP — Week [N], [YYYY]
-
-FROM LAST EDITION:
-- [Thread from previous that developed further this week]
-- [Promise made that can now be addressed]
-
-CANDIDATE TOPICS (ranked by depth + relevance):
-[#]. [Topic] — [Project/Area]
-    What happened: [specific events or decisions]
-    The insight: [the non-obvious thing worth sharing]
-    Source: [which daily notes contain the raw thinking]
-
-CONNECTING THREAD:
-[Theme that ties multiple candidates together]
-
-SUGGESTED STRUCTURE:
-[3–4 sections based on depth of material]
-```
-
-Rules: be specific (cite daily note dates), prioritize insights over updates, match existing tone
-(first person, reflective, connects specific events to broader ideas). Present candidates as options
-— let the user pick which to develop; never assume which topic they want to write. Offer the
-connecting thread and structure as suggestions to confirm, not decisions already made.
+If Obsidian CLI fails, say: "Obsidian CLI isn't working — update Obsidian with CLI enabled."

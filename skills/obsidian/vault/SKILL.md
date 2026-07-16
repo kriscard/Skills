@@ -50,7 +50,7 @@ principle is shared by every ritual skill (daily, close-day, weekly, goals, spot
 
 ```
 2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md          # Daily notes
-2 - Areas/Daily Ops/Weekly/M - Month YYYY/YYYY-Www.md  # Weekly notes
+2 - Areas/Daily Ops/YYYY/YYYY-Www.md             # Weekly notes (flat beside dailies)
 2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md   # Quarterly goals (typo preserved)
 2 - Areas/Goals/Monthly/M - Month YYYY.md        # Monthly goals
 2 - Areas/Goals/OKR Dashboard.base               # OKR base query
@@ -87,7 +87,7 @@ CLI enabled."
 `Templates/` folder in vault root. Key templates:
 
 - `Templates/Daily Notes.md`
-- `Templates/Weekly.md`
+- `Templates/Weekly Planning.md`
 - `Templates/Project.md`
 - `Templates/TIL.md`
 

@@ -1,150 +1,88 @@
 ---
 name: close-day
 description: >-
-  End-of-day Obsidian ritual: parse today's daily note, update active project notes in place, surface
-  vault connections, and write tomorrow carry-forward items. Use when the user says "close my day",
-  "end of day", "wrap up today", "process today's notes", "what did I do today", or runs /close-day.
+  End-of-day Obsidian ritual: close the active focus loop, triage Ideas Worth Sharing, and confirm
+  tomorrow's carry-forward. Use for "close my day", "end of day", "wrap up today", or /close-day.
 user-invocable: true
 ---
 
 # Close Day
 
-End-of-day ritual. Parses today's daily note, updates project notes in-place, surfaces vault
-connections, and sets up tomorrow. **A 5-minute ritual — not a lengthy report.**
+A 5–10 minute closure ritual, not a generated daily report.
 
-## Ask, Don't Assume
+## 1. Load the cockpit
 
-Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
-assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
-counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
-note, show your draft with its source and get explicit confirmation. Missing data is not permission
-to invent.
+Read today's workday note and parse only these named sections first:
 
-## Obsidian Access
+- `Daily Outcome`
+- `Next Action`
+- `Active Focus Block`
+- `Parking Lot`
+- `Work Notes`
+- `Ideas Worth Sharing`
+- `Ready to Resume`
+- `Carry Forward`
 
-Use Obsidian CLI via Bash. On failure: "Obsidian CLI isn't working — update Obsidian with CLI
-enabled."
+If the note is missing, stop and suggest `/daily`. If sections are sparse, ask what happened; do not infer inactivity.
 
-## Step 1 — Load Context (run in parallel)
+Completion: the current state, unresolved commitments, and captured sharing ideas are visible.
 
-```bash
-TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"
-obsidian read path="$TODAY" 2>/dev/null || echo "(no daily note — run /daily first)"
-obsidian files folder="1 - Projects/" format=json
-obsidian read path="AGENTS.md" 2>/dev/null || echo "(AGENTS.md not found)"
-```
+## 2. Close the active loop
 
-Parse all captured content from today's daily note: free-form writing, meeting notes, ideas, tasks,
-people referenced, decisions made.
+Ask the user to confirm or edit:
 
-## Step 2 — Vault Connection Discovery
+- outcome state: complete / deliberately stopped / blocked;
+- what is now true;
+- the next visible action;
+- the file, link, or command to reopen.
 
-Run searches per theme from today, then trace backlinks:
+Write one credible `Ready to Resume` state. Do not restart the whole portfolio or generate a long retrospective.
 
-```bash
-obsidian search:context query="<theme 1>" limit=10
-obsidian search:context query="<theme 2>" limit=10
-obsidian backlinks file="<today's note>"
-```
+Completion: future-you can resume without reconstructing the task.
 
-Surface: "Today you wrote about X. This connects to [[note]] from [date] — worth revisiting?"
-Flag themes recurring 3+ times in the past two weeks only after searching the date-bounded window,
-listing the source dates/notes, and distinguishing confirmed recurrences from possible matches.
+## 3. Triage Ideas Worth Sharing
 
-## Step 3 — Extract & Categorize
+For every non-empty receipt, ask for one decision:
 
-Source: today's daily note (Step 1).
+- **Promote** — durable enough for `Public Technical Presence`;
+- **Defer** — keep in the daily note for the weekly review;
+- **Discard** — remove it from the publishing pipeline without deleting the underlying work note.
 
-Four categories to extract:
+On promotion, preserve receipt ID, idea/lesson, proof, project, daily-note backlink, source session, and safety state. Hand off to `capture-receipt` for the approved write and offer:
 
-- **Action Items** — promises to others, deadlines, follow-ups
-- **Ideas & Insights** — observations, hypotheses, perspective shifts
-- **People & Commitments** — messages to send, meetings to schedule
-- **Questions Raised** — things to investigate, pending decisions
+1. save only;
+2. draft a tweet now through `tweet-today`;
+3. create a blog outline through `blog`.
 
-Cross-reference against existing open tasks:
+Never publish, claim publication, or expose private Roofr information. Anything marked `no` or `needs review` stays private until the user explicitly clears it.
 
-```bash
-obsidian tasks todo path="$TODAY"
-```
+Completion: every captured sharing idea is promoted, deferred, or discarded.
 
-Flag any action items missing from the task list.
+## 4. Confirm tomorrow candidates
 
-## Step 4 — Update Project Notes In-Place
+Extract promises, blockers, and unfinished work from today's note. Show exact source lines and ask what truly belongs tomorrow.
 
-Match active projects to today's work (explicit mentions + implied work). For each match, read the
-project note first:
+Update exactly one `## Carry Forward` section with confirmed tomorrow items only. Unselected work stays in its source system or weekly radar; it does not become silent debt.
 
-```bash
-obsidian read path="1 - Projects/<project-name>/<main-note>.md"
-```
+Completion: the note has one canonical Carry Forward section and no inferred commitments.
 
-Then update only the sections that changed. **These are section-targeted edits — never append raw
-entries at the bottom.** The CLI has no `patch`, so updating a named section means either the MCP
-`obsidian_patch_content` tool (heading-targeted, supports `operation: replace|append`) or a `read` +
-`create ... overwrite` rewrite of the whole note. Ask the user which to use, then apply the changes
-below:
+## 5. Optional project maintenance
 
-- **`📍 Current Status`** — _replace_ the section with summary + date:
-  `_Updated: $(date +%Y-%m-%d)_\n\n<status>\n\n### What's in progress\n<merged list>\n\n### Open questions / Blockers\n<merged list>`
-- **`🧠 Key Decisions`** — _append_ a row only if a decision was made today:
-  `| $(date +%Y-%m-%d) | <decision> | <why> |`
-- **`📝 Notes & Context`** — _append_ only if a new insight emerged: `\n<insight>`
+Only propose a project update when today's note contains meaningful status, decision, or insight evidence.
 
-Guidelines: only update on meaningful progress; preserve existing content; use the user's own
-language; adapt to non-standard templates.
+- Never modify a human-written note without `source: claude-memory`.
+- For an LLM-owned project note, show the exact named-section change and require approval.
+- Public Technical Presence writes are limited to its receipt/draft/published sections.
 
-### Related Notes Discovery (per matched project)
+Completion: protected notes remain untouched and approved LLM-owned updates are targeted.
 
-```bash
-qmd query "<project name> <keyword>" --json -n 5
-obsidian links file="1 - Projects/<project-name>/<main-note>.md"
-```
+## Report
 
-Filter: drop `2 - Areas/Daily Ops/` hits, already-linked notes, and `source: claude-memory` notes
-unless opted in. Keep at most 3 candidates.
+Return only:
 
-Propose — never write without approval:
+- outcome state and ready-to-resume action;
+- receipt decisions and any handoff started;
+- confirmed Carry Forward items;
+- optional approved project update.
 
-```
-[[Project A]] — related notes worth linking:
-  - [[note-1]] (3 - Resources/...) — <why it matches>
-Approve any to append to 🔗 Links & References?
-```
-
-## Step 5 — Carry Forward
-
-Today's daily note must end with exactly one `## Carry Forward` section. If the section already
-exists, update it in place instead of appending a duplicate heading. The CLI has no `patch`, so for
-section-targeted updates ask the user to choose MCP `obsidian_patch_content` or a `read` +
-`create ... overwrite` rewrite.
-
-If appending is safe because the section is absent:
-
-```bash
-TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"
-obsidian append path="$TODAY" content="## Carry Forward\n- [item 1]\n- [item 2]"
-```
-
-Completion: today's daily note has one Carry Forward section containing only confirmed tomorrow
-items.
-
-If the Quick Wrap section is empty, draft answers:
-
-- Did I explore anything new today?
-- What did I actually move forward?
-- What bottleneck became obvious?
-- One thing to carry into tomorrow?
-
-## Output Format
-
-Keep output concise. Focus on filing what matters, not summarizing the day.
-
-```
-Today's Extraction — [categories with items]
-Vault Connections — [recurring themes, links to older notes]
-Project Notes Updated — [list with what changed per project]
-Related Notes (proposed) — [per-project candidates; awaiting approval]
-Carry Forward — [what matters tomorrow]
-Quick Wrap — [draft answers if section empty]
-```
+If Obsidian CLI fails, say: "Obsidian CLI isn't working — update Obsidian with CLI enabled."

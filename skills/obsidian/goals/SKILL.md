@@ -47,19 +47,20 @@ obsidian files folder="1 - Projects/" format=json
 
 ### Weekly Review
 
-Read this week's note using the same path logic as the `weekly` skill. Derive the month folder and
-ISO week from the week being reviewed, not hardcoded placeholders:
+Read this week's note using the same flat path logic as the `weekly` skill. Derive the ISO week-year
+from the week being reviewed, not hardcoded placeholders:
 
 ```bash
 WEEK="<ISO week-year>-W<week>"          # e.g. 2026-W01; use ISO week-year for cross-year weeks
-MONTH="M - <Month YYYY from reviewed week>"
-obsidian read path="2 - Areas/Daily Ops/Weekly/$MONTH/$WEEK.md"
+YEAR="<ISO week-year>"
+obsidian read path="2 - Areas/Daily Ops/$YEAR/$WEEK.md"
 ```
 
-Check: are this week's planned priorities covered by monthly goals? Identify any monthly goals with
-no weekly activity. Set next week's top 3 priorities.
+Check: are this week's planned lanes connected to monthly goals? Identify any monthly goal with no
+verified weekly evidence as a question. For next week, confirm up to one Roofr, Markly, Learning,
+and Public Artifact outcome; `not-planned` is valid.
 
-Update the weekly note's "Next Week Focus" section.
+Update the weekly note's named lane and `Next Week Prepared` sections after approval.
 
 ### Monthly Review
 
