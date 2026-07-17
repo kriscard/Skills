@@ -8,6 +8,8 @@
     "./skills/dev/frontend",
     "./skills/dev/pr-review",
     "./skills/dev/react",
+    "./skills/dev/react-hook-form",
+    "./skills/dev/react-hook-form-audit",
     "./skills/dev/refactor",
     "./skills/dev/research",
     "./skills/dev/review",
