@@ -1,18 +1,17 @@
 ---
 name: goals
 description: >-
-  Obsidian goals review for quarterly, monthly, or weekly goal notes. Use when the user asks to
-  review goals, run an OKR check-in, update goals, set monthly goals, check whether goals are on
+  Obsidian goals review for quarterly or monthly goal notes. Use when the user asks to review goals,
+  run an OKR check-in, update goals, set monthly or quarterly goals, check whether goals are on
   track, or runs /goals.
 user-invocable: true
-argument-hint: '[quarterly | monthly | weekly — omit to choose]'
+argument-hint: '[quarterly | monthly — omit to choose]'
 ---
 
 # Goals Review
 
-Check-in and update goal notes across quarterly, monthly, and weekly levels. Goal reviews only
-matter if they connect to action — this skill always ends with concrete next steps, not just status
-updates.
+Check-in and update goal notes across quarterly and monthly levels. Goal reviews only matter if they
+connect to action — this skill always ends with concrete next steps, not just status updates.
 
 ## Ask, Don't Assume
 
@@ -24,14 +23,17 @@ to invent.
 
 ## Step 1 — Determine Review Level
 
-If `$ARGUMENTS` is provided, validate it against `quarterly`, `monthly`, or `weekly`. If it is
-missing or anything else, ask via `AskUserQuestion`:
+If `$ARGUMENTS` is provided, validate it against `quarterly` or `monthly`. If it is missing or
+anything else, ask via `AskUserQuestion`:
 
 > "Which goals review would you like?"
 >
 > - Quarterly
 > - Monthly
-> - Weekly
+
+Weekly execution and weekly-to-monthly alignment belong to the `weekly` skill. It owns weekly note
+creation, lane closure, and next-week preparation, and already loads active monthly and quarterly
+goals. If the user asks for a weekly goals review, route to `weekly` instead of continuing here.
 
 ## Step 2 — Load Context (run in parallel)
 
@@ -44,23 +46,6 @@ obsidian files folder="1 - Projects/" format=json
 ```
 
 ## Step 3 — Level-Specific Workflow
-
-### Weekly Review
-
-Read this week's note using the same flat path logic as the `weekly` skill. Derive the ISO week-year
-from the week being reviewed, not hardcoded placeholders:
-
-```bash
-WEEK="<ISO week-year>-W<week>"          # e.g. 2026-W01; use ISO week-year for cross-year weeks
-YEAR="<ISO week-year>"
-obsidian read path="2 - Areas/Daily Ops/$YEAR/$WEEK.md"
-```
-
-Check: are this week's planned lanes connected to monthly goals? Identify any monthly goal with no
-verified weekly evidence as a question. For next week, confirm up to one Roofr, Markly, Learning,
-and Public Artifact outcome; `not-planned` is valid.
-
-Update the weekly note's named lane and `Next Week Prepared` sections after approval.
 
 ### Monthly Review
 
