@@ -4,7 +4,7 @@ description: >-
   Socratic teaching for explicit learning requests: diagnose prior understanding, teach one concept
   at a time, verify comprehension, and correct misconceptions. Use for /learn, "teach me", or "I
   don't get X".
-user-invocable: true
+disable-model-invocation: true
 argument-hint: "[topic — or 'done' to save session]"
 ---
 

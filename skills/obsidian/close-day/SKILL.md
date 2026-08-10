@@ -3,7 +3,7 @@ name: close-day
 description: >-
   End-of-day Obsidian ritual: close the active focus loop, triage Ideas Worth Sharing, and confirm
   tomorrow's carry-forward. Use for "close my day", "end of day", "wrap up today", or /close-day.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Close Day

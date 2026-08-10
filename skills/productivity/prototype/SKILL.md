@@ -7,7 +7,7 @@ description: >-
   this", "scaffold this project", "turn this idea into a working app", "launch
   this", or /prototype. Do not use when the user only wants to capture, explore,
   or stress-test an idea; use ideation for that.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Prototype Workflow

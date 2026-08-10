@@ -4,7 +4,7 @@ description: >-
   Source synthesis for Obsidian: ingest an article, URL, video, book note, or selected Inbox source
   into durable Resources notes after discussing the key ideas. Use when the user asks to ingest a
   source, add source material to the wiki, synthesize an article, or runs /ingest.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Ingest

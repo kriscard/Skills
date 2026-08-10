@@ -3,7 +3,7 @@ name: docs
 description: >-
   Reader-job technical documentation: READMEs, API docs, architecture docs, how-tos, RFCs,
   design docs, and ADRs. Use when writing, revising, or reviewing docs for other developers.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Technical Documentation Writer

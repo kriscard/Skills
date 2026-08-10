@@ -4,7 +4,7 @@ description: >-
   TIL capture for explicit requests to save learned material from a session into an engaging
   Obsidian note. Use when the user runs /til or asks to save, document, or write up what they
   learned.
-user-invocable: true
+disable-model-invocation: true
 argument-hint: "[project or topic name — omit to infer from context]"
 ---
 

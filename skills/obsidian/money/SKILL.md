@@ -7,7 +7,7 @@ description: >-
   money", "review my revenue", "what should I charge", "help me monetize", "find opportunities", or
   asks about income, pricing, or business strategy. Goes beyond the vault — diagnoses structure
   first, then surfaces opportunities.
-user-invocable: true
+disable-model-invocation: true
 argument-hint: '[domain to focus on — omit for full analysis]'
 ---
 

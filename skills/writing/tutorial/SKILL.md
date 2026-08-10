@@ -5,8 +5,8 @@ description: >-
   state, dependency-ordered steps, working checkpoints, and mechanism
   explanations. Use when the user asks to create, draft, revise, or outline a
   tutorial, step-by-step guide, onboarding guide, or documentation that teaches a skill.
-user-invocable: true
 argument-hint: "[topic or technology]"
+disable-model-invocation: true
 ---
 
 # Tutorial Writer

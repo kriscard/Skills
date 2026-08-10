@@ -8,7 +8,7 @@ description: >-
   wrong with this codebase", "technical debt audit", or "how is this codebase
   structured". Do not use for single design decisions, PR review, or small
   refactors.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Repo Analysis

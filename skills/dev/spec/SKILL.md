@@ -5,7 +5,7 @@ description: >-
   or requirements text. Use when the user asks for a spec/PRD, pastes a Linear,
   GitHub issue, or Jira URL, or requests implementation where scope is ambiguous
   enough to need acceptance criteria before coding.
-user-invocable: true
+disable-model-invocation: true
 argument-hint: "[linear-url, github-issue-url, or description]"
 ---
 

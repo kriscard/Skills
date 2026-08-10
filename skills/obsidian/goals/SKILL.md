@@ -4,7 +4,7 @@ description: >-
   Obsidian goals review for quarterly or monthly goal notes. Use when the user asks to review goals,
   run an OKR check-in, update goals, set monthly or quarterly goals, check whether goals are on
   track, or runs /goals.
-user-invocable: true
+disable-model-invocation: true
 argument-hint: '[quarterly | monthly — omit to choose]'
 ---
 

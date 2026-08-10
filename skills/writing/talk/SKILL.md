@@ -4,7 +4,7 @@ description: >-
   Conference talk builder for technical CFP submissions, speaking proposals, timed talk outlines,
   and slide flows. Use when the user asks for a conference talk, CFP abstract, talk proposal, or to
   turn a project/article into a speaking proposal.
-user-invocable: true
+disable-model-invocation: true
 argument-hint: "[conference topic or title]"
 ---
 

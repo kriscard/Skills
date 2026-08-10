@@ -5,6 +5,7 @@ description: >-
   performance reviews, promotions, and Staff Engineer trajectory. Use when the
   user asks about career advancement, job applications, offers, comp, feedback,
   promotion packets, or whether they are on track for Staff.
+disable-model-invocation: true
 ---
 
 # Career Advisor

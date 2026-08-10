@@ -6,7 +6,7 @@ description: >-
   whenever the user says "vault health check", "fix broken links", "clean up my vault", "vault
   maintenance", or runs /maintain. Never modifies anything without explicit request — this skill
   diagnoses, it doesn't operate.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Vault Maintenance

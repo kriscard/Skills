@@ -4,7 +4,7 @@ description: >-
   Use when writing or revising developer-facing blog posts: technical articles,
   opinion pieces, project writeups, TILs, or learned-in-public posts that need
   one sharp angle/aha.
-user-invocable: true
+disable-model-invocation: true
 argument-hint: "[topic or title]"
 ---
 

@@ -5,7 +5,7 @@ description: >-
   audit of ~/.dotfiles: credential leaks, shell startup, Stow symlinks, Neovim
   startup, missing tools, or orphan config. Do not use for targeted Neovim or
   shell edits; route those to neovim or shell-env.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Dotfiles Audit

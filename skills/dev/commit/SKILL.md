@@ -6,7 +6,7 @@ description: >-
   Handles pre-commit hooks and writes meaningful commit messages. Use when the
   user says "commit", "push changes", "save to git", "commit this", or wants
   to create a git commit — even if they just say "save my work."
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Commit

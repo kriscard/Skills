@@ -4,7 +4,7 @@ description: >-
   Drift check for Obsidian: compare stated intentions against 30 days of vault behavior and surface
   verified priority gaps or avoidance questions. Use when the user asks "what am I avoiding?", "am I
   drifting?", "check my priorities vs behavior", "what's getting neglected?", or runs /spot-drift.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Spot Drift

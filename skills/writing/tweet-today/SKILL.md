@@ -5,7 +5,7 @@ description: >-
   conversation, a draft, or a technical topic. Use when the user asks what to
   tweet today or wants software dev, programming, UI/frontend, startup/product,
   tech, code-snippet, or AI-agent tweet options.
-user-invocable: true
+disable-model-invocation: true
 argument-hint: "[topic, today summary, or conversation excerpt]"
 ---
 

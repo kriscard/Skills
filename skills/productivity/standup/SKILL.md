@@ -6,6 +6,7 @@ description: >-
   "standup", "daily standup", "write my standup", "what did I do yesterday",
   "write my daily update", or invokes /standup — even if they just ask "can you
   write my standup?"
+disable-model-invocation: true
 ---
 
 # Daily Standup Generator

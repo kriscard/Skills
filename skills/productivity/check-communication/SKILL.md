@@ -5,6 +5,7 @@ description: >-
   updates, proposals, feedback, and pushback. Use when the user asks if a
   message sounds right, wants a rewrite, or pastes a draft for tone, clarity,
   buried asks, passive aggression, length, or next-step review.
+disable-model-invocation: true
 ---
 
 # Communication Review

@@ -4,7 +4,7 @@ description: >-
   Weekly Obsidian review and planning: close workday evidence, choose up to one outcome per lane,
   schedule protected blocks, and prepare Markly, teaching, and publishing actions. Use for "weekly
   review", "plan next week", writing prep, or /weekly.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Weekly Review

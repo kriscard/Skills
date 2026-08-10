@@ -4,7 +4,7 @@ description: >-
   Read-only PARA classification audit for the Obsidian vault, followed by an optional explicit-fix
   flow. Use when the user asks to audit PARA, check whether notes are in the right place, find
   projects missing outcomes/deadlines, or runs /audit-para.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Audit PARA

@@ -8,7 +8,7 @@ description: >-
   artifacts. Trigger on "ideate", "explore this idea", "poke holes in this",
   "help me choose", "turn this into a PRD/spec", or /ideation. Do not use for
   merely capturing an idea, processing inbox notes, or building the MVP directly.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Ideation

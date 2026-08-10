@@ -4,7 +4,7 @@ description: >-
   PARA triage for Obsidian Inbox notes: read each raw inbox note, suggest the correct PARA
   destination, confirm with the user, and move only on approval. Use when the user asks to process,
   clear, sort, or triage inbox notes, or runs /process-inbox.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Process Inbox

@@ -4,7 +4,7 @@ description: >-
   Daily startup ritual for the Obsidian vault: create today's workday note, surface exact context,
   and require the user to choose one daily outcome and next action. Use for "start my day", "daily
   startup", "today's focus", or /daily.
-user-invocable: true
+disable-model-invocation: true
 ---
 
 # Daily Startup
