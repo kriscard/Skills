@@ -1,128 +1,149 @@
 ---
 name: weekly
-description: >-
-  Weekly Obsidian review and planning: close workday evidence, choose up to one outcome per lane,
-  schedule protected blocks, and prepare Markly, teaching, and publishing actions. Use for "weekly
-  review", "plan next week", writing prep, or /weekly.
+description: Review one week of Obsidian evidence and prepare the next weekly note.
 disable-model-invocation: true
 ---
 
 # Weekly Review
 
-Weekly portfolio review: decide, close, and prepare. Balance is weekly, not daily.
+An approval-gated weekly closure and planning ritual.
 
-## 1. Resolve the week
+A **commitment** is an outcome explicitly chosen for one week. Active projects are candidates, not
+commitments. The reviewed weekly note owns its closure; the next weekly note owns the next
+commitments.
 
-Derive the requested ISO week. Ask only when the user could mean the current or previous partial week.
+## 1. Resolve the review
+
+Determine:
+
+- whether the user wants review, planning, or both;
+- the ISO week being reviewed;
+- the ISO week being planned.
 
 Canonical path:
 
 `2 - Areas/Daily Ops/<ISO week year>/<YYYY-Www>.md`
 
-Read it or create it with template `Weekly Planning`. Review Monday–Friday daily notes by default; missing or sparse notes are gaps to ask about, not evidence of inactivity.
+Ask when a partial week makes the intended period ambiguous.
 
-Completion: the correct flat weekly note and workday range are confirmed.
+Completion: the operation and exact week paths are confirmed.
 
-## 2. Gather evidence in parallel
+## 2. Gather review evidence
 
-Read:
+For the reviewed week, read in parallel:
 
-- workday daily notes;
-- TIL notes and teach lesson/learning-record links from the week;
-- the active monthly and quarterly goals;
-- `1 - Projects/Public Technical Presence/Public Technical Presence.md`;
-- explicit project evidence linked from daily notes;
-- prior weekly outcomes and statuses.
+- its weekly note, when present;
+- Monday–Friday daily notes;
+- notes explicitly linked from those notes;
+- active monthly and quarterly goals;
+- the previous weekly note when continuity matters.
 
-Extract accomplishments, decisions, blocked work, sharing receipts, and protected-block evidence. Cite source notes. Do not rank by activity volume.
+Extract planned commitments, completed and unfinished work, decisions, blockers, friction, unplanned
+accomplishments, radar items, and credible next actions. Cite the source note for every extracted
+claim. Missing or sparse notes are evidence gaps, not evidence of inactivity.
 
-Completion: every proposed highlight or outcome state has a source.
+Completion: every existing weekly commitment and every proposed accomplishment has a source or an
+explicit user correction.
 
-## 3. Close the current portfolio
+## 3. Close the reviewed week
 
-The four lanes are:
+For every commitment recorded in the reviewed weekly note, ask the user to confirm one state:
 
-1. Roofr Leverage
-2. Markly
-3. Learning
-4. Public Artifact
+- `complete`;
+- `scheduled`, with a real future week or calendar cue;
+- `retired`.
 
-For each lane:
+Record completed work outside the original commitments under `Unplanned Wins`. Preserve the
+original plan rather than adding retrospective commitments to it.
 
-- no outcome → `not-planned`;
-- planned outcome → user chooses `complete`, `scheduled`, or `retired`.
+Prepare a closure draft containing:
 
-There is no automatic rollover. A scheduled item must have a real future week or calendar cue. Show the closure draft and require confirmation before writing.
+- commitment states and evidence;
+- unplanned wins;
+- evidence worth keeping;
+- friction;
+- Keep / Change / Remove.
 
-Completion: every lane has one allowed status and every planned lane has evidence or an explicit user correction.
+Present the draft before writing.
 
-## 4. Choose next week's portfolio
+Completion: every planned commitment has one confirmed closure state and every closure claim has
+evidence or an explicit user correction.
 
-Ask the user to choose **up to one** outcome per lane. `not-planned` is valid.
+## 4. Discover candidate work
 
-For each planned lane, require:
+Query the project index first:
+
+```bash
+obsidian base:query path="MOCs/bases/Active Projects.base" format=json
+```
+
+If the Base is unavailable, fall back to:
+
+```bash
+obsidian files folder="1 - Projects/" format=json
+```
+
+Both commands provide discovery, not active status. Group support files under their top-level project
+and resolve one canonical project note. A root-level project file is canonical; for a project folder,
+prefer a same-named note or the note carrying the project's outcome, deadline, and status. Ask when
+the canonical note is ambiguous.
+
+Read each canonical note's outcome, deadline, status, current state, and next action. Exclude completed
+or inactive projects based on their metadata, not the Base name or folder location. Also gather
+non-project candidates from active goals, the reviewed week's radar and friction, recent daily-note
+evidence, and work supplied by the user.
+
+If project metadata is missing or stale, surface the discrepancy and offer an approval-gated
+`/project` update. Weekly consumes project state; it does not maintain project lifecycle.
+
+Completion: every candidate is identified as a project or non-project commitment and carries a
+source.
+
+## 5. Choose the next commitments
+
+Present the candidates as options, not commitments. Ask the user what deserves focus in the planned
+week. The user may choose, rename, combine, or introduce any outcome.
+
+For every chosen commitment, confirm:
 
 - outcome;
 - done-when condition;
 - appetite;
-- first visible action.
+- first visible action;
+- reason it matters this week.
 
-Challenge independent workstreams that can reuse the same evidence. Prefer one real problem producing work progress, a teach session, a durable note, and possibly a public post.
+Link project commitments to their project notes. Place Area responsibilities, learning, maintenance,
+and other work under `Other Commitments`. Surface competing independent outcomes as an overload
+question.
 
-Completion: no lane has more than one outcome and every planned lane has a first action.
+Nothing rolls forward automatically. A scheduled commitment enters the future weekly note only when
+the user explicitly accepts it there.
 
-## 5. Protect personal blocks
+Completion: every next-week commitment is explicitly chosen and has a checkable done-when condition
+and first action.
 
-Prompt the user to place these in the personal calendar:
+## 6. Write the notes
 
-- Wednesday Markly: 2–3 hours;
-- teach session completed by Thursday: 60–90 minutes;
-- publication block late week or early next week: about 60 minutes.
+After approval:
 
-Do not create events or claim they exist without an approved calendar integration. Workday gaps remain unscheduled bonus capacity.
+1. update the reviewed note's closure sections;
+2. create or update the planned weekly note with only the confirmed commitments.
 
-Teaching workspace:
+Use `Templates/Weekly Planning.md` when creating a note. Preserve existing human-written content.
+Prefer heading-targeted patching; otherwise show the exact replacement before using read +
+overwrite. Keep one copy of every heading.
 
-`/Users/kriscard/projects/learning/full-stack-through-markly`
-
-Before suggesting `/teach`, verify that the workspace exists. If the user asks to start the session, run `pwd` and compare its resolved path with the configured workspace. When they differ, stop without invoking `/teach` and provide exactly:
-
-```bash
-cd /Users/kriscard/projects/learning/full-stack-through-markly
-```
-
-Then tell the user to start a new Pi/Claude session there and invoke `/teach`. Never run `/teach` from the vault root or another working directory.
-
-Completion: block placement is confirmed or explicitly left unresolved, and any teach invocation is guarded by an exact working-directory match.
-
-## 6. Prepare the next actions
-
-Write:
-
-- Markly first action;
-- teach topic and workspace—the first pilot candidate is CodeRabbit AI customization for Markly;
-- publishing source receipt and first action.
-
-For writing prep, rank only evidence-backed receipts. Offer `tweet-today` for a small artifact or `blog` for an angle-first outline. One post per week is the commitment; optional extras never become debt.
-
-Completion: next week can start without re-deciding these actions.
-
-## 7. Update the weekly note and publishing project
-
-Write confirmed evidence, statuses, next outcomes, calendar confirmations, and Keep / Change / Remove into the existing named sections. Lane `Status` fields are the single source of closure state; do not create a second status list.
-
-After the user chooses the public artifact, offer an exact approval-gated update to `## 📌 Current Weekly Artifact` in the LLM-owned Public Technical Presence project. Include week, outcome, source receipt, state, and published URL when available. When publication is explicitly confirmed, append one `## 🚀 Published` table row containing week, date, artifact, public URL, and source receipt. Do not alter other project sections without approval.
-
-Prefer heading-targeted patching; otherwise show the exact rewrite before approval. Never duplicate headings.
+Completion: the reviewed note contains the confirmed retrospective and the planned note contains
+the confirmed commitments without duplicated outcomes or headings.
 
 ## Report
 
 Return:
 
-- current lane closures;
-- next week's planned and not-planned lanes;
-- block-placement confirmation;
-- prepared Markly, teach, and publishing actions;
-- any goal with no verified progress as a question, not a judgment.
+- reviewed commitment closures;
+- unplanned wins;
+- Keep / Change / Remove;
+- the next confirmed commitments;
+- unresolved evidence gaps, project updates, or scheduling decisions.
 
 If Obsidian CLI fails, say: "Obsidian CLI isn't working — update Obsidian with CLI enabled."
