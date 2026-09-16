@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Personal Claude Code skills — curated collection for development, knowledge management, writing, and productivity",
+  "description": "Personal agent skills for development, knowledge management, writing, and productivity",
   "author": {
     "name": "Chris Cardoso",
     "email": "contact@christophercardoso.dev"
@@ -11,7 +11,8 @@
   "license": "MIT",
   "scripts": {
     "typecheck": "tsc --build",
-    "validate:operating-system": "tsx scripts/validate-operating-system-skills.ts",
+    "validate": "pnpm run validate:skills && pnpm run typecheck && pnpm run format:check",
+    "validate:skills": "tsx scripts/validate-skills.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

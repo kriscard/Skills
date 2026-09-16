@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This is a Claude Code skills repository.
+This is an agent skills repository.
 
 ## Requirements
 
@@ -10,8 +10,6 @@ Node.js ≥ 18, pnpm ≥ 9
 
 ```
 kriscard-skills/
-├── .claude-plugin/
-│   └── plugin.json              # Skills manifest (lists all skill paths)
 ├── skills/
 │   ├── dev/                     # Development skills
 │   ├── dotfiles/                # Shell and dotfiles skills
@@ -20,7 +18,8 @@ kriscard-skills/
 │   ├── productivity/            # Productivity and workflow skills
 │   └── writing/                 # Writing and content skills
 ├── scripts/
-│   └── list-skills.sh           # List all SKILL.md paths
+│   ├── list-skills.sh           # List all SKILL.md paths
+│   └── validate-skills.ts       # Validate skill structure and references
 └── package.json
 ```
 
@@ -48,17 +47,15 @@ skills/<category>/<name>/
 ```bash
 pnpm install                     # First-time setup
 bash scripts/list-skills.sh      # List all SKILL.md paths
-pnpm run typecheck               # Type check TypeScript files
+pnpm run validate                # Validate skills, types, and formatting
 pnpm run format                  # Format all files
-pnpm run format:check            # Verify formatting (CI)
 ```
 
 ## Adding a Skill
 
 1. Create `skills/<category>/<name>/SKILL.md`
-2. Add the path to `.claude-plugin/plugin.json` under `"skills"`
-3. Run `bash scripts/list-skills.sh` to verify it is discoverable
-4. Install or update the collection with `npx skills@latest add kriscard/Skills -g`
+2. Run `pnpm run validate` to verify its structure, frontmatter, and references
+3. Install or update the collection with `npx skills@latest add kriscard/Skills -g`
 
 ## Naming Conventions
 
@@ -80,7 +77,7 @@ Skills use progressive disclosure: lean SKILL.md body + lazy-loaded references.
 
 ## Practices
 
-- **Test before committing non-trivial changes** — run `bash scripts/list-skills.sh` to verify all skills are discoverable. For skill routing changes, run an eval (spawn subagents with the skill loaded, verify each loads the expected reference).
+- **Test before committing non-trivial changes** — run `pnpm run validate`. For skill routing changes, run an eval (spawn subagents with the skill loaded, verify each loads the expected reference).
 - **Keep SKILL.md bodies lean** — if you find yourself over 300 lines, extract into `references/`.
 - **Skill names are global** — two installed skills with the same name collide. Check before creating.
 - **Use the Skills CLI for installation** — install with `npx skills@latest add kriscard/Skills -g` and update with `npx skills@latest update -g`.
