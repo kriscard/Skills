@@ -21,10 +21,10 @@ current conversation answer as a standalone wiki page.
 
 If the user specified a file or URL, use that directly.
 
-Otherwise, list the inbox:
+Otherwise, list the Web Clipper inbox:
 
 ```bash
-obsidian files folder="0 - Inbox/" format=json
+obsidian files folder="0 - Inbox/web-clippers/" format=json
 ```
 
 If multiple items, ask which one to process (or process all in sequence).
@@ -32,7 +32,7 @@ If multiple items, ask which one to process (or process all in sequence).
 ## Step 2 — Read the Source
 
 ```bash
-obsidian read path="0 - Inbox/[filename]"
+obsidian read path="0 - Inbox/web-clippers/[filename]"
 ```
 
 For URLs or web content: fetch the content directly.
@@ -124,7 +124,7 @@ obsidian append path="3 - Resources/log.md" content="\n## $(date +%Y-%m-%d)\ning
 After confirming the write succeeded:
 
 ```bash
-obsidian move path="0 - Inbox/[filename]" \
+obsidian move path="0 - Inbox/web-clippers/[filename]" \
   to="3 - Resources/[Type]/[filename]"
 ```
 
