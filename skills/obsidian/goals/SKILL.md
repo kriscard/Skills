@@ -31,9 +31,9 @@ anything else, ask via `AskUserQuestion`:
 > - Quarterly
 > - Monthly
 
-Weekly execution and weekly-to-monthly alignment belong to the `weekly` skill. It owns weekly note
-creation, lane closure, and next-week preparation, and already loads active monthly and quarterly
-goals. If the user asks for a weekly goals review, route to `weekly` instead of continuing here.
+Weekly execution and weekly-to-monthly alignment belong to the `weekly-review` skill. It owns weekly
+note creation, lane closure, and next-week preparation, and already loads active monthly and quarterly
+goals. If the user asks for a weekly goals review, route to `weekly-review` instead of continuing here.
 
 ## Step 2 — Load Context (run in parallel)
 

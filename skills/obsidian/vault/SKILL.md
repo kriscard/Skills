@@ -15,7 +15,7 @@ the map that makes every other skill accurate.
 ## Ask, Don't Assume
 
 These skills act on the user's personal knowledge — the interpretation is theirs, not yours. This
-principle is shared by every ritual skill (daily, close-day, weekly, goals, spot-drift).
+principle is shared by every ritual skill (daily, close-day, weekly-review, goals, spot-drift).
 
 - If you don't know something — a path, a date range, what counts as a "win", which goals are active
   — **ask**. Don't infer it from context or pick a default silently.

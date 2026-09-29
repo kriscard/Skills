@@ -10,19 +10,15 @@
   },
   "license": "MIT",
   "scripts": {
-    "typecheck": "tsc --build",
-    "validate": "pnpm run validate:skills && pnpm run typecheck && pnpm run format:check",
-    "validate:skills": "tsx scripts/validate-skills.ts",
+    "validate": "pnpm run validate:skills && pnpm run format:check",
+    "validate:skills": "node scripts/validate-skills.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@types/node": "^25.0.6",
-    "prettier": "^3.4.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "prettier": "^3.9.9"
   },
   "dependencies": {
-    "typebox": "^1.1.24"
+    "typebox": "^1.3.34"
   }
 }

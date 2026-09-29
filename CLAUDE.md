@@ -18,8 +18,7 @@ kriscard-skills/
 │   ├── productivity/            # Productivity and workflow skills
 │   └── writing/                 # Writing and content skills
 ├── scripts/
-│   ├── list-skills.sh           # List all SKILL.md paths
-│   └── validate-skills.ts       # Validate skill structure and references
+│   └── validate-skills.mjs      # Validate skill structure and references
 └── package.json
 ```
 
@@ -46,7 +45,6 @@ skills/<category>/<name>/
 
 ```bash
 pnpm install                     # First-time setup
-bash scripts/list-skills.sh      # List all SKILL.md paths
 pnpm run validate                # Validate skills, types, and formatting
 pnpm run format                  # Format all files
 ```

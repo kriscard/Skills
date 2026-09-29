@@ -66,7 +66,7 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 | `save-note` | Saves a conversation answer as a self-contained wiki page |
 | `spot-drift` | Compares stated priorities with recent behavior in the vault |
 | `vault` | Provides shared vault structure, CLI, and PARA context |
-| `weekly` | Reviews the week and prepares the next weekly note |
+| `weekly-review` | Reviews the week and prepares the next weekly note |
 
 ### Writing
 
@@ -120,7 +120,6 @@ Requires Node.js 18 or newer and pnpm 9 or newer.
 
 ```bash
 pnpm install
-bash scripts/list-skills.sh
 pnpm run validate
 ```
 

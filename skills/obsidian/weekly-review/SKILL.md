@@ -1,5 +1,5 @@
 ---
-name: weekly
+name: weekly-review
 description: Review one week of Obsidian evidence and prepare the next weekly note.
 disable-model-invocation: true
 ---
