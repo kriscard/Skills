@@ -50,8 +50,8 @@ A reader who stops here should still understand the audit.
 
 ## Module-design assessment
 
-Summarize organization and composition with the vocabulary from
-the shared `codebase-design.md` reference:
+Summarize organization and composition with the vocabulary from the
+`codebase-design` skill:
 
 - modules and the interfaces they expose
 - important seams and the adapters that occupy them

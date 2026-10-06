@@ -1,16 +1,5 @@
 export const sharedReferenceMirrors = [
   {
-    source: "skills/dev/references/codebase-design.md",
-    targets: [
-      "skills/dev/analyze-repo/references/codebase-design.md",
-      "skills/dev/architect/references/codebase-design.md",
-    ],
-  },
-  {
-    source: "skills/dev/references/agent-handoff.md",
-    targets: ["skills/dev/architect/references/agent-handoff.md"],
-  },
-  {
     source: "skills/writing/docs/references/adr-template.md",
     targets: ["skills/dev/architect/references/adr-template.md"],
   },

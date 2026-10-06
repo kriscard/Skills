@@ -33,9 +33,11 @@ reversibility are explicit.
 ### 2. Diagnose the current system
 
 Trace the current architecture through ownership, interfaces, data flow, runtime
-boundaries, and operations. Distinguish observed behavior from inferred intent.
-Name the evidence behind claims about scale, coupling, latency, reliability,
-security, ownership, or operational burden.
+boundaries, and operations. When the decision concerns module interfaces, seams,
+depth, or testability, load the `codebase-design` skill and apply its vocabulary.
+Distinguish observed behavior from inferred intent. Name the evidence behind claims
+about scale, coupling, latency, reliability, security, ownership, or operational
+burden.
 
 Done when the current design and its demonstrated pain are clear enough to judge
 whether change is warranted.
@@ -132,7 +134,6 @@ Done when the user has chosen the stopping point, artifact, or handoff target.
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — Required | Code organization, module interfaces, seams, depth, or testability | `references/codebase-design.md` |
 | 1 — High | Diagnosing maintainability symptoms or deciding whether to refactor | `references/code-smells.md` |
 | 2 — High | Service boundaries, client-specific orchestration, API protocols, or request waterfalls | `references/fullstack-patterns.md` |
 | 2 — High | Frontend composition, state ownership, rendering, or delivery strategy | `references/frontend-patterns.md` |

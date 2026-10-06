@@ -4,8 +4,8 @@
 # Code Smells and Refactoring Signals
 
 A smell is a prompt to gather evidence, not a verdict. Describe the observed
-change pattern first, then use the shared codebase-design vocabulary to locate
-the interface or seam responsible.
+change pattern first, then use the `codebase-design` vocabulary to locate the
+interface or seam responsible.
 
 This catalog is deliberately non-exhaustive. An unnamed symptom still qualifies
 when evidence shows change amplification, cognitive load, unknown unknowns,

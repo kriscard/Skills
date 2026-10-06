@@ -61,10 +61,10 @@ Done when every candidate finding has evidence and a confidence label.
 
 ### 2. Synthesize findings
 
-Load `references/codebase-design.md` and use its terms consistently. Assess
-modules through their interfaces, implementations, seams, adapters, depth,
-leverage, and locality. Reserve *boundary* for a domain or deployment boundary;
-use *seam* for a place where behavior can vary.
+Load the `codebase-design` skill and use its terms consistently. Assess modules
+through their interfaces, implementations, seams, adapters, depth, leverage, and
+locality. Reserve *boundary* for a domain or deployment boundary; use *seam* for
+a place where behavior can vary.
 
 Group verified evidence into `architecture`, `organization`, `composition`,
 `dependencies`, `patterns`, `hotspots`, `decisions`, and `verification`. Identify
@@ -115,12 +115,11 @@ highlighted problem maps to a finding.
 
 Read these references before writing:
 
-1. `references/codebase-design.md`
-2. `references/report-design-system.md`
-3. `references/report-components.md`
-4. `references/html-report-template.md`
-5. `references/architecture-decisions.md` when ADRs or ADR candidates exist
-6. the visualization reference selected in Step 3
+1. `references/report-design-system.md`
+2. `references/report-components.md`
+3. `references/html-report-template.md`
+4. `references/architecture-decisions.md` when ADRs or ADR candidates exist
+5. the visualization reference selected in Step 3
 
 Assign the path once and reuse it:
 
@@ -179,7 +178,6 @@ The analysis is complete only when:
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — Required | Assessing organization and module design | `references/codebase-design.md` |
 | 1 — Required | Generating any report | `references/report-design-system.md` |
 | 1 — Required | Building report sections | `references/report-components.md` |
 | 1 — Required | Assembling the final HTML | `references/html-report-template.md` |
