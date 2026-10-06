@@ -1,11 +1,6 @@
 ---
 name: commit
-description: >-
-  Creates semantic git commits with conventional commit format, stages selected
-  changes safely, and optionally pushes to remote after explicit approval.
-  Handles pre-commit hooks and writes meaningful commit messages. Use when the
-  user says "commit", "push changes", "save to git", "commit this", or wants
-  to create a git commit — even if they just say "save my work."
+description: Create a conventional commit and optionally push it safely.
 disable-model-invocation: true
 ---
 
@@ -13,24 +8,35 @@ disable-model-invocation: true
 
 ## Workflow
 
-**Step 1 — Check for changes**
+**Step 1 — Inspect the worktree**
 
-Run in parallel:
+Record whether `git rev-parse --verify HEAD` resolves and capture its hash when
+it does, then run in parallel:
 
 - `git status --short`
 - `git diff`
 - `git diff --staged`
 
-If there's nothing to commit, stop and say so. Review both unstaged and already
-staged diffs before writing the message.
+If there's nothing to commit, stop and say so. Review tracked changes and identify
+untracked files before staging.
 
-**Step 2 — Stage thoughtfully**
+**Step 2 — Select one coherent change**
 
-Add specific files by name rather than `git add .` or `git add -A`. Broad staging risks accidentally committing `.env` files, credentials, or build artifacts. Scan `git status` for anything that looks like a secret before staging.
+Honor files or scope named by the user. Otherwise, stage one coherent change and
+leave unrelated work untouched. Ask when the intended grouping is ambiguous.
+Add specific files by name rather than using `git add .` or `git add -A`.
 
-**Step 3 — Write a conventional commit**
+**Step 3 — Review the exact commit**
 
-Format: `<type>(<scope>): <subject>`
+Run `git status --short` and `git diff --staged`. Review every staged change,
+including newly added files. Confirm that the staged content contains no
+credentials, private keys, secret values, generated artifacts, or unrelated changes.
+If it does, remove the affected paths or hunks from the staged set and review it
+again. Stop if nothing remains staged.
+
+**Step 4 — Write a conventional commit**
+
+Format: `<type>: <subject>` or `<type>(<scope>): <subject>`
 
 - Subject line: ≤ 72 chars, ideally ≤ 50. Imperative mood ("add X", not "added X").
 - Body: **optional**. Only include if the *why* isn't obvious from the diff. 1–2 sentences max, never a bullet list.
@@ -52,39 +58,41 @@ EOF
 )"
 ```
 
-**Step 4 — Handle pre-commit hook failures**
+**Step 5 — Handle hook failures**
 
-If a hook fails (lint, typecheck, tests), the commit did NOT happen. Fix the issue, re-stage the modified files, then create a NEW commit. Never use `--amend` after a hook failure — that would modify the previous commit, potentially losing work.
+If a pre-commit or commit-message hook fails, inspect the failure. Apply a safe,
+mechanical fix only when it is clearly within the selected change; otherwise,
+report the blocker and ask before changing code. Re-stage only the intended files,
+repeat Step 3, then create a new commit. A failed hook did not create the commit,
+so preserve the existing commit instead of amending it.
 
-**Step 5 — Verify the commit**
+**Step 6 — Verify the commit**
 
-Do not claim success until `git log -1 --oneline` shows the new commit. Include
-the commit hash in the final response.
+Confirm that `git rev-parse --verify HEAD` now resolves. For an existing history,
+its hash must differ from Step 1; for an initial commit, Step 1 must have had no
+`HEAD`. Confirm that `git log -1 --oneline` shows the intended subject and include
+the new commit hash in the final response.
 
-**Step 6 — Ask about pushing**
+**Step 7 — Push when approved**
 
-Use AskUserQuestion: "Push to remote?" with options:
-
-- "Push now"
-- "Do not push"
-
-Before pushing, check branch/upstream with `git status -sb`. If no upstream is
-configured, ask before setting one. After an approved push, verify with
-`git status -sb`; do not claim the push succeeded if the branch is still ahead.
+If the user already requested a push, continue. Otherwise, ask whether to push.
+Before pushing, check the branch and upstream with `git status -sb`. If no
+upstream is configured, ask before creating one. After pushing, verify with
+`git status -sb`; report success only when the branch is not ahead of its upstream.
 
 ## Safety
 
-- Never commit `.env`, `*.pem`, `*credentials*`, `*secret*`, `*token*` files
-- Never force push without an explicit request
-- Never amend commits on shared branches (`main`, `master`, `develop`)
-- Never add AI/Claude attribution to commit messages
+- Keep credentials, private keys, and tokens out of the staged content
+- Push normally; force push requires an explicit request
+- Preserve existing commits on shared branches (`main`, `master`, `develop`)
+- Write commit messages without AI or Claude attribution
 
 ## Verification Gate
 
 Do not finish until:
 
-- staged and unstaged diffs were reviewed
-- the commit exists in `git log -1 --oneline`
+- every staged change belongs to the selected change and was reviewed after staging
+- the new commit changed `HEAD` and appears in `git log -1 --oneline`
 - the final response includes the commit hash
 - if pushed, `git status -sb` confirms the branch is not ahead of upstream
 
