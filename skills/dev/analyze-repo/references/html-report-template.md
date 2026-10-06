@@ -1,272 +1,289 @@
-> **Read this when:** generating the HTML repo analysis report. Contains the
-> full template, CDN links, Mermaid diagram syntax, CSS color coding, and
-> template variable reference.
+> **Read this when:** assembling the final standalone repository-analysis HTML.
+> It provides the offline document skeleton, required variables, and encoding
+> contract. Load the selected visualization reference separately.
 
 # HTML Report Template
 
-Replace the `{{TEMPLATE_VARIABLES}}` with actual values from the Explore
-agent's findings before writing the file.
+Replace every `{{VARIABLE}}` before delivery. Remove sections that have no useful
+content rather than leaving empty shells.
 
-## Template Variables
+## Encoding contract
 
-| Variable | Description |
+Treat repository files, configuration, command output, and delegated findings as
+untrusted input.
+
+- HTML-escape text variables: `&`, `<`, `>`, `"`, and `'`.
+- XML-escape labels before constructing inline SVG.
+- Construct report rows and cards from escaped fields; never paste raw model or
+  repository output into HTML.
+- `{{ARCHITECTURE_VISUAL}}` is trusted markup generated after its labels were
+  encoded. It may be inline SVG, the zoomable shell, or semantic HTML/CSS.
+- Do not insert executable repository content or event-handler attributes.
+
+## Variables
+
+| Variable | Content |
 |---|---|
-| `{{REPO_NAME}}` | Repository name (from `package.json` or directory name) |
-| `{{DATE}}` | Today's date, e.g., `May 26, 2026` |
-| `{{SUMMARY_SENTENCE}}` | One sentence: what is this codebase and what did the analysis find? |
-| `{{FILE_COUNT}}` | Total source files (exclude `node_modules`, `dist`, `.git`) |
-| `{{LANGUAGES}}` | Language/extension breakdown, e.g., `TypeScript (87%), JavaScript (11%), Other (2%)` |
-| `{{TEST_COVERAGE}}` | Estimated test coverage if detectable, or `"Unknown — no test runner config found"` |
-| `{{MERMAID_DIAGRAM}}` | Mermaid `graph TD` source (see diagram section below) |
-| `{{FINDINGS_ROWS}}` | HTML table rows for findings (see findings section below) |
-| `{{RECOMMENDATIONS_LIST}}` | HTML list items for top recommendations |
+| `{{REPO_NAME}}` | Escaped repository name |
+| `{{REVISION}}` | Escaped branch/commit or `Working tree` |
+| `{{DATE}}` | Analysis date |
+| `{{SCOPE}}` | Included and excluded scope |
+| `{{ASSESSMENT}}` | One-sentence interpretation |
+| `{{PROVENANCE}}` | Commands, artifacts, and limitations |
+| `{{SUMMARY_METRICS}}` | Constructed metric cards with provenance |
+| `{{TLDR}}` | Constructed dominant shape, risk, and next action |
+| `{{ARCHITECTURE_VISUAL}}` | Trusted generated visualization markup |
+| `{{ARCHITECTURE_CAPTION}}` | Escaped caption; omit when shell already owns it |
+| `{{MODULE_DESIGN}}` | Constructed organization/composition assessment |
+| `{{DECISION_RECORD}}` | Constructed ADR links and qualified candidates |
+| `{{RISK_MAP}}` | Constructed subsystem risk summary |
+| `{{FINDINGS}}` | Constructed ranked finding articles |
+| `{{HOTSPOTS}}` | Constructed focused file/module details |
+| `{{RECOMMENDATIONS}}` | Constructed ordered recommendation items |
+| `{{VERIFICATION_ITEMS}}` | Constructed checklist items |
 
----
-
-## Full HTML Template
+## Document skeleton
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Repo Analysis — {{REPO_NAME}}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
-  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Repository analysis — {{REPO_NAME}}</title>
   <style>
-    .severity-critical { background-color: #fef2f2; border-left: 4px solid #dc2626; }
-    .severity-warning  { background-color: #fffbeb; border-left: 4px solid #d97706; }
-    .severity-info     { background-color: #eff6ff; border-left: 4px solid #2563eb; }
-    .badge-critical { background: #dc2626; color: white; }
-    .badge-warning  { background: #d97706; color: white; }
-    .badge-info     { background: #2563eb; color: white; }
-    .mermaid { background: white; padding: 1.5rem; border-radius: 0.5rem; }
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --surface-subtle: #eef1f4;
+      --text: #18202a;
+      --muted: #5f6b78;
+      --border: #d8dee6;
+      --accent: #315efb;
+      --accent-soft: #e9eeff;
+      --critical: #b42318;
+      --critical-soft: #fef0ee;
+      --warning: #a15c00;
+      --warning-soft: #fff5df;
+      --info: #175cd3;
+      --info-soft: #edf4ff;
+      --success: #067647;
+      --success-soft: #ecfdf3;
+      --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 8px 24px rgb(16 24 40 / 6%);
+      --radius: 12px;
+      --content: 1180px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117; --surface: #151b23; --surface-subtle: #1d2530;
+        --text: #edf2f7; --muted: #a7b1bd; --border: #303b48;
+        --accent: #8aa4ff; --accent-soft: #202c55;
+        --critical: #ff8a80; --critical-soft: #3c2020;
+        --warning: #ffc66d; --warning-soft: #3a2c16;
+        --info: #8ab4ff; --info-soft: #182c4b;
+        --success: #75d6a5; --success-soft: #173528;
+        --shadow: 0 12px 32px rgb(0 0 0 / 24%);
+      }
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+    body {
+      margin: 0; color: var(--text); background: var(--bg);
+      font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+    a { color: var(--accent); }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    button, summary { font: inherit; }
+    button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: 3px;
+    }
+    .page { width: min(100% - 40px, var(--content)); margin-inline: auto; }
+    .page-header { padding: 54px 0 30px; border-bottom: 1px solid var(--border); }
+    .eyebrow {
+      color: var(--accent); font: 700 12px/1.2 ui-monospace, monospace;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    h1 { max-width: 820px; margin: 10px 0; font-size: clamp(30px, 5vw, 48px); line-height: 1.06; }
+    h2 { margin: 0 0 18px; font-size: clamp(20px, 3vw, 26px); }
+    h3 { margin: 0; font-size: 17px; }
+    .assessment { max-width: 800px; margin: 14px 0 0; color: var(--muted); font-size: 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 22px; color: var(--muted); }
+    main { padding: 34px 0 64px; }
+    section + section { margin-top: 38px; }
+    .surface {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    .section-body { padding: clamp(18px, 3vw, 30px); }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .metric { padding: 18px; }
+    .metric-value { font-size: 28px; font-weight: 750; line-height: 1.1; }
+    .metric-label { margin-top: 7px; font-weight: 650; }
+    .metric-source { margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .tldr { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 20px 22px; }
+    .figure-frame { overflow-x: auto; padding: 18px; background: var(--surface-subtle); border-radius: 10px; }
+    figure { margin: 0; }
+    figcaption { margin-top: 12px; color: var(--muted); }
+    .risk-map { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px;
+      border: 1px solid var(--border); border-radius: 999px; background: var(--surface);
+    }
+    .finding { padding: 22px; border-left: 4px solid var(--info); }
+    .finding + .finding { margin-top: 12px; }
+    .finding[data-severity="critical"] { border-left-color: var(--critical); background: var(--critical-soft); }
+    .finding[data-severity="warning"] { border-left-color: var(--warning); background: var(--warning-soft); }
+    .finding[data-severity="info"] { border-left-color: var(--info); background: var(--info-soft); }
+    .finding-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .tag {
+      padding: 3px 7px; border: 1px solid currentColor; border-radius: 5px;
+      font: 700 11px/1.2 ui-monospace, monospace; text-transform: uppercase;
+    }
+    .evidence { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+    .evidence-label { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    details { border-top: 1px solid var(--border); }
+    details:first-child { border-top: 0; }
+    summary { cursor: pointer; min-height: 44px; padding: 14px 18px; font-weight: 650; }
+    .details-body { padding: 0 18px 18px; color: var(--muted); }
+    .recommendations li + li, .checklist li + li { margin-top: 12px; }
+    .provenance { color: var(--muted); font-size: 13px; }
+    .scroll-region { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; }
+    @media (max-width: 820px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px) {
+      .page { width: min(100% - 24px, var(--content)); }
+      .page-header { padding-top: 34px; }
+      .metrics { grid-template-columns: 1fr; }
+      .section-body, .finding { padding: 17px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
-
-  <!-- Header -->
-  <header class="bg-white border-b border-gray-200 px-8 py-6 mb-8">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">{{REPO_NAME}}</h1>
-          <p class="text-sm text-gray-500 mt-1">Architecture Analysis · {{DATE}}</p>
-        </div>
-        <span class="text-sm text-gray-400">Generated by Claude Code</span>
+<body>
+  <header class="page-header">
+    <div class="page">
+      <div class="eyebrow">Repository analysis</div>
+      <h1>{{REPO_NAME}}</h1>
+      <p class="assessment">{{ASSESSMENT}}</p>
+      <div class="meta">
+        <span>{{REVISION}}</span><span>{{DATE}}</span><span>{{SCOPE}}</span>
       </div>
-      <p class="mt-4 text-gray-700 max-w-3xl">{{SUMMARY_SENTENCE}}</p>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-8 pb-16">
+  <main class="page">
+    <section aria-labelledby="summary-heading">
+      <h2 id="summary-heading">Measured summary</h2>
+      <div class="metrics">{{SUMMARY_METRICS}}</div>
+    </section>
 
-    <!-- Summary Cards -->
-    <section class="grid grid-cols-3 gap-4 mb-10">
-      <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Source Files</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2">{{FILE_COUNT}}</p>
-      </div>
-      <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Languages</p>
-        <p class="text-sm text-gray-700 mt-2 leading-relaxed">{{LANGUAGES}}</p>
-      </div>
-      <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Test Coverage</p>
-        <p class="text-sm text-gray-700 mt-2 leading-relaxed">{{TEST_COVERAGE}}</p>
+    <section aria-labelledby="tldr-heading">
+      <h2 id="tldr-heading">TL;DR</h2>
+      <div class="tldr surface">{{TLDR}}</div>
+    </section>
+
+    <section aria-labelledby="architecture-heading">
+      <h2 id="architecture-heading">Architecture</h2>
+      <div class="surface section-body">
+        <figure>
+          <div class="figure-frame">{{ARCHITECTURE_VISUAL}}</div>
+          <figcaption>{{ARCHITECTURE_CAPTION}}</figcaption>
+        </figure>
       </div>
     </section>
 
-    <!-- Architecture Diagram -->
-    <section class="bg-white rounded-xl border border-gray-200 p-8 mb-10">
-      <h2 class="text-lg font-semibold text-gray-900 mb-6">Architecture</h2>
-      <div class="mermaid">
-{{MERMAID_DIAGRAM}}
+    <section aria-labelledby="module-design-heading">
+      <h2 id="module-design-heading">Module design</h2>
+      <div class="surface section-body">{{MODULE_DESIGN}}</div>
+    </section>
+
+    <section aria-labelledby="decisions-heading">
+      <h2 id="decisions-heading">Architecture decisions</h2>
+      <div class="surface section-body">{{DECISION_RECORD}}</div>
+    </section>
+
+    <section aria-labelledby="risk-heading">
+      <h2 id="risk-heading">Risk concentration</h2>
+      <div class="risk-map">{{RISK_MAP}}</div>
+    </section>
+
+    <section aria-labelledby="findings-heading">
+      <h2 id="findings-heading">Ranked findings</h2>
+      <div>{{FINDINGS}}</div>
+    </section>
+
+    <section aria-labelledby="hotspots-heading">
+      <h2 id="hotspots-heading">Hotspot tour</h2>
+      <div class="surface">{{HOTSPOTS}}</div>
+    </section>
+
+    <section aria-labelledby="recommendations-heading">
+      <h2 id="recommendations-heading">Recommendations</h2>
+      <div class="surface section-body">
+        <ol class="recommendations">{{RECOMMENDATIONS}}</ol>
       </div>
     </section>
 
-    <!-- Findings Table -->
-    <section class="bg-white rounded-xl border border-gray-200 p-8 mb-10">
-      <h2 class="text-lg font-semibold text-gray-900 mb-6">Findings</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-gray-200 text-left">
-              <th class="pb-3 pr-6 font-semibold text-gray-500 w-28">Severity</th>
-              <th class="pb-3 pr-6 font-semibold text-gray-500 w-36">Category</th>
-              <th class="pb-3 pr-6 font-semibold text-gray-500">Finding</th>
-              <th class="pb-3 font-semibold text-gray-500">Recommendation</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            {{FINDINGS_ROWS}}
-          </tbody>
-        </table>
+    <section aria-labelledby="verification-heading">
+      <h2 id="verification-heading">Verification checklist</h2>
+      <div class="surface section-body">
+        <ul class="checklist">{{VERIFICATION_ITEMS}}</ul>
       </div>
     </section>
 
-    <!-- Top Recommendations -->
-    <section class="bg-white rounded-xl border border-gray-200 p-8">
-      <h2 class="text-lg font-semibold text-gray-900 mb-6">Top Recommendations</h2>
-      <ol class="space-y-4 list-decimal list-inside text-gray-700">
-        {{RECOMMENDATIONS_LIST}}
-      </ol>
+    <section aria-labelledby="provenance-heading">
+      <h2 id="provenance-heading">Provenance and limits</h2>
+      <div class="surface section-body provenance">{{PROVENANCE}}</div>
     </section>
-
   </main>
 </body>
 </html>
 ```
 
----
+## Component examples
 
-## Findings Row Format
-
-Each finding becomes one `<tr>` in the table. Use this template per row:
+A metric:
 
 ```html
-<tr class="severity-critical">
-  <td class="py-3 pr-6">
-    <span class="badge-critical text-xs font-semibold px-2 py-1 rounded">CRITICAL</span>
-  </td>
-  <td class="py-3 pr-6 text-gray-500">Architecture</td>
-  <td class="py-3 pr-6">Circular dependency between <code>auth</code> and <code>user</code> modules</td>
-  <td class="py-3 text-gray-600">Extract shared types to a <code>shared/</code> module that neither imports from</td>
-</tr>
+<div class="metric surface">
+  <div class="metric-value">184</div>
+  <div class="metric-label">Source files</div>
+  <div class="metric-source">Measured · tracked source paths</div>
+</div>
 ```
 
-Replace `severity-critical` / `badge-critical` with `severity-warning` /
-`badge-warning` or `severity-info` / `badge-info` as appropriate.
-
-**Severity guide:**
-- **CRITICAL** — blocks scaling, causes bugs, security issue, or blocks new
-  contributors from making correct changes
-- **WARNING** — slows development, increases bug risk, or creates maintenance
-  burden without immediate breakage
-- **INFO** — improvement opportunity with low urgency; good to address in
-  normal refactoring
-
----
-
-## Recommendations List Format
+A finding:
 
 ```html
-<li>
-  <strong>Eliminate the circular auth ↔ user dependency</strong> — 
-  Extract <code>UserIdentity</code> and <code>AuthToken</code> types to 
-  <code>shared/types/</code>. Circular dependencies prevent tree-shaking and 
-  make both modules harder to test in isolation.
-</li>
+<article class="finding surface" id="finding-1" data-severity="warning">
+  <div class="finding-meta">
+    <span class="tag">Warning</span><span class="tag">Verified</span>
+    <span class="tag">Dependencies</span>
+  </div>
+  <h3>Boundary title</h3>
+  <p><strong>Observed:</strong> Escaped factual statement.</p>
+  <p><strong>Impact:</strong> Concrete consequence.</p>
+  <p><strong>Next action:</strong> Bounded recommendation.</p>
+  <div class="evidence">
+    <div class="evidence-label">Evidence</div>
+    <code>escaped/path.ts · escaped command summary</code>
+  </div>
+</article>
 ```
 
----
+## Assembly gate
 
-## Mermaid Diagram — Architecture Layers
+Before opening the report:
 
-Use `graph TD` (top-down) for layered architectures. Use `graph LR` (left-right)
-for pipeline-style flows.
-
-### Typical layered architecture
-
-```
-graph TD
-    UI["UI Layer\n(React components, pages)"]
-    HOOKS["Application Layer\n(hooks, contexts, stores)"]
-    API["API Layer\n(route handlers, server actions)"]
-    DOMAIN["Domain Layer\n(business logic, entities)"]
-    INFRA["Infrastructure Layer\n(db, external APIs, cache)"]
-
-    UI --> HOOKS
-    HOOKS --> API
-    API --> DOMAIN
-    DOMAIN --> INFRA
-
-    style UI fill:#dbeafe,stroke:#2563eb
-    style HOOKS fill:#ede9fe,stroke:#7c3aed
-    style API fill:#dcfce7,stroke:#16a34a
-    style DOMAIN fill:#fef9c3,stroke:#ca8a04
-    style INFRA fill:#fee2e2,stroke:#dc2626
-```
-
-### Dependency density example (replace with real module names)
-
-```
-graph TD
-    Auth["auth/"]
-    User["user/"]
-    Posts["posts/"]
-    Comments["comments/"]
-    Shared["shared/"]
-    DB["database/"]
-
-    Auth --> Shared
-    User --> Shared
-    Posts --> User
-    Posts --> Shared
-    Comments --> Posts
-    Comments --> User
-    Auth --> DB
-    User --> DB
-    Posts --> DB
-    Comments --> DB
-
-    style Shared fill:#dbeafe,stroke:#2563eb,stroke-width:3px
-```
-
-**Tip:** highlight the most-imported module with a thicker border (`stroke-width:3px`)
-and a distinct color. It visually communicates which module has the most coupling
-pressure — often where the biggest refactoring opportunity lives.
-
-### Annotating problem areas
-
-Add a red border to modules that are flagged as hotspots:
-
-```
-style ProblematicModule fill:#fee2e2,stroke:#dc2626,stroke-width:3px
-```
-
----
-
-## Complete Example Output
-
-For a Next.js SaaS app, the MERMAID_DIAGRAM might look like:
-
-```
-graph TD
-    Pages["app/ (Next.js pages)"]
-    Components["components/ (UI)"]
-    Hooks["hooks/ (client state)"]
-    ServerActions["app/actions/ (mutations)"]
-    Lib["lib/ (utilities)"]
-    DB["db/ (Prisma + queries)"]
-    External["External APIs\n(Stripe, Resend)"]
-
-    Pages --> Components
-    Pages --> ServerActions
-    Components --> Hooks
-    ServerActions --> DB
-    ServerActions --> External
-    Hooks --> Lib
-    DB --> Lib
-
-    style DB fill:#dcfce7,stroke:#16a34a
-    style ServerActions fill:#ede9fe,stroke:#7c3aed
-    style Lib fill:#dbeafe,stroke:#2563eb,stroke-width:3px
-```
-
-And a FINDINGS_ROWS entry:
-
-```html
-<tr class="severity-warning">
-  <td class="py-3 pr-6">
-    <span class="badge-warning text-xs font-semibold px-2 py-1 rounded">WARNING</span>
-  </td>
-  <td class="py-3 pr-6 text-gray-500">Patterns</td>
-  <td class="py-3 pr-6">Three competing data-fetching patterns: raw <code>fetch</code>, SWR, and TanStack Query exist in the same codebase</td>
-  <td class="py-3 text-gray-600">Pick one standard (TanStack Query recommended). New contributors will choose inconsistently.</td>
-</tr>
-```
+1. Search for `{{` and require zero matches.
+2. Confirm the document has no external URLs required for styles, scripts, or
+   fonts.
+3. Confirm every finding ID appears in the evidence ledger.
+4. Confirm unmeasured values say `Not measured` rather than presenting an
+   estimate.
+5. Render-check using the workflow in `SKILL.md`.
