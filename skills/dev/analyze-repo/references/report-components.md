@@ -51,7 +51,7 @@ A reader who stops here should still understand the audit.
 ## Module-design assessment
 
 Summarize organization and composition with the vocabulary from
-`codebase-vocabulary.md`:
+the shared `codebase-design.md` reference:
 
 - modules and the interfaces they expose
 - important seams and the adapters that occupy them

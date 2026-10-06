@@ -1,128 +1,119 @@
-> **Read this when:** user asks why code is hard to maintain, wants to identify what to refactor, or asks when/whether to refactor.
+> **Read this when:** diagnosing maintainability symptoms or deciding whether a
+> structural refactor is warranted.
 
-# Code Smells & Refactoring Signals
+# Code Smells and Refactoring Signals
 
-Adapted from Fowler's *Refactoring* — curated for frontend/fullstack work. No class-hierarchy framing; examples use components, hooks, and modules.
+A smell is a prompt to gather evidence, not a verdict. Describe the observed
+change pattern first, then use the shared codebase-design vocabulary to locate
+the interface or seam responsible.
 
----
+This catalog is deliberately non-exhaustive. An unnamed symptom still qualifies
+when evidence shows change amplification, cognitive load, unknown unknowns,
+obscured ownership, or behavior leaking across interfaces. Describe it in the
+repository's own terms and apply the same refactor gate; never force it into the
+nearest named smell.
 
-## Architecture-Level Smells (Wrong Boundaries)
+## Architecture signals
 
-These smells signal that something is in the wrong place — wrong module, wrong abstraction, wrong ownership. Fix the structure before fixing the code.
+### Change amplification
 
-### 1. Shotgun Surgery
-**What:** A single logical change requires edits across many unrelated files.
-**Signal:** "I added a new user role and had to update 8 files."
-**Cause:** Logic that belongs together is spread across the codebase.
-**Fix:** Move all related logic into one module. The goal: one change = one file changed.
+One logical change repeatedly touches unrelated callers, layers, or packages.
+Trace recent examples and identify which knowledge is duplicated. Recommend a
+module move only when one owner can provide greater locality.
 
-### 2. Divergent Change
-**What:** One module changes for many unrelated reasons.
-**Signal:** `userUtils.ts` gets touched for auth changes, display formatting, API mapping, and validation.
-**Cause:** SRP violation — the module has multiple responsibilities.
-**Fix:** Split by responsibility. `userAuth.ts`, `userDisplay.ts`, `userApi.ts`.
+### Divergent change
 
-### 3. Feature Envy
-**What:** A function or hook is more interested in another module's data than its own.
-**Signal:** `useCheckout` spends most of its logic reading from `useCart` and `useUser` directly.
-**Cause:** The logic is in the wrong module.
-**Fix:** Move the logic to where the data lives, or extract a new module that owns both.
+One module changes for unrelated business or technical reasons. Separate
+responsibilities when they have distinct owners, invariants, dependencies, or
+change cadence—not merely to reduce file size.
 
-### 4. Inappropriate Intimacy
-**What:** Two modules know too much about each other's internal implementation.
-**Signal:** `CheckoutPage` imports and directly calls internal methods of `CartStore`.
-**Cause:** Missing interface — direct coupling to internals instead of the public API.
-**Fix:** Define a clean interface. `CartStore` exposes only what consumers need; `CheckoutPage` uses only that.
+### Feature envy
 
-### 5. Middle Man
-**What:** A module does nothing but delegate to another module.
-**Signal:** `useCartItems` just calls `useCartStore` and returns the result without transformation.
-**Cause:** Over-abstraction — the layer adds no value.
-**Fix:** Remove the middle man and call the underlying module directly. (Exception: if the indirection makes testing significantly easier, it may be worth keeping.)
+Behavior repeatedly reaches through another module's interface to interpret its
+state. The behavior may belong with that state or in an orchestration module that
+legitimately owns both concerns. Verify ownership before moving it.
 
----
+### Inappropriate intimacy
 
-## Component / Hook-Level Smells
+Callers depend on implementation details, undocumented ordering, internal data
+shape, or private lifecycle. Strengthen the interface or move the seam so callers
+need less knowledge.
 
-### 6. Long Component
-**What:** A component over ~150 lines that mixes rendering, data fetching, and business logic.
-**Signal:** You scroll through a component to understand any single behavior.
-**Fix:** Split by concern. Extract data fetching to a hook. Extract sub-sections as child components.
+### Pass-through module
 
-### 7. Long Parameter List
-**What:** A function or hook with more than 4–5 parameters.
-**Signal:** `useForm(fieldName, defaultValue, validators, onSubmit, formatters, options)`
-**Cause:** Multiple concerns bundled together, or a growing API without design.
-**Fix:** Consolidate into an options object. Split the function if parameters represent different concerns.
+A module delegates while adding no policy, translation, lifecycle, compatibility,
+or test leverage. Apply the deletion test: if removal makes complexity disappear,
+the module may be shallow; if complexity spreads across callers, it was providing
+locality.
 
-### 8. Data Clumps
-**What:** The same 3–4 props always appear together across components and function calls.
-**Signal:** Every function that deals with a user takes `(userId, userName, userEmail, userRole)`.
-**Cause:** Related data that hasn't been modeled as a unit.
-**Fix:** Extract into a type/interface: `User`. Pass the object.
+## Component and function signals
 
-### 9. Prop Drilling
-**What:** Passing props more than 2 levels deep to reach a consumer.
-**Signal:** `App → Layout → Sidebar → Nav → NavItem` — and `NavItem` needs `currentUser` that was defined in `App`.
-**Cause:** State is defined too high up, or the wrong component owns it.
-**Fix:** Lift state to Context if many components need it, or use a state manager. Ask first: does this state actually need to be this high?
+### Mixed component responsibilities
 
-### 10. Dead Code
-**What:** Unused components, hooks, utilities, types, or commented-out code.
-**Signal:** A component that's imported nowhere. A utility function no one calls.
-**Fix:** Delete it. Version control remembers it. Dead code raises cognitive load for every reader.
+Rendering, remote data, domain rules, and effects change independently but are
+entangled. Split at a demonstrated change boundary. A long cohesive component may
+be healthier than several pass-through components.
 
----
+### Difficult interface
 
-## Data / Type Smells
+Callers must supply many unrelated facts, understand ordering, or coordinate
+invalid combinations. Prefer an interface that represents the real operation and
+makes invalid states harder to express. An options object improves syntax but
+does not by itself reduce interface complexity.
 
-### 11. Primitive Obsession
-**What:** Using primitives (strings, numbers) for values that have domain meaning and constraints.
-**Signal:** `userId: string`, `orderId: string`, `productId: string` — all the same type, but mixing them is a bug.
-**Fix:** Use branded types or nominal types:
-```ts
-type UserId = string & { __brand: 'UserId' }
-type OrderId = string & { __brand: 'OrderId' }
-// Now TypeScript prevents: fn(orderId as UserId)
+### Data clump
+
+The same fields travel together and share invariants across several interfaces.
+Model them together when they represent one domain concept; visual similarity or
+coincidental co-occurrence is insufficient.
+
+### Prop threading
+
+Values cross components that neither own nor use them. First reconsider
+composition and state ownership. Context or a store is justified when the value
+is genuinely ambient or shared across a bounded subtree; it is not an automatic
+fix for depth alone.
+
+### Dead code
+
+A symbol or branch is unreachable through supported entry points. Confirm dynamic
+loading, reflection, generated references, and public compatibility before
+removal.
+
+## Data and type signals
+
+### Primitive confusion
+
+Distinct domain values share a primitive representation and are accidentally
+interchangeable. Use validation, domain types, or branded/nominal types where the
+error risk justifies the interface cost.
+
+### Parallel structures
+
+Collections depend on positional synchronization or duplicated keys. Model one
+record per concept or establish an explicit keyed relationship.
+
+## Refactor gate
+
+Refactor when all are true:
+
+1. the symptom is demonstrated by current code, history, defects, or measured
+   friction
+2. the proposed interface has a clear owner and improves leverage or locality
+3. behavior can be protected by tests or another observable verification loop
+4. migration can be incremental or has an explicit rollback
+
+Choose the smallest structural change that addresses the demonstrated cause.
+Separate behavior-preserving moves from behavior changes when that separation
+improves review and rollback; do not impose commit boundaries that make the work
+less coherent.
+
+## Reporting format
+
+```text
+Observed: concrete change pattern and evidence
+Cause: interface, ownership, or seam problem supported by the evidence
+Impact: defect risk, change amplification, cognitive load, or unknown unknowns
+Refactor: smallest boundary or interface change
+Verification: behavior that must remain stable
 ```
-
-### 12. Parallel Arrays
-**What:** Two or more arrays that must always stay in sync index-by-index.
-**Signal:** `const ids = ['a', 'b']` and `const labels = ['Alpha', 'Beta']` — callers must know they're aligned.
-**Cause:** Data that belongs together was split.
-**Fix:** Replace with an array of objects: `[{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }]`.
-
----
-
-## When to Refactor (Fowler's 4 Types)
-
-**Preparatory** — Before adding a feature, refactor to make the feature easy.
-> "What would make this change trivial?" Refactor that first. Then add the feature.
-
-**Comprehension** — While reading code you need to understand, refactor to clarify.
-> Rename the confusing variable. Extract the cryptic expression. Flatten the nested conditional. Leave it easier to read than you found it.
-
-**Litter-pick** — While passing through code for another reason, fix the small thing.
-> If it takes < 5 minutes, fix it now. If it takes longer, note it and come back with dedicated time.
-
-**Planned** — Dedicated refactor time blocked on the calendar.
-> If you never plan it, it never happens. Technical debt has compounding interest.
-
-**The rule:** never mix refactoring with feature work in the same commit. Refactoring changes structure; features change behavior. Mixed commits make bugs hard to isolate and history hard to read.
-
----
-
-## Refactoring Techniques Mapped to Smells
-
-| Smell | Technique |
-|-------|-----------|
-| Shotgun Surgery | Extract Module, Move Function |
-| Divergent Change | Extract Module, Split by responsibility |
-| Feature Envy | Move Function to the module that owns the data |
-| Inappropriate Intimacy | Define interface, Extract API boundary |
-| Long Component | Extract Component, Extract Hook |
-| Long Parameter List | Introduce Options Object, Extract Type |
-| Data Clumps | Extract Type/Interface |
-| Prop Drilling | Lift to Context, Introduce State Manager |
-| Primitive Obsession | Introduce Branded Type |
-| Parallel Arrays | Replace with Array of Objects |

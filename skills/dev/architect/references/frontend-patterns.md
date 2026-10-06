@@ -1,178 +1,173 @@
-> **Read this when:** user is building a web frontend, discussing component architecture, state management strategy, or rendering model choice.
+> **Read this when:** deciding frontend composition, state ownership, routing,
+> rendering, hydration, delivery, or performance architecture.
 
 # Frontend Architecture Patterns
 
-## Rendering Strategy
+Treat frontend architecture as several independent decisions. Do not collapse
+render location, data location, caching, streaming, and interactivity into one
+label.
 
-The rendering model is the most consequential architectural decision for a fullstack web app. It affects SEO, performance, infrastructure cost, and developer experience. Choose at the architecture level — migrating later is expensive.
+## Rendering and delivery
 
-**For React implementation depth (hydration pitfalls, Server Actions, RSC boundaries) → load the react skill's `references/rendering-models.md`.**
+### Decision dimensions
 
-### Decision Table
+1. **Data origin:** database, internal service, public API, cache, filesystem, or
+   client state.
+2. **Fetch location:** build process, request-time server, edge runtime, or
+   browser.
+3. **Render location:** build time, request-time server, edge runtime, or browser.
+4. **Network payload:** HTML, serialized component data, JSON, streamed chunks,
+   and JavaScript.
+5. **Interactivity:** server-only output, hydrated subtree, or client-owned UI.
+6. **Hydration:** which boundaries ship code, when they become interactive, and
+   how user input affects priority.
+7. **Caching:** scope, key, freshness, invalidation, and acceptable staleness.
+8. **Execution placement:** proximity to users versus proximity to authoritative
+   data and supported runtime capabilities.
 
-| Strategy | SEO | Personalized | Data freshness | Client bundle | TTFB |
-|----------|-----|-------------|----------------|--------------|------|
-| **CSR** | ❌ | ✅ | ✅ real-time | Large | Slow |
-| **SSR** | ✅ | ✅ | ✅ per-request | Small | Fast |
-| **SSG** | ✅ | ❌ | ❌ build-time | Small | Fastest |
-| **ISR** | ✅ | ❌ | ~periodic | Small | Fast |
-| **RSC** | ✅ | ✅ | ✅ | Reduced | Fast |
-| **Streaming SSR** | ✅ | ✅ | ✅ | Small | Progressive |
-| **Edge Rendering** | ✅ | ✅ | ✅ | Small | Globally fast |
+JSX is authoring syntax, not a rendering location. A parent component may compose
+server-rendered and client-rendered descendants; describe each boundary rather
+than assigning one strategy to the whole application.
 
-### Decision Path
+### Common techniques
 
-```
-SEO required?
-├── No → CSR (dashboards, tools, authenticated apps)
-└── Yes
-    ├── Personalized per user?
-    │   ├── No → SSG (marketing, docs, blogs) or ISR (periodically updated)
-    │   └── Yes → SSR / RSC / Streaming SSR
-    │       ├── Need to reduce JS bundle? → RSC
-    │       ├── Need progressive loading? → Streaming SSR
-    │       └── Need low global latency? → Edge Rendering
-    └── Mixed (some static, some dynamic)?
-        └── RSC (static shell + dynamic islands)
-```
+| Technique | Provides | Primary costs and constraints |
+|---|---|---|
+| Client rendering | Browser-owned interaction and navigation | JavaScript startup, loading states, client-visible data access |
+| Build-time rendering | Cacheable output prepared before requests | Rebuild/invalidation path, stale content |
+| Request-time rendering | Per-request data and personalization | Server work, latency, cache design, failure surface |
+| Incremental regeneration | Cached output refreshed after deployment | Staleness semantics, invalidation complexity |
+| Server components | Server-owned component execution and reduced client code where supported | Framework boundary rules, serialization, caching semantics |
+| Streaming | Progressive delivery of independently ready output | Boundary placement, error handling after headers, observability |
+| Selective hydration | Independent hydration boundaries with interaction priority | Suspense/code boundaries, client bundle arrival, framework support |
+| Deferred hydration/loading | Code and hydration triggered by visibility, idle time, media, or intent | First-interaction delay, event replay, accessibility, implementation support |
+| Edge execution | Compute near selected regions | Runtime limits, data distance, deployment and debugging constraints |
 
-**Trade-off to watch:** SSR can increase LCP vs CSR on slow networks with fast clients — the full HTML document may take longer than a cached JS bundle loading data lazily. Measure with real-user metrics before committing.
+These techniques compose. Server components may be static or dynamic; server
+rendering may stream; cached output may be served from an edge without executing
+application code there. Selective hydration schedules independent boundaries;
+deferred or progressive hydration is the broader architectural choice to delay
+code or interactivity until a condition is met. Verify what the selected runtime
+and framework actually support.
 
----
+### Selection questions
 
-## Component Patterns
+- Which content must be indexable or useful before JavaScript runs?
+- Which output is shared, per tenant, per user, or per request?
+- How stale may each data source become, and what invalidates it?
+- Does compute benefit more from user proximity or data proximity?
+- Which interactions need browser state or browser APIs?
+- What fails when an upstream source is slow after streaming begins?
+- How much client JavaScript and hydration work does the design introduce?
 
-### Container / Presentational
-Separate data-fetching and logic from rendering. Container owns state and effects; presentational component is pure props-in, UI-out.
+Validate with representative data, network conditions, cache behavior, and
+real-user measurements. Technique names alone do not predict TTFB, LCP, bundle
+size, or indexing behavior.
 
-```tsx
-// Container
-function UserProfileContainer({ userId }: { userId: string }) {
-  const { data: user } = useUser(userId)
-  return user ? <UserProfileCard user={user} /> : <Skeleton />
-}
+## Component composition
 
-// Presentational — no hooks, no fetching, fully testable
-function UserProfileCard({ user }: { user: User }) {
-  return <div>{user.displayName}</div>
-}
-```
+### Presentational boundary
 
-**2026 note:** TanStack Query + pure components largely replaces this pattern. The "container" is now `useQuery`. The presentational component stays the same.
+Separate domain/data orchestration from reusable display when they change for
+different reasons. The split can be a server/client boundary, parent/child
+composition, or a plain module interface; it does not require a named container
+component.
 
-### Compound Components
-State lives in a parent component; children access it via Context without explicit prop-passing. The consumer controls composition.
+Use when the display should be reusable or testable without the data source. Keep
+them together when the split would only add pass-through interfaces.
 
-```tsx
-// Usage looks natural — no prop threading
-<Select value={value} onChange={setValue}>
-  <Select.Option value="a">Option A</Select.Option>
-  <Select.Option value="b">Option B</Select.Option>
-</Select>
-```
+### Compound components
 
-**Use when:** a group of related components must share state but the consumer needs control over their arrangement (tabs, accordions, dropdown menus, form field groups).
+Use related child components under one owner when consumers need layout control
+and the parts share state or invariants. Keep the public interface smaller than
+the implementation details it coordinates.
 
-### Custom Hooks
-Extract logic from components into reusable hooks. The primary composition tool in 2026.
+### Hooks
 
-```ts
-// Logic extracted — both components and pages can use it
-function useUserPermissions(userId: string) {
-  const { data } = useQuery(['permissions', userId], () => fetchPermissions(userId))
-  return {
-    canEdit: data?.roles.includes('editor') ?? false,
-    canDelete: data?.roles.includes('admin') ?? false,
-  }
-}
-```
+Use a hook to share stateful React behavior across multiple callers. A hook is
+not automatically a domain module: move framework-independent rules behind a
+plain interface when other runtimes or tests need them.
 
-**Use when:** the same stateful logic appears in more than one component. Prefer this over HOC for logic reuse. Hooks can compose other hooks — build complex behavior from simple building blocks.
+### Higher-order components
 
-### Render Props
-Inject behavior via a function-as-child or render prop. Less common in 2026 but still the right tool for some cases.
+Use a wrapper component for uniform tree-level behavior applied across many
+component shapes, such as an error, suspense, authorization, or telemetry
+boundary. Account for prop collisions, ref behavior, debugging names, wrapper
+order, and static properties. Prefer a hook or ordinary composition when the
+consumer needs control or only shares logic.
 
-```tsx
-// When a hook doesn't work (e.g., drag-and-drop with ref + render logic intertwined)
-<Draggable>
-  {({ isDragging, ref }) => (
-    <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1 }}>Content</div>
-  )}
-</Draggable>
-```
+### Render callbacks
 
-**Use when:** the consumer needs both behavior and ref access together, or the library requires it (animation libraries, DnD libraries).
+Use a render callback when consumers must control rendering while a provider owns
+behavior, lifecycle, or a ref. Prefer ordinary composition when no behavior must
+cross that interface.
 
-### Provider Pattern
-Ambient state via Context. Avoids prop drilling for values needed deep in the tree.
+### Providers
 
-```tsx
-// For truly cross-cutting concerns
-<ThemeProvider theme={theme}>
-  <AuthProvider>
-    <App />
-  </AuthProvider>
-</ThemeProvider>
-```
+Use context for genuinely ambient values or coordination within a bounded
+subtree. Provider value identity and consumer access patterns determine rerender
+cost; measure the actual tree rather than assuming context is free or uniformly
+expensive.
 
-**Use when:** genuinely cross-cutting concerns — theme, locale, auth state, feature flags.
-**Don't use as:** a performance optimization or to avoid thinking about component structure. Context re-renders all consumers on every change.
+## State ownership
 
----
+Classify state before choosing tooling:
 
-## State Management (Trade-off First, Not Framework First)
+| State | Default owner | Decision forces |
+|---|---|---|
+| Remote data | Authoritative remote system plus an application cache | freshness, deduplication, invalidation, optimistic writes, offline behavior |
+| URL state | URL/router | shareability, navigation semantics, serialization |
+| Local interaction | Nearest owning component | lifetime, reset behavior, render scope |
+| Cross-tree UI state | Smallest shared subtree or store | write frequency, selectors, transitions, persistence |
+| Workflow/state machine | Explicit transition owner | valid states, forbidden transitions, effects, recovery |
+| Form state | Form boundary | validation timing, dirty state, submission, server errors |
 
-There is no single default. Choose based on what kind of state you're managing.
+Prefer the repository's established state mechanism when it satisfies the
+required ownership and update semantics. Select or migrate a library only after
+identifying a concrete limitation.
 
-| State type | Where it lives | Best tool |
-|-----------|----------------|-----------|
-| **Server state** (data from API) | Server, cached on client | TanStack Query, SWR |
-| **Global UI state** (modals, sidebars, multi-page wizard) | Client, shared across routes | Zustand |
-| **Local UI state** (input value, toggle, hover) | Component | `useState` |
-| **Complex UI state machine** (multi-step flow with transitions) | Component or context | `useReducer`, XState |
-| **URL state** (filters, pagination, selected tab) | URL | `useSearchParams` |
-| **Form state** | Form scope | React Hook Form, Formik |
+## Route and navigation boundaries
 
-**State colocation principle:** state should live as close as possible to where it's used. Only lift it when multiple components genuinely need it. Don't pre-emptively centralize.
+Treat a route as a product and data boundary, not only a URL-to-component map.
+Define ownership of loading, authorization, errors, metadata, cache scope, and
+navigation state. Preserve URL semantics for shareable state and browser history.
+Place data dependencies where independent branches can start in parallel rather
+than discovering each fetch after its parent renders.
 
-**Redux in 2026:** TanStack Query has replaced Redux for most data-fetching. Zustand has replaced Redux for most UI state. Redux remains appropriate for large codebases with complex cross-slice state dependencies and middleware pipelines.
+Persistent layouts and nested routes can reduce repeated work, but they also
+extend state lifetime. Specify when state resets across navigation and how stale
+route data is revalidated.
 
----
+## Mutations and reconciliation
 
-## Architectural Insights
+For every mutation, identify the authoritative write, optimistic state, conflict
+policy, invalidation or reconciliation path, retry/idempotency behavior, and user
+feedback. Streaming a response and persisting a change are separate concerns.
+Forms, actions, and client caches must converge on the same outcome after error,
+navigation, or reload.
 
-### CQRS Mirrors Redux
-Redux is an implementation of CQRS: selectors are the read model (Query), dispatch+actions are the write model (Command). Separating reads from writes is architectural — it applies to any state design, not just Redux.
+## Frontend trust boundaries
 
-Implication: design your state queries (what data looks like when read) independently from your state mutations (how data changes). Reselect/selectors = query layer. Actions/reducers = command layer.
+Treat browser input, URL state, storage, hydration payloads, and third-party
+scripts as untrusted. Keep secrets and authoritative authorization on the server.
+For each server/client boundary, verify output encoding, data minimization, cache
+scope, mutation authorization, CSRF posture, content-security policy, and tenant
+isolation. Client visibility rules improve UX but do not enforce access.
 
-### Optimistic Updates = Write-Behind Cache
-Optimistic UI updates follow the Write-Behind Cache pattern: update the local state (cache) immediately, sync to the server asynchronously. If the server rejects, roll back.
+Map which data is serialized into HTML or component payloads and which code runs
+with access to user content. Third-party scripts and dependencies need explicit
+capability, loading, and failure boundaries.
 
-This pattern is principled, not magic:
-1. Apply the change locally (instant feedback)
-2. Send to server in background
-3. On success: confirm (no-op or reconcile)
-4. On failure: roll back to previous state + show error
+## Performance as architecture
 
-TanStack Query's `onMutate` / `onError` / `onSettled` callbacks map exactly to these steps.
+Trace critical user journeys as dependency chains:
 
----
+- request and data waterfalls
+- server work before first bytes
+- resources required before meaningful rendering
+- client code required before interaction
+- duplicate or extraneous work across boundaries
 
-## Performance as Architecture (PRPL)
-
-Performance is an architectural concern, not a last-minute optimization. PRPL is a framework for thinking about it:
-
-- **Push** critical resources for the initial route (preload, early hints)
-- **Render** the initial route as fast as possible (SSR, SSG, or minimal JS for CSR)
-- **Pre-cache** remaining routes in the background (service worker, prefetch)
-- **Lazy-load** remaining routes and features on demand (dynamic import, route-based splitting)
-
-**Route-based code splitting** is the most impactful single change for most SPAs:
-```ts
-// Each route loads only its own code
-const Dashboard = lazy(() => import('./pages/Dashboard'))
-const Settings = lazy(() => import('./pages/Settings'))
-```
-
-**Import-on-interaction** for non-critical UI: don't load a rich text editor or date picker until the user clicks the field that needs it.
+Choose interventions from measured bottlenecks: cache, parallelize, preload,
+stream, split code, virtualize rendering, or move computation. Each intervention
+shifts complexity; record the new invalidation, failure, and observability costs.

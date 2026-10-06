@@ -79,7 +79,9 @@ Next step: confirm with an owner, then draft an ADR if deliberate
 ```
 
 Do not fabricate decision dates, owners, rationale, alternatives, or status.
-Offer ADR drafting after the report when the user can supply missing context.
+Route an unresolved candidate to the `architect` skill when options still need
+to be compared. Draft the ADR after the decision is resolved and the user can
+supply missing context.
 
 ## Existing ADR checks
 

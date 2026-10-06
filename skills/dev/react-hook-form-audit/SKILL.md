@@ -41,12 +41,12 @@ Completion: each submitted value can be traced from initialization through seria
 Read `references/checks.md` completely. Load the build skill's branch reference when the audited
 form uses that branch:
 
-- `../react-hook-form/references/server-data-and-lifecycle.md`
-- `../react-hook-form/references/adapters-and-accessibility.md`
-- `../react-hook-form/references/wizards-and-conditionals.md`
-- `../react-hook-form/references/field-arrays.md`
-- `../react-hook-form/references/version-8.md`
-- `../react-hook-form/references/actions-boundary.md`
+- `references/server-data-and-lifecycle.md`
+- `references/adapters-and-accessibility.md`
+- `references/wizards-and-conditionals.md`
+- `references/field-arrays.md`
+- `references/version-8.md`
+- `references/actions-boundary.md`
 
 Completion: every applicable check and branch rule was evaluated against every in-scope form.
 

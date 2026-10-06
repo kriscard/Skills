@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { sharedReferenceMirrors } from "./shared-reference-mirrors.mjs";
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const skillsRoot = join(repo, "skills");
@@ -129,6 +130,13 @@ for (const absoluteFile of skillFiles) {
   );
 
   for (const reference of referenced) {
+    if (reference.startsWith("../")) {
+      failures.push(
+        `${file}: ${reference} escapes the skill directory; bundle it under references/`,
+      );
+      continue;
+    }
+
     if (!existsSync(join(skillDirectory, reference))) {
       failures.push(`${file}: missing ${reference}`);
     }
@@ -150,6 +158,30 @@ for (const absoluteFile of skillFiles) {
     if (!firstNonemptyLine?.startsWith("> **Read this when:**")) {
       failures.push(
         `${relative(repo, absoluteReference)}: missing Read this when marker`,
+      );
+    }
+  }
+}
+
+for (const mirror of sharedReferenceMirrors) {
+  const source = join(repo, mirror.source);
+
+  if (!existsSync(source)) {
+    failures.push(`${mirror.source}: missing canonical shared reference`);
+    continue;
+  }
+
+  const canonical = readFileSync(source, "utf8");
+  for (const targetPath of mirror.targets) {
+    const target = join(repo, targetPath);
+
+    if (!existsSync(target)) {
+      failures.push(
+        `${targetPath}: missing bundled mirror of ${mirror.source}; run pnpm sync:references`,
+      );
+    } else if (readFileSync(target, "utf8") !== canonical) {
+      failures.push(
+        `${targetPath}: differs from ${mirror.source}; run pnpm sync:references`,
       );
     }
   }

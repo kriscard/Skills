@@ -12,73 +12,145 @@ description: >-
 
 # Architect
 
-## Methodology: Walk the Decision Tree
+Resolve one consequential design decision at a time. Architecture is the fit
+between constraints and trade-offs, not a catalog of preferred technologies.
 
-Architecture is about trade-offs, not best practices. Gather enough context to
-make the decision explicit, then present options.
+## Workflow
 
-- Ask only if the answer is blocking; otherwise inspect the codebase or state
-  assumptions
-- Ask one focused question at a time when clarification is required
-- Provide your recommended answer for each blocking question
-- Resolve dependencies between decisions sequentially — don't jump ahead
+### 1. Frame the decision
 
-Gather at minimum:
-- **What exists today** — greenfield or evolving an existing system?
-- **Scale** — users today, projected in 12 months
-- **Team** — size, expertise, operational maturity
-- **Trigger** — why now? pain point, new feature, scale issue?
-- **Constraints** — budget, timeline, compliance, existing infrastructure
+State the decision as a choice, its scope, the trigger, and the cost of reversing
+it. Inspect the repository and existing decision records before asking questions.
+Gather only constraints that could change the recommendation; state non-blocking
+unknowns as assumptions.
 
-Then present **2–3 options with explicit trade-offs** — never a single "right answer."
+Ask when missing context blocks comparison. Resolve dependent decisions in order
+rather than mixing them into one recommendation.
 
-## Reference Files
+Done when the decision, current state, decision owner, constraints, and
+reversibility are explicit.
 
-Load the relevant reference file based on context. Read only what the conversation needs.
+### 2. Diagnose the current system
+
+Trace the current architecture through ownership, interfaces, data flow, runtime
+boundaries, and operations. Distinguish observed behavior from inferred intent.
+Name the evidence behind claims about scale, coupling, latency, reliability,
+security, ownership, or operational burden.
+
+Done when the current design and its demonstrated pain are clear enough to judge
+whether change is warranted.
+
+### 3. Compare viable options
+
+Compare the status quo with every materially viable alternative. Preserve a
+rejected alternative only when its rejection is non-obvious or likely to be
+revisited. Do not pad the comparison to reach a fixed option count.
+
+Evaluate each option against the same decision-specific criteria, including when
+relevant:
+
+- fit with current constraints and established architecture
+- complexity added, removed, or shifted
+- migration and interoperability
+- user and customer impact, including accessibility where relevant
+- failure modes, security, privacy, and data consistency
+- reliability, recovery, operational ownership, and observability
+- cost, performance, capacity, and scaling evidence
+- evolvability, reversibility, and lock-in
+
+Done when every viable option is evaluated against the criteria that can change
+the decision.
+
+### 4. Recommend and verify
+
+Give one recommendation or state that evidence is insufficient. Include:
+
+1. the recommendation and why it wins
+2. viable alternatives and why they lose
+3. trade-offs, risks, and failure modes
+4. assumptions and unresolved questions
+5. an incremental next step or experiment
+6. validation signals and rollback/reversal path
+
+Use current, version-specific documentation when a recommendation depends on a
+framework, library, provider, or platform. Prefer the repository's established
+stack unless measured limitations justify migration.
+
+Use this response shape:
+
+```markdown
+## Recommendation
+**Decision:** [one sentence]
+**Why:** [decisive constraints and evidence]
+
+## Options
+| Option | Fit | Costs and risks | Reversibility |
+|---|---|---|---|
+
+## Assumptions and unknowns
+[What is assumed; what could change the decision]
+
+## Next step
+[Smallest experiment, migration slice, or implementation step]
+
+## Validation and reversal
+[Signals, failure threshold, rollback or migration path]
+
+## Durable artifact
+[Existing record, recommended artifact, or why none is needed]
+```
+
+Done when the recommendation is actionable and the user can tell what evidence
+would confirm or overturn it.
+
+### 5. Ask what happens next
+
+The recommendation memo is the default stopping point. When the user has not
+already specified the next output, ask whether they want to:
+
+- stop at the recommendation
+- create an ADR
+- create a technical design or diagram
+- prepare a handoff for a named person, agent, or workflow
+- continue through their orchestrator or planning workflow
+
+Before preparing a handoff, ask who or what will receive it and what that receiver
+must do next.
+
+A result qualifies as an **ADR candidate** when it is hard to reverse,
+surprising, constrained by facts outside the code, establishes ownership or
+integration boundaries, deliberately deviates from the expected path, or rejects
+a non-obvious alternative. Identify the candidate in the normal response. Draft
+or write the ADR only when the decision is resolved and the user chooses that
+artifact. When evidence is insufficient, preserve the open questions instead of
+recording an unresolved assumption as a decision. Link an existing ADR when it
+already owns the decision.
+
+Done when the user has chosen the stopping point, artifact, or handoff target.
+
+## References Routing Table
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — High | Code organization, module design, why codebase feels hard to change | `references/design-principles.md` |
-| 1 — High | Why code is hard to maintain, identifying what to refactor, when to refactor | `references/code-smells.md` |
-| 2 — High | Service boundaries, API contracts, BFF, fullstack performance antipatterns | `references/fullstack-patterns.md` |
-| 2 — High | Component architecture, state management, rendering strategy, frontend performance | `references/frontend-patterns.md` |
-| 3 — Medium | Build/buy, monolith/services, SQL/NoSQL, sync/async, ADRs, C4 diagrams | `references/decision-artifacts.md` |
-| 3 — Medium | "What structural pattern should I use?", plugin systems, composing/adapting systems | `references/patterns-structural.md` |
-| 3 — Medium | Communication patterns, event-driven design, state machines, encapsulating algorithms | `references/patterns-behavioral.md` |
+| 1 — Required | Code organization, module interfaces, seams, depth, or testability | `references/codebase-design.md` |
+| 1 — High | Diagnosing maintainability symptoms or deciding whether to refactor | `references/code-smells.md` |
+| 2 — High | Service boundaries, client-specific orchestration, API protocols, or request waterfalls | `references/fullstack-patterns.md` |
+| 2 — High | Frontend composition, state ownership, rendering, or delivery strategy | `references/frontend-patterns.md` |
+| 2 — High | Persistence, data ownership, consistency, schema evolution, or migration | `references/data-architecture.md` |
+| 2 — High | Reliability, security, privacy, observability, capacity, or runtime topology | `references/system-quality.md` |
+| 2 — High | Durable decision, design/spec, uncertainty map, or diagram | `references/decision-artifacts.md` |
+| 2 — Conditional | Writing a resolved ADR when the repository has no template | `references/adr-template.md` |
+| 2 — Conditional | User requests a handoff and names its receiver | `references/agent-handoff.md` |
+| 3 — Medium | Object creation, wrapping, adaptation, composition, or subsystem access | `references/patterns-structural.md` |
+| 3 — Medium | Events, coordination, interchangeable behavior, explicit state, queues, or traversal | `references/patterns-behavioral.md` |
 
-## Complexity Red Flags (Diagnose First)
+## Completion Gate
 
-Before recommending a solution, identify the symptom. These are fast first-pass signals.
+The decision is complete only when:
 
-**Ousterhout's 3 complexity symptoms:**
-- **Change amplification** — one logical change requires edits in many unrelated places
-- **Cognitive load** — developer must hold too much context to make a change safely
-- **Unknown unknowns** — it's not obvious what must change when something else changes
-
-**Architecture-level smells (Fowler):**
-- **Shotgun Surgery** — one change touches many unrelated files → missing abstraction or wrong boundary
-- **Divergent Change** — one module changes for many unrelated reasons → SRP violation
-- **Feature Envy** — a function/hook is more interested in another module's data than its own → wrong ownership
-
-If you see these symptoms, load `references/code-smells.md` or `references/design-principles.md`.
-
-## Quick Decision Checks
-
-- **Rendering strategy:** use `references/frontend-patterns.md` for CSR/SSR/SSG/ISR/RSC/Streaming/Edge trade-offs.
-- **API protocol:** use `references/fullstack-patterns.md` for REST vs GraphQL vs gRPC.
-- **Durable decision record:** use `references/decision-artifacts.md` for ADRs and C4 diagrams.
-
-Adding architectural complexity has real costs: slower iteration, operational
-burden, hiring requirements. Evaluate whether the complexity is paid for at
-current scale.
-
-## Output Contract
-
-End with:
-
-1. Recommendation
-2. 2–3 alternatives considered
-3. Trade-offs and risks
-4. Assumptions
-5. Next concrete step
-6. ADR draft only if the decision is hard to reverse
+- repository evidence and user constraints are separated from assumptions
+- the status quo and every viable alternative use the same evaluation criteria
+- the recommendation states what complexity it adds, removes, or shifts
+- validation and reversal are concrete
+- the user has chosen to stop, create an artifact, or hand the decision to a
+  named receiver or workflow

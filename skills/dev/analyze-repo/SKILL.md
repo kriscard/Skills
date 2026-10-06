@@ -61,7 +61,7 @@ Done when every candidate finding has evidence and a confidence label.
 
 ### 2. Synthesize findings
 
-Load `references/codebase-vocabulary.md` and use its terms consistently. Assess
+Load `references/codebase-design.md` and use its terms consistently. Assess
 modules through their interfaces, implementations, seams, adapters, depth,
 leverage, and locality. Reserve *boundary* for a domain or deployment boundary;
 use *seam* for a place where behavior can vary.
@@ -82,9 +82,10 @@ deletion test to suspected pass-through modules, and call a seam real only when
 multiple adapters or another demonstrated variation justify it.
 
 For consequential undocumented choices, add an **ADR candidate** rather than
-inventing rationale. Link recorded decisions to their existing ADR. Offer to
-draft ADRs after the audit; do not create them as part of analysis unless the
-user asks.
+inventing rationale. Link recorded decisions to their existing ADR. Hand an
+unresolved candidate to the `architect` skill to compare options and recommend a
+decision; draft the ADR only after that decision is resolved and the user asks
+for the durable artifact.
 
 Done when the top findings are evidence-backed, use the shared vocabulary,
 distinguish established patterns from accidental variation, and are ordered by
@@ -114,7 +115,7 @@ highlighted problem maps to a finding.
 
 Read these references before writing:
 
-1. `references/codebase-vocabulary.md`
+1. `references/codebase-design.md`
 2. `references/report-design-system.md`
 3. `references/report-components.md`
 4. `references/html-report-template.md`
@@ -178,7 +179,7 @@ The analysis is complete only when:
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — Required | Assessing organization and module design | `references/codebase-vocabulary.md` |
+| 1 — Required | Assessing organization and module design | `references/codebase-design.md` |
 | 1 — Required | Generating any report | `references/report-design-system.md` |
 | 1 — Required | Building report sections | `references/report-components.md` |
 | 1 — Required | Assembling the final HTML | `references/html-report-template.md` |

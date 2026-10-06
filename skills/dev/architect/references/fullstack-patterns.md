@@ -1,112 +1,120 @@
-> **Read this when:** user is designing service boundaries, API contracts, or fullstack system architecture. Covers BFF pattern, API protocol selection, and frontend-relevant performance antipatterns.
+> **Read this when:** deciding service boundaries, client-specific
+> orchestration, API contracts, protocols, or request/data-flow architecture.
 
 # Fullstack Architecture Patterns
 
----
+Separate responsibilities before choosing a protocol or deployment unit. A BFF,
+API gateway, graph layer, and domain service may coexist, but they solve different
+problems.
 
-## BFF (Backend for Frontend)
+## Responsibility map
 
-### What it is
-A backend layer owned by the frontend team that aggregates and transforms backend services into an interface optimized for a specific client type (web, mobile, desktop).
+| Responsibility | Typical owner |
+|---|---|
+| Client-specific aggregation and view models | BFF or application backend |
+| Authentication enforcement, routing, quotas, coarse caching | Gateway or platform edge |
+| Domain rules and authoritative state | Domain/application service |
+| Cross-source graph contract and field resolution | GraphQL layer or federated graph |
+| Workflow coordination across boundaries | Application/orchestration module |
 
-```
-Web Client → BFF (Web) ─┐
-                         ├─ User Service
-Mobile Client → BFF (Mobile) ─┘ │
-                                  └─ Product Service
-                                  └─ Order Service
-```
+Ownership follows the organization's operating model. Record who deploys,
+observes, supports, and evolves each contract rather than assigning ownership by
+technology name.
 
-### Problem it solves
-**Over-fetching:** A REST endpoint returns everything; the frontend renders 3 fields.
-**Chatty I/O:** Loading one page requires 6 sequential API calls to get related data.
-**Shape mismatch:** Backend models represent domain objects; frontend needs a view model optimized for one specific screen.
+## Backend for Frontend
 
-### Modern forms
-- **GraphQL server** — client specifies exactly what fields it needs; server fulfills from multiple sources
-- **Next.js API routes / Route Handlers** — thin aggregation layer that calls internal services
-- **tRPC** — end-to-end type-safe RPC from TypeScript backend to TypeScript frontend; zero API schema duplication
-- **API Gateway with aggregation** — AWS API Gateway, Kong for infrastructure-level BFF
+A BFF exposes an interface shaped for one client class and orchestrates downstream
+capabilities on that client's behalf.
 
-### Ownership
-The BFF interface is defined by what the UI needs, not by backend domain models. **Frontend team owns it.** This is the key architectural decision: the contract is frontend-driven.
+Use when evidence shows:
 
-### When to add
-- Multiple microservices must be called to render one page
-- Mobile and web need different data shapes from the same backend
-- Backend API is too chatty or over-fetching is measurable
-- You need to add auth, rate limiting, or caching without touching each microservice
+- web, mobile, or another client needs materially different contracts
+- one user journey requires repeated client-side orchestration across services
+- domain responses need stable client-specific projection
+- the client cannot safely or efficiently coordinate required downstream work
 
-### Trade-offs
-| Benefit | Cost |
-|---------|------|
-| Frontend gets exactly the data it needs | Another service to deploy and maintain |
-| Backend services stay focused on domain | Potential for logic duplication across BFFs |
-| Easy to version per client type | Requires coordination when backend contracts change |
+A GraphQL server is a BFF only when it owns this client-specific responsibility.
+An API gateway is a BFF only when it performs client-specific orchestration, not
+merely routing, authentication, or rate limiting.
 
----
+Costs include another contract, deployment, failure surface, observability path,
+and potential duplication across clients. Keep domain invariants in their owning
+module; the BFF composes rather than becomes a second domain layer.
 
-## API Protocol Decision
+## Protocol selection
 
-Choosing the wrong protocol for the wrong use case creates friction that compounds over time.
+Choose protocol after defining consumers, interaction shape, compatibility,
+latency, caching, security, and evolution requirements.
 
-| Protocol | Strengths | Weaknesses | Use when |
-|----------|-----------|------------|----------|
-| **REST** | Stateless, HTTP-cacheable, widely understood, battle-tested tooling | Over-fetching, under-fetching, N+1 request patterns, versioning friction | Public APIs, simple CRUD, stable known clients, existing team knowledge |
-| **GraphQL** | Client specifies exact fields, strongly typed schema, introspectable, solves over/under-fetch | Cache complexity, query cost management, N+1 resolver problem, steeper backend setup | Varied client data needs (web vs mobile), BFF implementation, rapid frontend iteration, complex nested data |
-| **gRPC** | Binary (fast), bidirectional streaming, contract-first via protobuf, strongly typed | Not browser-native (requires proxy like grpc-web or connect), steep learning curve, tooling gap | Server-to-server internal communication, high-throughput internal APIs, streaming (chat, live data) |
+### HTTP resource/message APIs
 
-### Decision signals
-- **"Our frontend needs different data than our mobile app"** → GraphQL or separate BFFs
-- **"We're making 5 API calls to render this page"** → GraphQL, BFF aggregation, or request batching
-- **"Two microservices communicate at high frequency internally"** → gRPC
-- **"We're building a public API for third-party developers"** → REST (widest tooling support, most familiar)
-- **"We need real-time bidirectional streaming"** → gRPC or WebSockets
+Strong fit for broadly consumable contracts, request/response interactions,
+standard HTTP semantics, and intermediary caching. Payload shape, batching,
+sparse fields, and purpose-built endpoints determine whether over-fetching or
+request waterfalls occur; they are not inherent properties of REST.
 
----
+### GraphQL
 
-## Frontend Performance Antipatterns
+Strong fit when clients need varied projections over a governed graph and the
+organization can own schema evolution, authorization, resolver cost, caching,
+and observability. One browser request may still trigger internal waterfalls or
+N+1 work; inspect the complete resolver and downstream graph.
 
-These are architectural problems, not implementation details. Fixing them requires design changes, not just code tweaks.
+### RPC and contract-first binary protocols
 
-### Busy Frontend
-**What:** Heavy computation running on the browser's main thread, blocking rendering and interaction.
-**Symptoms:** Janky animations, unresponsive UI during data processing, high TBT (Total Blocking Time) in Core Web Vitals, long tasks in Chrome DevTools.
-**Examples:** Sorting/filtering large datasets on the client, complex CSV parsing, image processing in JS.
+Strong fit for controlled service-to-service communication, generated clients,
+high throughput, or streaming. Account for browser compatibility, debugging,
+versioning, proxy support, and organizational language diversity.
 
-**Fixes:**
-- Move CPU-bound work to a **Web Worker** (runs in background thread, zero main thread impact)
-- **Offload to the server** — server can do it faster with less latency than sending data + processing in browser
-- **Defer with `requestIdleCallback`** for non-urgent work
-- **Virtualize long lists** (react-virtual, tanstack-virtual) instead of rendering 10,000 DOM nodes
+### Events and asynchronous messages
 
-**Measure with:** INP (Interaction to Next Paint), TBT (Total Blocking Time) in Lighthouse/Web Vitals.
+Strong fit for decoupled notification, workload buffering, replay, and workflows
+that do not require an immediate result. Define delivery guarantees, ordering,
+idempotency, schema evolution, retries, dead-letter handling, and ownership.
 
----
+### Realtime channels
 
-### Chatty I/O
-**What:** Many small sequential requests to fetch what could be one larger request.
-**Symptoms:** Waterfall of API calls in DevTools Network tab, page feels slow despite good server response times, N+1 query pattern.
-**Examples:** Load user → load their posts → load comments for each post (sequential chain). Loading 20 items and then making 20 individual requests for their details.
+WebSockets, server-sent events, and streaming RPC serve different directionality
+and connection requirements. Choose from message flow, fan-out, reconnection,
+backpressure, infrastructure, and authorization needs.
 
-**Fixes:**
-- **GraphQL** — one request, client specifies exactly what it needs including nested relations
-- **BFF aggregation** — BFF fetches from multiple services and returns a composed response
-- **Request batching** — DataLoader pattern; batch individual lookups into one bulk request
-- **Prefetch** — load the next likely page/data before the user navigates to it
-- **Pagination strategy** — don't load 1000 items to show 20; use cursor-based pagination
+## Decision evidence
 
----
+Trace at least one representative journey and record:
 
-### Extraneous Fetching
-**What:** Fetching more data than is actually rendered or used.
-**Symptoms:** Large API response payloads, unused fields in every response, slow perceived performance despite fast API.
-**Examples:** A user list endpoint that returns full user objects with 30 fields when the UI shows only name and avatar.
+- callers and contract owners
+- request/message count and dependency order
+- payloads actually consumed
+- latency and throughput targets with source
+- consistency and failure semantics
+- compatibility and migration requirements
+- operational owner and observability
 
-**Fixes:**
-- **GraphQL field selection** — `query { users { id name avatarUrl } }` — never fetch unneeded fields
-- **Sparse fieldsets (JSON:API)** — `?fields[user]=id,name,avatarUrl`
-- **Server-side projection** — REST endpoint accepts a `fields` parameter
-- **BFF** — the BFF selects and transforms only what the specific client needs
+A protocol recommendation is incomplete until it explains how the whole journey
+behaves, not only the client-facing request count.
 
-**Diagnostic question:** "Is there anything in this API response that this component never reads?" If yes, that's extraneous fetching.
+## Common data-flow problems
+
+### Request waterfall
+
+Independent operations run sequentially. Verify the dependency before combining,
+parallelizing, preloading, or moving orchestration server-side.
+
+### N+1 work
+
+One list operation triggers per-item downstream work. Address it with batching,
+bulk interfaces, joins/projections, or resolver planning at the layer that owns
+the data access.
+
+### Extraneous transfer
+
+The system transfers fields or records the consumer does not use. Compare payload
+and consumption, then consider projection, sparse fields, pagination, compression,
+or a client-specific interface.
+
+### Busy client
+
+Main-thread computation or excessive rendering blocks interaction. Measure the
+work first, then reduce it, schedule it, move it to a worker, or move it closer to
+the data. Server offload is beneficial only when transfer and server latency do
+not exceed the saved client work.

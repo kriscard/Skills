@@ -12,6 +12,7 @@
   "scripts": {
     "validate": "pnpm run validate:skills && pnpm run format:check",
     "validate:skills": "node scripts/validate-skills.mjs",
+    "sync:references": "node scripts/sync-shared-references.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

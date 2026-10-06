@@ -1,69 +1,127 @@
-> **Read this when:** the user needs a decision framework, ADR draft, or architecture diagram for a system decision that is hard to reverse, spans service/module boundaries, or needs explicit trade-off documentation.
+> **Read this when:** choosing a durable output for an architecture decision,
+> design, unresolved question, or diagram.
 
-# Architecture Decision Artifacts
+# Decision and Design Artifacts
 
-Use these artifacts when the decision needs durable context. Skip them for obvious or easily reversible choices.
+Choose by the information that must survive, not by adopting a universal planning
+framework. The recommendation memo in `SKILL.md` is the default response and
+index. It may remain in the conversation; it does not require a second persisted
+file. When a specialized artifact is warranted, link it from the response instead
+of repeating its contents. Persist both only when the user or repository workflow
+requires both. Add an artifact only when it has a clear reader and owner.
 
-## Decision Frameworks
+## Artifact chooser
 
-### Build vs Buy
+| Need | Artifact | Completion signal |
+|---|---|---|
+| Communicate the recommendation now | Recommendation memo | Decision, options, assumptions, next step, validation, and reversal are explicit |
+| Preserve one consequential technical trade-off | ADR | Context, decision, alternatives, consequences, and confirmation survive |
+| Specify a cross-module design before implementation | Technical design/spec | Interfaces, flows, data, failures, migration, and verification are implementable |
+| Expose unresolved decisions and research | Uncertainty map | Each unknown has an owner, evidence path, and promotion criterion |
+| Clarify topology, ownership, or sequence | Architecture diagram | Scope, nodes, edges, current/proposed state, and caption are unambiguous |
 
-- **Build when:** core differentiator, unique requirements, team has expertise
-- **Buy/OSS when:** commodity problem, maintenance burden isn't worth carrying
-- Key question: "If this breaks at 3am, do you want your team debugging it or calling support?"
+Lifecycle frameworks that maintain project state, phases, tasks, stories, or
+multi-role delivery belong downstream of the architecture decision. The
+repository's established planning workflow owns that work.
 
-### Monolith vs Services
+## Architecture decision record
 
-- **Modular monolith when:** team <10, early stage, domain boundaries still unclear
-- **Services when:** multiple teams need independent deployment, clear bounded contexts exist, different scaling needs per component
-- Key question: "Can you draw clear service boundaries today without guessing?"
+### Qualification
 
-### SQL vs NoSQL
+Use an ADR when a decision is consequential, difficult to reverse, or likely to
+be challenged later, especially when it establishes:
 
-- **SQL when:** relational data, complex queries, consistency critical, schema is stable
-- **NoSQL when:** flexible schema, high write throughput, document-shaped data, known access patterns
-- Key question: "What queries will you run most? How often does your schema change?"
+- architectural shape or deployment topology
+- integration and consistency between contexts
+- technology with material lock-in
+- ownership, scope, or explicit exclusions
+- a deliberate deviation from the expected approach
+- legal, compliance, partner, performance, or operational constraints not
+  visible in code
+- rejection of a non-obvious alternative
 
-### Sync vs Async
+A local, conventional, easily reversible choice usually needs no ADR. A
+reversible choice may still qualify when it is surprising, externally
+constrained, or likely to be repeatedly challenged. Missing an ADR is not itself
+technical debt.
 
-- **Sync when:** user needs immediate response, simple request/response flow
-- **Async when:** long-running tasks, decoupling producers from consumers, spike absorption
-- Key question: "Does the user need the result immediately, or can they check back later?"
+### Format selection
 
-## ADR Template
+Choose the smallest form that preserves the reasoning:
 
-Use when a decision is hard to reverse, surprising without context, and the result of a real trade-off.
+- **Full option record (MADR-style):** drivers, options, outcome, consequences,
+  and confirmation when later reviewers need the full comparison.
+- **Concise record (Nygard-style):** status, context, decision, and consequences
+  when the trade-off is settled and compact.
+- **Memory record:** surprising choice plus reason when that is the only context
+  future maintainers cannot recover.
 
-```markdown
-# ADR-[N]: [Title]
-Status: Proposed | Accepted | Deprecated
-Date: YYYY-MM-DD
+### Triage classification
 
-## Context
-What situation forced this decision? What are the constraints?
+These labels select the next action; they are not ADR status values:
 
-## Decision
-What are we doing? Be specific enough that a new engineer could implement it.
+- **Recorded:** link the existing record and check implementation alignment.
+- **ADR candidate:** the decision qualifies but lacks a durable record.
+- **Needs context:** code shows a choice but cannot prove intent or rationale.
+- **No record needed:** the choice is local, reversible, or obvious from the
+  environment.
 
-## Consequences
-**Positive:** What gets better?
-**Negative:** What gets harder?
-**Risks:** What could go wrong, and how would we know?
-```
+Use only the repository template's lifecycle values inside an ADR, such as
+`Proposed`, `Accepted`, `Superseded`, or `Deprecated`.
 
-Keep to one page. If it takes more than 2 minutes to read, trim it.
+Draft the ADR after the direction is resolved and the user requests the
+artifact. `Proposed` means one chosen direction awaiting formal acceptance, not
+several unresolved alternatives. Open decision-blocking questions belong in an
+uncertainty map.
 
-## C4 Diagrams
+Use the repository's ADR convention. When none exists, load the shared ADR
+template routed from `SKILL.md`; it is the single source for lifecycle, sections,
+and failure modes. Preserve facts that cannot be recovered from code and never
+invent dates, owners, rationale, or alternatives.
 
-Use Level 1 (System Context) and Level 2 (Container) — these stay accurate long enough to be useful. Skip Level 4 (Code) — it goes stale within weeks.
+## Technical design/spec
 
-```mermaid
-C4Context
-  Person(user, "User")
-  System(app, "Your App", "Description")
-  System_Ext(ext, "External Service")
-  Rel(user, app, "Uses")
-  Rel(app, ext, "Calls")
-```
+Use when an accepted direction still needs enough precision for multiple modules
+or contributors to implement consistently. Include only applicable sections:
 
-Label every box with technology and purpose.
+- goals, non-goals, and decision links
+- current and proposed architecture
+- interfaces, contracts, ownership, and invariants
+- data model, consistency, migration, and compatibility
+- request, event, sequence, and failure flows
+- security, privacy, reliability, observability, and accessibility constraints
+- rollout, rollback, testing, and acceptance signals
+- unresolved questions with owners
+
+A design spec explains the implementation contract. Decision-blocking unknowns
+belong in an uncertainty map; a design may retain peripheral implementation
+questions with owners. It does not need to become a task list; hand accepted
+design to the planning workflow for decomposition.
+
+## Uncertainty map
+
+Use when evidence is insufficient for a recommendation. Separate:
+
+- known facts with evidence
+- decisions that can be made now
+- agent-research questions
+- questions requiring human/product/domain input
+- work that is not precise enough to schedule
+
+Each unknown needs an owner, next evidence source, and criterion for becoming a
+decision or task.
+
+## Architecture diagrams
+
+Choose the view that answers the decision:
+
+- **System context:** actors, the system, and external dependencies
+- **Container/deployment:** independently running or deployed units and their
+  responsibilities
+- **Module/component:** interfaces and dependencies relevant to the decision
+- **Sequence/data flow:** ordering, protocols, state transitions, and failures
+
+Use the lowest level that clarifies the trade-off without cataloging the entire
+codebase. Label nodes by responsibility; include technology only when it changes
+the decision. State what edges mean and distinguish current from proposed
+architecture. The rendering tool is optional.

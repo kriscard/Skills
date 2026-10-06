@@ -1,6 +1,6 @@
 > **Read this when:** user needs to compose, wrap, adapt, structure objects, or provide simplified access to complex subsystems. Also covers creational patterns (how objects are created).
 
-# Structural & Creational Patterns (Frontend 2026)
+# Structural and Creational Patterns
 
 The classic GoF patterns map directly to modern frontend development. Instead of class hierarchies, these patterns manifest through ES6 modules, closures, hooks, and component composition.
 
@@ -115,7 +115,7 @@ function withAuth<P>(Component: React.ComponentType<P>) {
 }
 ```
 
-**2026 note:** Custom hooks have replaced HOCs for most logic extraction. Prefer hooks over HOCs unless the decoration must happen at the JSX tree level (auth guards, error boundaries, portals).
+Prefer the repository's established composition mechanism. Use tree-level decoration when behavior must wrap rendering or lifecycle; use hooks or plain modules when only logic is shared.
 
 **Use when:** adding behavior that's orthogonal to the component's core responsibility — analytics, error handling, feature flags, access control.
 
