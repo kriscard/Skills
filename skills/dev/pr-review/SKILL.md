@@ -1,10 +1,10 @@
 ---
 name: pr-review
 description: >-
-  Bug-first, evidence-only PR review with guidance-scoped specialist passes for
+  Bug-first, evidence-only pull request review with guidance-scoped passes for
   security, correctness, architecture, React patterns, and accessibility. Use
-  when the user says "review this PR", "review my changes", "review the diff",
-  or mentions a PR number. Prefers silence over speculative findings.
+  when the user explicitly asks to review a pull request or supplies a PR
+  number or URL for review. Prefers silence over speculative findings.
 user-invocable: true
 argument-hint: "[PR number or branch — omit for current branch vs PR/default base]"
 ---
@@ -17,47 +17,55 @@ concrete fix. Prefer silence over false positives.
 ## Step 1 — Acquire Context (run independent reads in parallel)
 
 ```bash
-# If PR number given:
-gh pr view <number> --json title,body,files,baseRefName,headRefName,commits
-gh pr diff <number>
+# If a PR number or URL is given:
+gh pr view <number-or-url> --json title,body,files,baseRefName,headRefName,commits
+gh pr diff <number-or-url>
 
-# If reviewing current branch, determine base first:
+# If a named branch is given, replace <head> with that branch.
+# Otherwise use HEAD. Resolve the repository's default base branch first:
 git status -sb
-git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || true
-git merge-base HEAD origin/<base-branch>
-git diff "$(git merge-base HEAD origin/<base-branch>)"..HEAD
-git log "$(git merge-base HEAD origin/<base-branch>)"..HEAD --oneline
+base_ref="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null)"
+merge_base="$(git merge-base "$base_ref" <head>)"
+git diff "$merge_base"..<head>
+git log "$merge_base"..<head> --oneline
 ```
 
-Use the PR's `baseRefName` when available. Do not assume `main` if the PR or
-repository reports a different base branch.
+Use the PR's `baseRefName` when available. Otherwise resolve the base from the
+repository's remote default branch or explicit project guidance. Do not assume
+`main`.
 
 Also read applicable guidance:
 
-- root `CLAUDE.md` / `REVIEW.md`
-- any `CLAUDE.md` / `REVIEW.md` in directories containing modified files
+- root `AGENTS.md`, `CLAUDE.md`, and `REVIEW.md`
+- every applicable copy of those files from the root through each changed
+  file's parent directory
 - skip rules for generated files, vendored code, snapshots, fixtures, or file patterns
 
 Build a guidance map: which rules apply to which changed paths.
 
-Done only when you have: base branch, head branch, file list, full diff, commit
-list, PR description, guidance map, and skipped paths. If any item is
-unavailable, state why before review.
+Done only when every mode has a base ref, head ref, file list, full diff, commit
+list, guidance map, and skipped paths. For a PR, also require its title and
+body. If any required item is unavailable, state why before review.
 
 ## Step 2 — Profile the Diff
 
-Check what the diff touches to decide which specialist passes to run:
+Classify the diff to decide which specialist passes to run:
 
-- `HAS_REACT` — diff contains `.tsx`, `.jsx`, `use*.ts`, `components/`, or similar
-- `HAS_ARCH` — diff touches `services/`, `schemas/`, `api/`, `routes/`, `migrations/`, `prisma/`
-- `HAS_UI` — diff contains CSS, Tailwind classes, styled-components, or design tokens
-- `HAS_CONFIG` — diff touches build, deploy, dependency, env, CI, auth, or database config
+- `HAS_REACT` — changed `.jsx` / `.tsx`, React or Next.js imports, hooks, or components
+- `HAS_ARCH` — changed service or module boundaries, schemas, APIs, routes,
+  migrations, or persistence
+- `HAS_UI` — changed rendered markup, styles, Tailwind classes, or design tokens
+- `HAS_CONFIG` — changed build, deploy, dependency, environment, CI, auth, or
+  database configuration
+
+Done only when each flag is recorded as true or false with the changed paths or
+diff evidence that determined it.
 
 ## Step 3 — Run Specialist Passes
 
-For non-trivial diffs, run specialist passes in parallel when agents are
-available. Otherwise run the same passes sequentially yourself. Each pass must
-read enough surrounding code to confirm data flow and call sites.
+Run every applicable pass. Parallelize independent passes when agents are
+authorized and available; otherwise run them sequentially. Each pass must read
+enough surrounding code to confirm data flow and call sites.
 
 **Always run:**
 - **Bug + regression** — logic errors, broken edge cases, build failures, wrong results
@@ -75,6 +83,10 @@ read enough surrounding code to confirm data flow and call sites.
 
 **If HAS_CONFIG:**
 - **Release safety** — deploy/build breaks, unsafe defaults, missing migrations, dependency/runtime mismatch
+
+A pass is complete only when it returns candidate findings or records no
+finding and identifies the code, config, tests, or call sites it inspected.
+Proceed only after every applicable pass is complete.
 
 ## Step 4 — Validate Candidate Findings
 
