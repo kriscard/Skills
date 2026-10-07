@@ -16,11 +16,14 @@ visible from the code, installed version, or verified runtime behavior.
 
 ### 1. Establish scope and versions
 
-Read project guidance and detect installed RHF, React, resolver, schema, UI-library, data-fetching,
-and framework versions. Inventory every file that imports RHF directly and follow its form
-components, schemas, defaults, serializers, mutations, and tests.
+Choose scope from the request before inventorying files. For a targeted bug or change review,
+include the requested or changed forms and follow their components, schemas, defaults, serializers,
+mutations, and tests. Inventory every RHF form only for an explicit repository-wide audit. Read
+project guidance and detect the installed RHF, React, resolver, schema, UI-library, data-fetching,
+and framework versions.
 
-Completion: every form in scope has an entry point and its supporting files accounted for.
+Completion: the scope is explicit, and every included form has an entry point and its supporting
+files accounted for.
 
 ### 2. Reconstruct each form contract
 
@@ -38,8 +41,8 @@ Completion: each submitted value can be traced from initialization through seria
 
 ### 3. Run the checks
 
-Read `references/checks.md` completely. Load the build skill's branch reference when the audited
-form uses that branch:
+Read `references/checks.md` completely. Load the bundled mirror of the build skill's canonical
+branch reference when the audited form uses that branch:
 
 - `references/server-data-and-lifecycle.md`
 - `references/adapters-and-accessibility.md`

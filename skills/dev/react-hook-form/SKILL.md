@@ -1,11 +1,10 @@
 ---
 name: react-hook-form
 description: >-
-  Build and modify React Hook Form forms. Use when React Hook Form is mentioned,
-  imported, installed, or established by project conventions, including controlled
-  widget integration, schema validation, fetched edit forms, conditional fields,
-  multi-step wizards, field arrays, submission errors, and dirty-state handling.
-  Use the react-hook-form-audit skill when the job is review rather than implementation.
+  Build and modify forms that use React Hook Form or whose project conventions
+  require it. Use when implementing controlled widgets, schema validation, fetched
+  edit forms, conditional fields, multi-step wizards, field arrays, submission
+  errors, or dirty-state handling. For review or diagnosis, use react-hook-form-audit.
 ---
 
 # React Hook Form
@@ -60,16 +59,16 @@ Load the relevant reference before implementing a branch:
 | 4 — High | Dynamic or nested rows with `useFieldArray` | `references/field-arrays.md` |
 | 5 — Medium | Installed project uses or is migrating to RHF v8 | `references/version-8.md` |
 | 6 — Medium | React 19 action or Next.js Server Action appears in the same flow | `references/actions-boundary.md` |
-| 7 — Medium | Tests requested, existing tests affected, or behavior is non-trivial | `references/testing.md` |
+| 7 — Medium | Tests requested or affected; async submission, baseline, conditional/wizard, or field-array behavior changed | `references/testing.md` |
 
 Completion: every detected branch has loaded and applied its reference; no branch is handled from
 memory alone.
 
 ### 5. Verify
 
-Run the project's TypeScript typecheck. Fix every error caused by the change. Tests are optional:
-run focused existing tests when present and add tests when requested or when a complex behavior
-would otherwise remain unverified. Exercise the form manually when runtime tooling is available.
+Run the project's TypeScript typecheck and fix every error caused by the change. Run focused
+existing tests when present. When the testing reference was loaded, add or update its behavioral
+tests. Otherwise tests are optional. Exercise the form manually when runtime tooling is available.
 
 Completion: typecheck passes, or unrelated pre-existing failures are named with evidence; modified
 paths, submission mapping, and failure behavior have all been checked.

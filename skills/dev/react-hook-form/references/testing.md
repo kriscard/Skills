@@ -1,4 +1,4 @@
-> **Read this when:** tests are requested, existing tests cover the changed form, or form behavior is complex enough to need regression evidence.
+> **Read this when:** tests are requested or affected, or the change alters async submission, baseline, conditional/wizard, or field-array behavior.
 
 # Testing
 
@@ -14,8 +14,9 @@ Prefer behavioral tests with Testing Library/user-event:
 - assert field-array add, remove, and reorder preserve row identity;
 - assert wizard cross-step dependencies invalidate prior completion and block final submission.
 
-Avoid testing RHF internals or suppressing async warnings by wrapping initial render in unnecessary
-`act`. Tests are optional unless the user requests them or project guidance requires them, but the
-TypeScript typecheck is always required.
+Test through user-visible behavior rather than RHF internals. Use async queries for observable
+updates instead of adding `act` around the initial render. Complete verification only when each
+changed behavior that triggered this reference has a focused regression assertion, or a missing
+test harness is reported as a remaining risk.
 
 Source: [Advanced testing](https://react-hook-form.com/advanced-usage#TestingForm).
