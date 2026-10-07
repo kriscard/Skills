@@ -1,115 +1,57 @@
 ---
 name: review
 description: >-
-  Bug-first, evidence-only review for code changes: find production-impacting
-  security, correctness, reliability, performance, and maintainability issues.
-  Use after writing or modifying code, when reviewing diffs or PRs, or when the
-  user asks "review this", "check this code", mentions security, code quality,
-  or performance. Enforces project guidance when available and prefers silence
-  over speculative findings.
+  Bug-first, evidence-only review of selected code, uncommitted changes, or code
+  modified in the current task. Use when the user asks to review or check code,
+  security, correctness, quality, or performance without naming a pull request or
+  branch comparison. Use pr-review for a PR number, PR URL, or branch-versus-base review.
 ---
 
 # Code Review
 
-Bug-first triage: report only findings with evidence, reachable impact, and a
-concrete fix. Prefer silence over false positives.
+Review a bounded code scope for production-impacting defects and applicable project-rule
+violations. Prefer silence over speculative findings.
 
-## Step 1 — Gather Context
+## Process
 
-1. Identify the changed files or specific code under review.
-2. Read applicable project guidance: root `CLAUDE.md` / `REVIEW.md` and any
-   path-local copies in directories containing reviewed files.
-3. Build a guidance map: which rules apply to which paths, including skip rules
-   for generated files, vendored code, snapshots, fixtures, or other exclusions.
-4. Load routed references when the changed code matches a reference trigger.
+### 1. Assemble the review packet
 
-Done only when the review scope, applicable guidance, and skipped paths are
-known. If any context is unavailable, state what is missing before reviewing.
+Identify the selected files, snippet, or working-tree diff. For repository changes, inspect both
+staged and unstaged changes and read enough surrounding code, callers, tests, and configuration to
+trace their impact.
 
-## Step 2 — Inspect Bug-First
+Read applicable guidance:
 
-Review changed code and enough surrounding code to prove or disprove impact.
-Use this priority order:
+- root `AGENTS.md`, `CLAUDE.md`, and `REVIEW.md`;
+- every applicable copy from the repository root through each reviewed file's parent directory;
+- skip rules for generated files, vendored code, snapshots, fixtures, or path exclusions.
 
-1. **Security** — injection, XSS, CSRF, auth bypass, secret exposure, trust-boundary mistakes
-2. **Correctness** — wrong results, data loss, broken error handling, edge cases, async races
-3. **Reliability** — production crashes, unsafe config, migration/deploy hazards, cleanup leaks
-4. **Performance** — N+1 queries, unbounded scans, memory leaks, repeated I/O, missing batching
-5. **Maintainability** — only senior-engineer issues: duplication, needless complexity, violated local patterns
-6. **Style/tests** — only when project guidance says so, or when the issue creates concrete production risk
+Build a guidance map from changed paths to governing rules. Treat the user's request or supplied
+artifact as the spec; otherwise record that no separate spec is available.
 
-## Step 3 — Validate Findings
+Completion: the packet contains the bounded scope, changed code or full diff, relevant surrounding
+code, guidance map, skipped paths, and a spec source or explicit `no spec available`.
 
-Before reporting a candidate finding, confirm all gates:
-
-- The issue is introduced by, or directly relevant to, the reviewed change.
-- The code path is reachable with realistic inputs or states.
-- The problem is not handled elsewhere by a guard, fallback, type guarantee,
-  transaction, try/catch, sanitizer, or caller contract.
-- The impact is concrete: accuracy, security, reliability, performance, or
-  maintainability harm the author would likely fix.
-- The finding is guidance-scoped: it does not violate skip rules and cites any
-  exact project rule it enforces.
-
-If any gate fails, drop the finding silently.
-
-## Severity
-
-- **Critical** — exploitable security issue, data loss, broken core flow, deploy/build break
-- **High** — correctness or reliability bug that should be fixed before merge
-- **Medium** — performance or maintainability issue a senior engineer would fix soon
-- **Low** — clear guidance violation or minor bug worth fixing, but non-blocking
-- **Pre-existing** — existing bug directly relevant to the changed path but not introduced here
-
-## Completion Gate
-
-Complete the review only after applying the guidance map, inspecting changed
-code plus relevant config/tests/call sites, and validating every reported
-finding. If no issues are found, state what was inspected.
-
-## Output Format
-
-```
-## Summary
-[1-sentence overall assessment]
-Issues: N critical · N high · N medium · N low · N pre-existing
-
-## 🔴 Critical
-1. `file:line` — [issue]
-   **Problem:** ...
-   **Impact:** ...
-   **Fix:** ...
-
-## 🟠 High
-...
-
-## 🟡 Medium
-...
-
-## 🔵 Low
-...
-
-## ⚪ Pre-existing
-...
-
-## Risk Summary
-[No blocking issues found / Found issues worth addressing before merge / Found production-risk issue]
-```
-
-Omit empty sections.
-
-## What Not To Do
-
-- Don't approve, block, or own merge authority; provide a risk summary instead
-- Don't flag style, formatting, or missing tests unless guidance says so or the issue creates concrete risk
-- Don't invent rules; enforce only evidenced bugs and applicable project guidance
-- Don't flag theoretical security risks without a plausible path to harm
-- Don't flag skipped paths or generated files unless guidance explicitly includes them
-- Don't give vague feedback like "this could be better"
-- Don't ignore config changes — they cause many production incidents
-
-## References
+### 2. Load applicable review references
 
 | Priority | Load when | Reference |
-|----------|-----------|-----------|
-| 1 — High | Reviewing UI code, component APIs, accessibility, or web interface patterns | `references/web-interface-guidelines.md` |
+| --- | --- | --- |
+| 1 — Required | Every code review | `references/review-core.md` |
+| 2 — High | Rendered web UI, interaction, forms, responsive behavior, or accessibility changed | `references/frontend-risk-checks.md` |
+
+Completion: the core is loaded, every conditional reference has been selected from changed-code
+evidence, and the review packet names which references apply.
+
+### 3. Run and report the review
+
+Apply every axis, validation gate, severity rule, and output requirement in the core reference. Run
+independent axes in parallel only when agents are authorized and available; otherwise keep separate
+notes while running them sequentially.
+
+Completion: every applicable axis records findings or an evidence-backed no-findings result, every
+reported candidate passes the core validation gate, and the final report follows the core format.
+
+## Boundary
+
+This skill reviews code already in scope. A pull request or branch comparison requires
+`pr-review`, which first resolves metadata, the comparison base, commits, and originating spec.

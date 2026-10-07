@@ -37,13 +37,13 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 | `commit` | Creates safe conventional commits and optionally pushes them after approval |
 | `debug` | Diagnoses bugs, failures, and unexpected behavior from root cause to verification |
 | `frontend` | Reviews frontend architecture, TypeScript boundaries, accessibility, and browser security |
-| `pr-review` | Runs bug-first PR reviews across correctness, security, architecture, React, and accessibility |
+| `pr-review` | Reviews PR or branch diffs against production risk, repository standards, and the originating spec |
 | `react` | Audits React and Next.js rendering, effects, performance, and modern APIs |
 | `react-hook-form` | Builds and modifies React Hook Form forms |
 | `react-hook-form-audit` | Audits React Hook Form code for correctness, accessibility, and performance |
 | `refactor` | Improves code structure while preserving behavior and public APIs |
 | `research` | Retrieves current, source-grounded framework and API documentation |
-| `review` | Reviews code changes for production-impacting defects |
+| `review` | Reviews selected or local code changes for production-impacting defects and project-rule violations |
 | `spec` | Turns issues or requirements into approval-gated implementation specs |
 | `test` | Applies test-pyramid, behavioral testing, and red-green-refactor practices |
 

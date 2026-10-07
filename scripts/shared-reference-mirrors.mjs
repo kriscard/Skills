@@ -37,4 +37,12 @@ export const sharedReferenceMirrors = [
       "skills/dev/react-hook-form-audit/references/actions-boundary.md",
     ],
   },
+  {
+    source: "skills/dev/review/references/review-core.md",
+    targets: ["skills/dev/pr-review/references/review-core.md"],
+  },
+  {
+    source: "skills/dev/review/references/frontend-risk-checks.md",
+    targets: ["skills/dev/pr-review/references/frontend-risk-checks.md"],
+  },
 ];
