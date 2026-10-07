@@ -1,150 +1,52 @@
-> **Read this when:** user asks how to structure a React project, mentions
-> feature folders, asks "where should this file go", reports that changes to one
-> feature break another, or is starting a new mid-to-large-scale React app.
->
-> **Not the right file?** Barrel file bundle performance → `bundle-and-perf-investigation.md`.
-> Component composition within a feature → `ui-patterns.md`.
+> **Read this when:** deciding frontend file placement, feature ownership,
+> cross-feature imports, shared-code promotion, folder depth, or how structure should
+> evolve as an application grows.
 
-> **Priority: MEDIUM** — Architecture debt from a flat structure shows up as
-> shotgun surgery: one feature change touches 8 files across the codebase. The
-> feature-based pattern makes that one change touch one directory. Apply when
-> the current structure is already causing pain, not as a preemptive refactor
-> on a small project.
->
+# Frontend Feature Architecture
 
-# Feature-Based Architecture
+Organize code by product ownership when that improves locality. Preserve strong existing
+repository conventions, but still surface demonstrated ownership or dependency
+problems. Structure evolves from evidence; it is not a starter-kit ceremony.
 
-Pattern from bulletproof-react, dub, and midday. Co-locate everything that
-changes together. A feature owns its API calls, components, hooks, state, types,
-and utilities — other features don't reach into it.
+## Start with the repository
 
----
+Map the current routes, product concepts, shared layers, import direction, and teams or
+features that change together. Identify actual pain: shotgun edits, unclear ownership,
+circular imports, duplicated policy, or shared folders that hide unrelated code.
 
-## The Structure
+For a small navigable project, keep the structure small. Introduce feature or domain
+layers when product ownership and change patterns are visible.
 
-```
-src/
-├── features/
-│   ├── auth/
-│   │   ├── api/          ← fetch functions, React Query hooks (useUser, useLogin)
-│   │   ├── components/   ← LoginForm, AuthGuard, UserAvatar
-│   │   ├── hooks/        ← useAuth, useSession
-│   │   ├── stores/       ← Zustand store if needed (authStore)
-│   │   ├── types/        ← User, Session, AuthState
-│   │   └── utils/        ← tokenHelpers, permissionChecks
-│   ├── billing/
-│   │   ├── api/
-│   │   ├── components/   ← PricingTable, InvoiceList, UpgradeModal
-│   │   ├── hooks/
-│   │   └── types/
-│   └── dashboard/
-│       ├── api/
-│       ├── components/
-│       └── hooks/
-├── shared/               ← used by more than one feature
-│   ├── components/       ← Button, Input, Modal (generic, no feature logic)
-│   ├── hooks/            ← useDebounce, useLocalStorage
-│   ├── lib/              ← api client, date utils, validators
-│   └── types/            ← common types shared across features
-└── app/                  ← routes, layouts, providers — composes features
-    ├── (dashboard)/
-    │   └── page.tsx
-    └── providers.tsx
-```
+## Ownership rules
 
----
+- Code used by one feature stays with that feature.
+- Code used by multiple features may move to the smallest honest shared layer.
+- Shared code that returns to one consumer is demoted to that consumer.
+- Features expose intentional entry points rather than inviting deep imports.
+- Cross-feature behavior is coordinated by a higher composition layer or an explicit
+  shared domain—not by one feature reaching into another's internals.
+- Route structure and feature ownership may differ; a reusable feature should not be
+  trapped inside one route merely because that route first used it.
 
-## Rules
+Apply the **delete-a-feature test**: removing a feature should remove its private UI,
+state, queries, actions, and tests while breaking only explicit consumers.
 
-**No cross-feature imports** — features must not import from each other:
+## Evolution
 
-```typescript
-// ❌ billing imports from auth internals
-import { getUserPermissions } from '@/features/auth/utils/permissionChecks';
+1. Begin with colocated files and clear names.
+2. Group a product capability when its files change together.
+3. Add internal `components`, `hooks`, `queries`, or `utils` folders only when their
+   populations make navigation clearer.
+4. Promote stable shared contracts after real reuse.
+5. Introduce domains, packages, or enforced import rules when team scale or dependency
+   pressure justifies them.
 
-// ✅ shared/ for cross-cutting concerns
-import { getUserPermissions } from '@/shared/lib/permissions';
-// Or: pass the data as a prop from the app layer
-```
+Avoid moving files solely to match an ideal tree. A migration should improve ownership,
+import direction, or change locality and preserve behavior throughout.
 
-**Unidirectional flow:** `shared/` → `features/` → `app/`. Nothing flows upward.
+## Verification
 
-**No barrel files inside features:**
-
-```typescript
-// ❌ features/auth/index.ts re-exporting everything
-// Creates circular dependency risk + prevents tree-shaking
-
-// ✅ Import directly from the module
-import { LoginForm } from '@/features/auth/components/LoginForm';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-```
-
-**Compose at the app layer:**
-
-```typescript
-// app/(dashboard)/page.tsx — assembles features, owns no logic itself
-import { UserStats } from '@/features/dashboard/components/UserStats';
-import { RecentActivity } from '@/features/activity/components/RecentActivity';
-import { BillingBanner } from '@/features/billing/components/BillingBanner';
-
-export default function DashboardPage() {
-  return (
-    <>
-      <BillingBanner />
-      <UserStats />
-      <RecentActivity />
-    </>
-  );
-}
-```
-
----
-
-## When to Use vs. When to Skip
-
-| Use feature-based when | Skip it when |
-|------------------------|--------------|
-| 3+ developers working concurrently | Solo project or prototype |
-| Features have clear domain boundaries | Features share most of their state |
-| Shotgun surgery across files is already happening | App has < 5 features |
-| You want to enforce "no cross-feature imports" at the ESLint level | The flat structure is navigable and causing no pain |
-| Preparing for a team to scale | Upfront structure adds overhead you don't have time for |
-
----
-
-## Enforcing the Rules with ESLint
-
-```javascript
-// .eslintrc.js — prevent cross-feature imports
-rules: {
-  'import/no-restricted-paths': [
-    'error',
-    {
-      zones: [
-        // features cannot import from other features
-        {
-          target: './src/features/auth',
-          from: './src/features',
-          except: ['./auth'],
-          message: 'Feature modules cannot import from other features.',
-        },
-        // features cannot import from app layer
-        {
-          target: './src/features',
-          from: './src/app',
-          message: 'Feature modules cannot import from the app layer.',
-        },
-      ],
-    },
-  ],
-},
-```
-
----
-
-## Further Reading
-
-- [Bulletproof React — Project Structure](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md)
-- [dub codebase](https://github.com/dubinc/dub) — feature-based structure in production
-- [midday codebase](https://github.com/midday-ai/midday) — mono-repo with feature isolation
+A structure recommendation is complete when each moved or proposed file has an owner,
+import direction is explicit, shared placement is justified by actual consumers, the
+delete-a-feature test is credible, and the repository remains easy to navigate at its
+current scale.

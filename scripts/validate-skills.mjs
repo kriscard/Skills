@@ -33,6 +33,27 @@ function markdownFiles(directory) {
   return files;
 }
 
+function localMarkdownPointers(markdown, isReference) {
+  const pointers = new Set();
+
+  for (const match of markdown.matchAll(
+    /\]\(\s*<?((?!https?:\/\/|mailto:|#)[^)\s>]+\.md(?:#[^)\s>]*)?)>?\s*\)/g,
+  )) {
+    pointers.add(match[1]);
+  }
+
+  if (isReference) {
+    for (const line of markdown.split(/\r?\n/).slice(1)) {
+      const contextualPointer = line.match(
+        /(?:[Ll]oad|[Rr]ead|[Ss]ee|[Rr]eference|[Rr]oute(?:s|d)?\s+to|[Dd]etails?\s+in)[^`]{0,80}`([a-z0-9]+(?:-[a-z0-9]+)*\.md(?:#[a-z0-9._-]+)?)`/,
+      );
+      if (contextualPointer) pointers.add(contextualPointer[1]);
+    }
+  }
+
+  return pointers;
+}
+
 function frontmatter(markdown, file) {
   const lines = markdown.split(/\r?\n/);
   if (lines[0] !== "---") {
@@ -142,9 +163,8 @@ for (const absoluteFile of skillFiles) {
     }
   }
 
-  for (const absoluteReference of markdownFiles(
-    join(skillDirectory, "references"),
-  )) {
+  const absoluteReferences = markdownFiles(join(skillDirectory, "references"));
+  for (const absoluteReference of absoluteReferences) {
     const reference = relative(skillDirectory, absoluteReference)
       .split(sep)
       .join("/");
@@ -159,6 +179,20 @@ for (const absoluteFile of skillFiles) {
       failures.push(
         `${relative(repo, absoluteReference)}: missing Read this when marker`,
       );
+    }
+  }
+
+  for (const absoluteMarkdown of [absoluteFile, ...absoluteReferences]) {
+    const content = readFileSync(absoluteMarkdown, "utf8");
+    const isReference = absoluteMarkdown !== absoluteFile;
+
+    for (const pointer of localMarkdownPointers(content, isReference)) {
+      const path = pointer.split("#", 1)[0];
+      if (!existsSync(resolve(dirname(absoluteMarkdown), path))) {
+        failures.push(
+          `${relative(repo, absoluteMarkdown)}: missing local Markdown pointer ${pointer}`,
+        );
+      }
     }
   }
 }
