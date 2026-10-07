@@ -44,7 +44,7 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 | `refactor` | Improves code structure while preserving behavior and public APIs |
 | `research` | Retrieves current, source-grounded framework and API documentation |
 | `review` | Reviews selected or local code changes for production-impacting defects and project-rule violations |
-| `spec` | Turns issues or requirements into approval-gated implementation specs |
+| `spec` | Builds separately reviewed requirements, technical design, and an executable plan, then records approval and stops before implementation |
 | `test` | Applies test-pyramid, behavioral testing, and red-green-refactor practices |
 
 ### Obsidian
