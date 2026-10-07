@@ -1,89 +1,67 @@
-> **Read this when:** Dotfiles security scan finds possible credentials, unsafe permissions, history risks, or gitignore gaps.
+> **Read this when:** A dotfiles scan finds credential candidates, unsafe permissions, shell-history risks, or ignore gaps that need remediation.
 
-# Security Patterns
+# Security remediation
 
-Credential management, file permissions, and history security for dotfiles.
+## Live-secret response
 
-## Credential Management
+For a confirmed live credential:
 
-**Never hardcode credentials**:
-```zsh
-# BAD
-export GITHUB_TOKEN="ghp_xxxxxxxxxxxx"
+1. Keep the value out of output, patches, reports, and chat.
+2. Revoke or rotate it at the provider.
+3. Replace the tracked value with a lookup from the chosen secret store or a local ignored file.
+4. Verify the current tree is clean with a redacted scan.
+5. Determine whether Git history or remote caches require cleanup.
 
-# GOOD
-# In .env (not committed)
-GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+Done when the old credential is invalid, the replacement source is untracked, and verification reports only redacted locations.
 
-# In 99-local.zsh (not committed)
-[ -f "$HOME/.dotfiles/.env" ] && source "$HOME/.dotfiles/.env"
+## Secret storage
+
+Prefer the platform keychain, a password-manager CLI, or another existing secret store. When the repository already uses a local ignored environment file, keep it outside the Stow package when practical, restrict it to the user, and source it explicitly.
+
+Commit templates with empty or unmistakably fake values:
+
+```dotenv
+GITHUB_TOKEN=
+OPENAI_API_KEY=
+AWS_ACCESS_KEY_ID=
 ```
 
-**Use .env.example pattern**:
-```bash
-# .env.example (committed as template)
-GITHUB_TOKEN=ghp_your_token_here
-OPENAI_API_KEY=sk-your_key_here
-AWS_ACCESS_KEY_ID=your_access_key
+## Permissions
+
+Inspect contents only when required for the finding. Typical private files use user-only permissions:
+
+```sh
+chmod 600 ~/.dotfiles/.env
+chmod 600 ~/.netrc ~/.authinfo
 ```
 
-## File Permissions
+Git identity files need user-only permissions only when they contain private material; email addresses and public signing-key identifiers are not secrets.
 
-**Sensitive files should be 600** (user read/write only):
-- `.gitconfig-work`, `.gitconfig-personal` (if containing tokens)
-- `.env` files
-- `.ssh/config`
-- `.netrc`, `.authinfo`
+## Shell history
 
-```bash
-chmod 600 ~/.dotfiles/.gitconfig-work
-```
+Use `HIST_IGNORE_SPACE` only as defense in depth: a leading-space convention is easy to forget. Prefer commands that read secrets from stdin, the keychain, or a protected file. Inspect the current history options before editing them.
 
-## History Security
+## Version control
 
-**Prevent sensitive commands in history**:
-```zsh
-# In zsh.d/10-options.zsh
-setopt HIST_IGNORE_SPACE  # Commands starting with space aren't logged
+Derive ignore rules from real local-secret paths. Common candidates include:
 
-# Exclude patterns (zsh 5.3+)
-HISTORY_IGNORE="(ls|cd|pwd|exit|clear)*"
-```
-
-**Usage**: Prefix sensitive commands with space
-```bash
-# Not logged due to leading space
- export API_KEY=secret
-```
-
-## Version Control
-
-**What to commit**:
-- Configuration templates
-- Scripts and functions
-- Plugin lists
-- `.env.example` files
-
-**What NOT to commit**:
-- Secrets (.env, tokens)
-- Local overrides (99-local.zsh)
-- Machine-specific paths
-- Cache files (.zcompdump)
-
-**.gitignore patterns**:
 ```gitignore
-# Secrets
 .env
-*_token
-*_secret
-*_key
-
-# Local overrides
+.env.*
+!.env.example
+.netrc
+.authinfo
 **/99-local.zsh
 **/*.local.*
-
-# Cache
-*.zwc
 .zcompdump*
-.DS_Store
+*.zwc
 ```
+
+Confirm behavior rather than assuming the pattern works:
+
+```sh
+git -C ~/.dotfiles check-ignore -v .env
+git -C ~/.dotfiles status --short --ignored
+```
+
+Done when each sensitive local file is ignored or intentionally tracked, permissions match its contents, and no secret value appears in verification output.

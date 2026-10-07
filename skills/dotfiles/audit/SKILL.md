@@ -1,166 +1,155 @@
 ---
 name: audit
 description: >-
-  Dotfiles health baseline and triage. Use when the user wants a whole-system
-  audit of ~/.dotfiles: credential leaks, shell startup, Stow symlinks, Neovim
-  startup, missing tools, or orphan config. Do not use for targeted Neovim or
-  shell edits; route those to neovim or shell-env.
-disable-model-invocation: true
+  Audit the complete ~/.dotfiles system for credential exposure, shell and
+  Neovim startup regressions, broken Stow links, missing tools, and stale
+  configuration. Use for whole-dotfiles health checks and triage; route focused
+  Neovim work to neovim and focused terminal or shell edits to shell-env.
 ---
 
 # Dotfiles Audit
 
-Full health check of the dotfiles setup. Run all steps in order — each takes seconds and together they give a complete picture.
+Audit the repository in security-first order. The repository uses one GNU Stow package at `~/.dotfiles/home/`; its `README.md` and `dotfiles --help` are authoritative for current layout and commands.
 
-Security check runs first: it's always highest priority.
+## Step 0: Security scan
 
-## Step 0: Security Scan
-
-Scan for credentials before anything else.
-
-```bash
-# API keys, tokens, passwords in config files
-grep -rE "(API_KEY|TOKEN|SECRET|PASSWORD)\s*=\s*['\"][^'\"]+['\"]" ~/.dotfiles/ 2>/dev/null
-# Common token prefixes
-grep -rE "(ghp_|sk-|AKIA|-----BEGIN.*PRIVATE KEY-----)" ~/.dotfiles/ 2>/dev/null
-```
-
-Flag any findings as **CRITICAL** — credentials in dotfiles can leak via git.
-
-**File permission check** — these should be 600:
-
-```bash
-stat -f "%A %N" ~/.dotfiles/.gitconfig-work ~/.dotfiles/.gitconfig-personal 2>/dev/null
-```
-
-**Git safety** — verify `.gitignore` in the dotfiles repo includes:
-
-- `.env`, `*_token`, `*_secret`, `99-local.zsh`, `**/*.local.*`
-
-Done when credential findings, sensitive-file permissions, and gitignore coverage are recorded as clean or listed as Critical findings with file paths.
-
-## Step 1: Shell Startup Time
+Search tracked files without printing credential values:
 
 ```sh
-time zsh -i -c exit
+cd ~/.dotfiles
+
+scan_redacted() {
+  local detector=$1 pattern=$2
+  git grep -nI -E "$pattern" -- ':(exclude)*.example' ':(exclude)*.md' 2>/dev/null |
+    while IFS=: read -r file line _; do
+      printf '%s:%s [%s; value redacted]\n' "$file" "$line" "$detector"
+    done
+}
+
+scan_redacted assignment '(API_KEY|ACCESS_KEY|TOKEN|SECRET|PASSWORD|PRIVATE_KEY)[[:space:]]*=[[:space:]]*[^[:space:]]{8,}'
+scan_redacted token-prefix '(gh[pousr]_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|BEGIN[[:space:]].*PRIVATE KEY)'
 ```
 
-**Target:** <200ms. >500ms means something is blocking during interactive init.
+Treat matches as candidates until placeholders and false positives are ruled out. Keep credential values out of command output and the report. If a live credential is tracked, record its redacted location, revoke or rotate it, remove it from the current tree, and assess Git-history cleanup.
 
-If slow, isolate which zsh.d file is the culprit:
+Check local secret permissions without reading their contents:
 
 ```sh
-# Add timing to each zsh.d file temporarily
-for f in ~/.zsh.d/*.zsh; do
-  time zsh -c "source $f" 2>&1 | grep real
-  echo "  ^ $f"
+find ~/.dotfiles -maxdepth 2 -type f \( -name '.env' -o -name '.netrc' -o -name '.authinfo' \) -exec stat -f '%Sp %N' {} \;
+```
+
+Inspect `.gitignore` against the actual local-secret files. Load `references/security-patterns.md` when findings need remediation.
+
+Done when each candidate is classified false positive, placeholder, or live secret; sensitive local-file permissions are recorded; and every live-secret response names rotation and cleanup actions without exposing the value.
+
+## Step 1: Baseline diagnostics
+
+Prefer the repository's own health check:
+
+```sh
+cd ~/.dotfiles
+dotfiles doctor --verbose
+```
+
+If the command is unavailable, inspect `./dotfiles --help` and `README.md` before choosing fallback checks.
+
+Done when every failed diagnostic is captured with its component and next action, or the unavailable command and chosen fallback are recorded.
+
+## Step 2: Shell startup
+
+Measure several fresh interactive shells and retain all timings:
+
+```sh
+for run in 1 2 3 4 5; do
+  /usr/bin/time -p zsh -i -c exit 2>&1 | awk -v run="$run" '/^real / { print run, $2 }'
 done
 ```
 
-Done when one cold interactive startup measurement is recorded, the result is classified OK/SLOW against target, and any SLOW result names a likely zsh.d culprit or next profiling command.
+Use the median as the baseline. Treat a regression against a previous baseline as stronger evidence than a universal threshold. For a slow result, load `references/shell-performance.md`; profile the complete startup in source order rather than sourcing modules independently.
 
-## Step 2: Zsh Plugins Audit
+Done when the samples and median are recorded, compared with any prior baseline, and a regression names the next profiling step.
 
-Check `~/.dotfiles/zsh/.zshrc` and `~/.dotfiles/zsh/zsh.d/` for plugin loading (zinit, antigen, oh-my-zsh, etc.).
+## Step 3: Stow link health
 
-Flag heavy plugins:
-
-- Large completion frameworks loaded synchronously
-- `nvm` / `rbenv` / `pyenv` with eager shell integration (use lazy variants)
-- Any plugin that makes network calls or spawns subprocesses at init
-
-Done when each plugin/init integration is classified keep, lazy-load, remove, or needs profiling.
-
-## Step 3: Stow Symlink Health
+Preview the repository-supported sync, then inspect broken links:
 
 ```sh
-# Find broken symlinks in home directory (depth 3 to avoid scanning everything)
+cd ~/.dotfiles
+dotfiles sync --dry-run
 find ~ -maxdepth 3 -type l ! -e 2>/dev/null
 ```
 
-A broken symlink means the stow source file was deleted or moved without re-stowing. Fix: either restore the source file or `stow -D <package>` to remove the dead link.
+A broken link needs its expected source determined before repair. Use `dotfiles sync` only after the dry run is understood.
 
-Done when every broken symlink is listed with its expected source or the report states none found.
+Done when the sync preview is classified clean or lists conflicts, and every broken link has an expected source or an explicit unresolved reason.
 
-## Step 4: Neovim Startup Time
-
-```sh
-nvim --headless --startuptime /tmp/nvim-startup.log +q && sort -k2 -n /tmp/nvim-startup.log | tail -20
-```
-
-**Target:** <150ms. >300ms needs investigation.
-
-Check which plugins are loading eagerly: the top entries after sorting are the slowest. Cross-reference against the plugin list to find candidates for lazy-loading.
-
-Done when startup time is recorded, classified OK/SLOW, and SLOW results name top slow entries. For targeted repair, stop and route to the neovim skill.
-
-## Step 5: Tool Inventory Check
-
-Verify tools referenced in dotfiles are actually installed:
+## Step 4: Neovim health and startup
 
 ```sh
-which sesh tmux yabai starship lazygit gh bat fd rg zoxide fzf
+nvim --headless '+checkhealth' '+write! /tmp/nvim-health.log' '+qa'
+nvim --headless --startuptime /tmp/nvim-startup.log '+qa'
+sort -k2 -n /tmp/nvim-startup.log | tail -20
 ```
 
-Any `not found` means either:
+The repository currently targets Neovim 0.12+, `vim.lsp.config`, and `nvim-treesitter` main. Route repairs to the neovim skill.
 
-- The tool was uninstalled but its config is still in dotfiles (orphan config)
-- The tool isn't installed yet on this machine (new machine setup)
+Done when health failures and startup timing are recorded; any regression names the slow entries or next profiler.
 
-Done when every referenced tool checked is listed as installed, missing-but-needed, or missing-and-orphaned.
+## Step 5: Tool and config inventory
 
-## Step 6: Orphan Config Detection
-
-Cross-reference `ls ~/.dotfiles/` (stow packages) against the tools found in Step 5. A package with no corresponding installed binary is an orphan.
+Read `Brewfile`, `home/`, and the management CLI instead of assuming package names map one-to-one to binaries:
 
 ```sh
-ls ~/.dotfiles/
+cd ~/.dotfiles
+find home -maxdepth 3 -type f | sort
+rg -n '^(brew|cask|tap) ' Brewfile
 ```
 
-Review each package: if the tool it configures isn't installed and you're not planning to use it, consider archiving the package or adding a note.
+For each configured tool, classify it as active, setup-required, intentionally retained, or orphan candidate. Confirm GUI applications through the package inventory or application bundle rather than `which` alone.
 
-Done when every package is classified active, setup-required, or orphan candidate.
+Done when every reviewed configuration has a classification backed by its source file and installation evidence.
 
-## Completion Gate
+## Completion gate
 
-Do not produce the final report until each step has either a captured result or an explicit reason it could not run. Security issues rank first regardless of other findings.
+Produce the report only after every step has a captured result or an explicit reason it could not run. Rank live-secret response first, then broken setup, measured regressions, and cleanup opportunities.
 
-## Report Format
-
-After running all steps, produce a report:
+## Report format
 
 ```text
 DOTFILES AUDIT REPORT
 =====================
 
 Security
-  🔴 Critical: [N issues] / ✅ Clean
-  [List any credential finds with file:line]
-  [File permission issues]
-  [Git safety gaps]
+  [Clean | redacted candidate locations and classifications]
+  [Permission or ignore gaps]
 
-Startup Times
-  Shell: Xms (target <200ms) — [OK | SLOW: investigate zsh.d/X.zsh]
-  Neovim: Xms (target <150ms) — [OK | SLOW: top culprits: plugin1, plugin2]
+Repository diagnostics
+  [doctor result and failed checks]
 
-Symlink Health
-  Broken links: X found
-  [list each broken link and its expected source]
+Startup
+  Shell median: Xs [baseline comparison]
+  Neovim: Xms [baseline comparison and slow entries]
 
-Tool Inventory
-  Installed: sesh, tmux, starship, ...
-  Missing: [tool] — config exists at ~/.dotfiles/<package> (orphan or needs install)
+Stow
+  [dry-run result]
+  [broken links and expected sources]
 
-Recommended Cleanups (priority order)
-  1. [most impactful fix — security first, then startup time, then cosmetic]
-  2. ...
+Inventory
+  [active | setup-required | intentionally retained | orphan candidate]
+
+Actions
+  1. [security]
+  2. [correctness]
+  3. [measured performance]
+  4. [cleanup]
 ```
 
 ## References
 
 | Priority | Load when | Reference |
 |---|---|---|
-| High | Security scan finds issues or credential patterns need review | `references/security-patterns.md` |
-| High | Shell startup is slow and needs profiling strategies | `references/shell-performance.md` |
-| Medium | Auditing a specific package/component after the baseline identifies it | `references/component-analysis.md` |
-| Low | Git config issues found: permissions, signing, aliases, or multi-identity | `references/git-config.md` |
+| High | A scan finds credential candidates, unsafe permissions, history risks, or ignore gaps | `references/security-patterns.md` |
+| High | Shell measurements regress and need source-order profiling or lazy-loading analysis | `references/shell-performance.md` |
+| Medium | The baseline identifies a component that needs deeper targeted analysis | `references/component-analysis.md` |
+
+For Git identity, signing, aliases, pager, or multi-config findings, route the focused repair to shell-env, which owns the canonical Git guidance.

@@ -1,100 +1,89 @@
 ---
 name: neovim
 description: >-
-  Neovim config healthcheck for ~/.dotfiles/.config/nvim/ using lazy.nvim and
-  GNU Stow. Use when the user wants to validate or repair Neovim, add/remove
-  plugins, diagnose startup performance, fix keymaps/LSP, or modernize config.
-  Prefer audit for whole-dotfiles reviews and shell-env for non-Neovim terminal
-  config.
+  Maintain the Stow-managed Neovim config in ~/.dotfiles/home/.config/nvim for
+  Neovim 0.12+, lazy.nvim, vim.lsp.config, and nvim-treesitter main. Use to
+  validate or repair Neovim, change plugins, diagnose measured startup
+  regressions, or fix keymaps and LSP. Route whole-dotfiles health checks to
+  audit and non-Neovim terminal configuration to shell-env.
 ---
 
-# Neovim Configuration
+# Neovim configuration
 
-Config lives at `~/.dotfiles/.config/nvim/`, symlinked by GNU Stow, namespaced under `kriscard/`. Plugin manager is **lazy.nvim**.
+The source is `~/.dotfiles/home/.config/nvim/`, linked into `~/.config/nvim/` by the repository's single `home` Stow package. Read `~/.dotfiles/README.md` and the current config before editing; the repository currently requires Neovim 0.12+, `vim.lsp.config`, and `nvim-treesitter` main.
 
-## Config Location
+## Layout
 
 ```text
-~/.dotfiles/.config/nvim/
-├── init.lua                  # Entry point — sources all modules
-├── lua/kriscard/
-│   ├── core/
-│   │   ├── options.lua       # vim.opt settings
-│   │   ├── keymaps.lua       # vim.keymap.set with {desc = "..."}
-│   │   └── autocmds.lua      # autocommands
-│   └── plugins/              # lazy.nvim plugin specs (one file per plugin or group)
-│       └── *.lua
+~/.dotfiles/home/.config/nvim/
+├── init.lua
+├── lua/kriscard/       # core options, keymaps, autocmds, lazy bootstrap
+├── lua/plugins/        # lazy.nvim plugin specs
+├── after/ftplugin/     # filetype-local behavior
+└── lazy-lock.json
 ```
 
-Stow package: `cd ~/.dotfiles && stow nvim` (or whatever the package name is — check `ls ~/.dotfiles`).
+Use `dotfiles sync --dry-run` from `~/.dotfiles` when link structure changes. Ordinary edits to an already linked source file do not need re-Stowing.
 
-## First: classify the branch
+## Classify the branch
 
-- Healthcheck or broken config → use Key Workflows; load `references/config.md` if needed.
-- Plugin add/remove/replacement → load `references/plugins.md`.
-- Startup/performance → load `references/performance.md`.
-- Whole-dotfiles health issue → route to audit; non-Neovim terminal config → route to shell-env.
+- Health failure or broken config → run the validation workflow; load `references/config.md` for structure, keymaps, or LSP.
+- Plugin add, removal, replacement, or maintenance check → load `references/plugins.md`.
+- Measured startup regression → load `references/performance.md`.
+- Whole-dotfiles health issue → route to audit.
+- Non-Neovim terminal config → route to shell-env.
 
-Do not load all references.
+Load only references reached by the branch.
 
-## Key Workflows
+## Validate config
 
-### Validate config
-
-```vim
-:checkhealth          " full diagnostic
-:checkhealth lazy     " plugin manager health
-:checkhealth nvim-treesitter
-:Lazy                 " plugin status dashboard
-```
-
-Done when health output is captured, any failing provider/plugin is named, and each issue has a fix or next diagnostic command.
-
-### Add a plugin
-
-1. Create or edit a file in `lua/kriscard/plugins/`.
-2. Return a lazy.nvim spec table.
-3. Save — lazy.nvim auto-detects changes on next start, or run `:Lazy sync`.
-4. Run `:checkhealth <plugin>` when the plugin provides health checks.
-
-Done when the spec is in the Stow-managed source path, lazy.nvim can sync/load it, and any keymaps/commands include lazy-load boundaries.
-
-### Diagnose performance
-
-Run `:Lazy profile` to see per-plugin load times. For CLI measurement:
+Capture CLI-safe diagnostics first:
 
 ```sh
-nvim --headless --startuptime /tmp/nvim.log +q && sort -k2 -n /tmp/nvim.log | tail -20
+nvim --headless '+checkhealth' '+write! /tmp/nvim-health.log' '+qa'
+nvim --headless '+Lazy! sync' '+qa'
 ```
 
-Done when before/after startup measurements are recorded, top slow plugins or config files are named, and each recommendation maps to a lazy.nvim `event`, `cmd`, `keys`, or `ft` boundary or is marked needs deeper profiling.
+Use interactive `:checkhealth`, `:Lazy`, and `:messages` when the headless output is incomplete.
 
-### Fix broken plugin
+Done when the exact failing provider, plugin, or Lua location is captured and each failure has a verified fix or a specific next diagnostic.
 
-Move from least destructive to most destructive:
+## Add or change a plugin
 
-1. `:Lazy log` — inspect recent install/update errors.
-2. `:messages` — capture Lua errors after startup.
-3. `:Lazy sync` — retry install/update when the error indicates missing or stale plugin state.
-4. `:Lazy clean` — remove unused plugins only after confirming they are no longer referenced.
-5. Delete `~/.local/share/nvim/lazy/<plugin>` only as a last resort to force reinstall.
+1. Inspect related specs under `lua/plugins/` and the lockfile.
+2. Edit the Stow-managed source.
+3. Use the plugin's real command, key, filetype, or event as its lazy boundary; keep plugins eager when their current API requires it.
+4. Run lazy.nvim sync and the plugin's available health check.
+5. Exercise one user-visible command or key path.
 
-Done when the error is reproduced or log output is captured, the least destructive applicable repair has run, and the next startup/checkhealth result is recorded.
+Done when lazy.nvim loads the spec, the lockfile change is intentional, health output is recorded, and the exercised behavior works.
 
-## Quick Checks (run on every audit)
+## Diagnose performance
 
-- [ ] Plugins use `opts = {}` instead of `config = function() require("x").setup({}) end` where possible
-- [ ] Keymaps include `{desc = "..."}` for which-key integration
-- [ ] LSP plugins are not loaded eagerly (use `event = "BufReadPre"`)
-- [ ] No duplicate keymaps (`:verbose map <key>` to check)
-- [ ] `vim.loader.enable()` called in `init.lua` (bytecode cache, free perf)
+Use `:Lazy profile` for plugin timing and the workflow in `references/performance.md` for repeatable process-level measurements. Optimize only measured regressions.
 
-Completion gate: do not declare Neovim work done until the changed source path, validation command, and result are reported.
+Done when before/after medians are recorded and every recommendation names the measured event plus the applicable lazy boundary—or explains why the plugin must remain eager.
+
+## Repair a broken plugin
+
+Move from observation to the least destructive applicable repair:
+
+1. Capture `:Lazy log`, `:messages`, and relevant health output.
+2. Confirm the spec and pinned revision before changing state.
+3. Run `:Lazy sync` when evidence indicates missing or stale plugin state.
+4. Run `:Lazy clean` only after confirming removed specs.
+5. Delete one plugin directory only when reinstall evidence justifies it.
+
+Done when the original failure is reproduced or captured, the smallest justified repair has run, and a fresh startup plus health check records the result.
+
+## Completion gate
+
+Report the changed source path, Neovim version, validation commands, observed results, and any intentional lockfile change. A clean command exit without the relevant behavior check is incomplete.
 
 ## References
 
 | Priority | Load when | Reference |
 |---|---|---|
-| High | Plugin recommendations, modern picks, what to add/remove, abandoned plugins | `references/plugins.md` |
-| High | Startup time, lazy-loading strategies, profiling, which plugins are slow | `references/performance.md` |
-| Medium | Config structure, best practices, common mistakes, keymaps, LSP setup | `references/config.md` |
+| High | Plugin recommendation, addition, removal, replacement, or maintenance status | `references/plugins.md` |
+| High | Measured startup regression, lazy boundaries, or profiling | `references/performance.md` |
+| Medium | Config structure, keymaps, health checks, or Neovim 0.12 LSP setup | `references/config.md` |

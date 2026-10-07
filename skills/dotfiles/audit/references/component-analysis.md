@@ -1,93 +1,38 @@
-> **Read this when:** A dotfiles audit identifies a specific package or component that needs deeper targeted analysis.
+> **Read this when:** A whole-dotfiles audit identifies one component that needs deeper analysis after the baseline is complete.
 
-# Component-Specific Analysis Reference
+# Component analysis
 
-Detailed analysis guidance for each dotfiles component. Referenced by the dotfiles-optimizer skill during targeted or full-scope analysis.
+Inspect the current tree before applying these checks. The repository source lives under `~/.dotfiles/home/`; `README.md`, `Brewfile`, and the `dotfiles` CLI are the current inventory.
 
-## Shell (Zsh)
+## Shell
 
-Analyze the modular configuration in `zsh/zsh.d/`:
+Inspect `home/.zshrc` and the modules it actually sources from `home/zsh/zsh.d/`.
 
-| File | Purpose | Key Checks |
-|------|---------|------------|
-| `00-env.zsh` | Environment variables | Exposed credentials |
-| `10-options.zsh` | Shell options | Validate settings |
-| `20-completions.zsh` | Completion system | Performance, caching |
-| `30-plugins.zsh` | Plugin loading | Slow plugins, lazy loading |
-| `40-lazy.zsh` | Lazy loading patterns | Validate implementation |
-| `50-keybindings.zsh` | Key mappings | Conflicts |
-| `60-aliases.zsh` | Aliases | Modern tool alternatives |
-| `70-functions.zsh` | Functions | Optimize complex functions |
-| `80-integrations.zsh` | External integrations | Validate configurations |
-| `99-local.zsh.example` | Local overrides | Security |
+Classify every sourced module by responsibility, startup cost, external commands, and dependency on earlier modules. Validate changes with `zsh -n`, then measure the complete interactive startup. Source-order profiling is authoritative because isolated modules can depend on prior environment setup.
 
-**Key checks**:
-- Startup time profiling (should be <500ms)
-- Plugin lazy loading opportunities
-- Modern aliases (eza, bat, fd, ripgrep, zoxide)
-- Secure environment variable handling
+## Neovim
 
-## Editor (Neovim)
+Route implementation to the neovim skill. Check:
 
-Analyze `.config/nvim/`:
-- LSP configurations (validate server setups)
-- Plugin management (check for outdated or conflicting plugins)
-- Performance (startup time, lazy loading)
-- Keybindings (identify conflicts)
+- Neovim version against the repository requirement
+- `:checkhealth` failures
+- lazy.nvim status and lockfile changes
+- `vim.lsp.config` / `vim.lsp.enable` usage
+- `nvim-treesitter` main-branch API usage
+- duplicate keymaps and measured startup regressions
 
-## Multiplexer (Tmux)
+## Tmux and sesh
 
-Analyze `.config/tmux/`:
-- Plugin configuration
-- Keybinding sanity
-- Performance settings
-- Integration with sesh session manager
+Inspect `home/.config/tmux/tmux.conf` and current sesh configuration. Check plugin-manager initialization paths, duplicate initialization, bindings, session restore, and reload output. Preserve the configured TPM directory rather than introducing a generic `~/.tmux` path.
 
 ## Git
 
-Analyze git configuration files:
-- `.gitconfig` - Main configuration
-- `.gitconfig-personal` - Personal settings
-- `.gitconfig-work` - Work settings
-- Check for exposed credentials
-- Validate signing configuration
-- Suggest workflow improvements
+Route identity, signing, aliases, pager, and conditional includes to shell-env. Resolve include paths as Git sees them and verify effective values inside representative personal and work repositories with `git config --show-origin --get-regexp`.
 
-## Terminal (Kitty/Ghostty)
+## Terminal and prompt
 
-Analyze `.config/kitty/` and `.config/ghostty/`:
-- Theme consistency (Catppuccin Macchiato)
-- Font configuration
-- Performance settings
-- Key mappings
+Inspect current Ghostty, Kitty, Starship, and theme files before recommending values. Check syntax with the tool's own command when available, then reload the smallest affected component.
 
-## Modern Tool Recommendations
+## Classification gate
 
-Reference these tool replacements (from user's existing setup):
-
-| Traditional | Modern Alternative | User Has | Benefit |
-|-------------|-------------------|----------|---------|
-| `ls` | `eza` | Yes | Git integration, icons |
-| `cat` | `bat` | Yes | Syntax highlighting |
-| `find` | `fd` | Yes | Faster, simpler syntax |
-| `grep` | `ripgrep` | Yes | Blazing fast search |
-| `cd` | `zoxide` | Yes | Smart jumping |
-
-Validate these are properly aliased and configured. Suggest additional modern tools if relevant.
-
-## Security Validation
-
-Always check for:
-1. **Exposed credentials**: API keys, tokens, passwords in plain text
-2. **File permissions**: Sensitive files should be 600 (user read/write only)
-3. **History settings**: Ensure sensitive commands aren't logged
-4. **Git safety**: Validate `.gitignore` patterns for secrets
-5. **Environment files**: Check `.env` vs `.env.example` patterns
-
-## Performance Optimization
-
-Check for:
-1. **Shell startup time**: Profile and identify slow components
-2. **Lazy loading**: Defer loading of tools not used in every session
-3. **Completion caching**: Validate completion cache strategies
-4. **Plugin efficiency**: Identify slow or redundant plugins
+Done when each finding names the inspected source path, observed evidence, impact, focused owner skill, and next verification command. Recommendations based only on a generic tool checklist remain unclassified.

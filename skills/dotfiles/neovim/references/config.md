@@ -1,151 +1,63 @@
-> **Read this when:** user asks about config structure, best practices, common config mistakes, keymaps, LSP on_attach setup, or how to organize their Neovim config.
+> **Read this when:** Neovim work involves config structure, keymaps, health checks, or LSP setup for the repository's Neovim 0.12+ baseline.
 
-# Neovim Config Best Practices
+# Neovim configuration reference
 
-## lazy.nvim Setup Pattern
+Inspect the checked-in files before proposing structure. The current split is `lua/kriscard/` for core setup and `lua/plugins/` for lazy.nvim specs.
 
-The correct entry point in `init.lua`:
+## Bootstrap and module order
 
-```lua
-vim.loader.enable()  -- bytecode cache — put this first
+Keep `init.lua` small and follow the repository's existing bootstrap in `lua/kriscard/lazy.lua`. Core options, keymaps, and autocmds must load in the order required by the existing entry point. Treat `vim.loader.enable()` as version-aware: verify whether the required Neovim version already enables the loader before adding or retaining an explicit call.
 
--- Bootstrap lazy.nvim
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  vim.fn.system({
-    "git", "clone", "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", lazypath,
-  })
-end
-vim.opt.rtp:prepend(lazypath)
+Use lazy.nvim `opts` when a plugin follows `require(module).setup(opts)`. Use `config` for nonstandard setup, ordering, or multiple setup calls that `opts` cannot express.
 
--- Load core config before plugins
-require("kriscard.core.options")
-require("kriscard.core.keymaps")
+## Keymaps
 
--- Initialize lazy.nvim
-require("lazy").setup("kriscard.plugins", {
-  -- lazy.nvim options
-  change_detection = { notify = false },
-})
-```
-
-## Common Mistakes
-
-**Using `config = function()` when `opts` works:**
-```lua
--- Wrong — verbose and bypasses lazy.nvim's auto-setup
-config = function()
-  require("telescope").setup({ defaults = { ... } })
-end
-
--- Right — lazy.nvim calls setup(opts) automatically
-opts = { defaults = { ... } }
-```
-
-**Not returning the spec table:**
-```lua
--- Wrong — file returns nothing, plugin silently not loaded
-local M = {}
-M[1] = "author/plugin"
-return M
-
--- Right
-return {
-  "author/plugin",
-  opts = {},
-}
-```
-
-**Conflicting keymaps:**
-Check what's bound before adding: `:verbose map <key>`. The `verbose` prefix shows which file set the mapping.
-
-**Calling `setup()` in multiple places:**
-Only call `setup()` once per plugin, either via `opts` in the spec or in a single `config` function. Calling it twice resets options.
-
-## Keymap Best Practices
-
-Always include `{desc = "..."}` — which-key.nvim uses these for its popup, and `:map` output becomes readable.
-
-```lua
--- Good pattern
-vim.keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", {
-  desc = "Find files",
-  silent = true,
-})
-
--- Grouping with which-key (v3 API)
-require("which-key").add({
-  { "<leader>f", group = "find" },
-  { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find files" },
-})
-```
-
-**Mode conventions:**
-- `"n"` — normal
-- `"i"` — insert
-- `"v"` — visual
-- `"x"` — visual block only (not select)
-- `{ "n", "v" }` — multiple modes
-
-## LSP on_attach Pattern
-
-```lua
--- In your LSP config (e.g., lua/kriscard/plugins/lsp.lua)
-local on_attach = function(client, bufnr)
-  local map = function(keys, func, desc)
-    vim.keymap.set("n", keys, func, { buffer = bufnr, desc = "LSP: " .. desc })
-  end
-
-  map("gd", vim.lsp.buf.definition, "Go to definition")
-  map("gr", vim.lsp.buf.references, "References")
-  map("K", vim.lsp.buf.hover, "Hover docs")
-  map("<leader>rn", vim.lsp.buf.rename, "Rename")
-  map("<leader>ca", vim.lsp.buf.code_action, "Code action")
-  map("<leader>D", vim.lsp.buf.type_definition, "Type definition")
-end
-
--- Pass to lspconfig
-require("lspconfig").ts_ls.setup({
-  on_attach = on_attach,
-  capabilities = capabilities,  -- from blink.cmp or nvim-cmp
-})
-```
-
-## Config Modularization
-
-Keep files focused — one concern per file:
-
-```
-lua/kriscard/
-├── core/
-│   ├── options.lua     # vim.opt.* settings only
-│   ├── keymaps.lua     # non-plugin keymaps only
-│   └── autocmds.lua    # vim.api.nvim_create_autocmd calls
-└── plugins/
-    ├── lsp.lua         # lspconfig + mason + conform
-    ├── treesitter.lua  # nvim-treesitter
-    ├── telescope.lua   # or fzf-lua
-    ├── ui.lua          # theme, lualine, icons
-    └── git.lua         # gitsigns, neogit
-```
-
-Don't put keymaps in plugin spec `config` functions — it makes them impossible to audit in one place. Use the `keys` field in the spec for plugin-specific bindings, and `lua/kriscard/core/keymaps.lua` for everything else.
-
-## Health Checks
+Inspect existing mappings before adding one:
 
 ```vim
-:checkhealth             " full system check
-:checkhealth lazy        " lazy.nvim
-:checkhealth nvim        " core Neovim requirements
-:checkhealth lspconfig   " LSP setup
-:checkhealth mason       " mason server installs
+:verbose nmap <leader>x
+:verbose imap <C-x>
+```
+
+Give user-facing mappings a `desc`. Put global mappings with the existing core keymaps; put plugin-specific lazy triggers in the plugin spec's `keys`; put buffer-local LSP mappings in the existing attach module.
+
+Done when the mapping has one owner, its mode and scope are intentional, and `:verbose map` identifies the expected source.
+
+## LSP for Neovim 0.12+
+
+Use the native configuration path. Keep nvim-lspconfig on the runtime path for its `lsp/<server>.lua` defaults, merge shared capabilities into `"*"`, add per-server overrides, and let the existing Mason integration enable installed servers.
+
+```lua
+vim.lsp.config("*", {
+  capabilities = capabilities,
+})
+
+vim.lsp.config("ts_ls", {
+  settings = {
+    typescript = {},
+  },
+})
+
+vim.lsp.enable("ts_ls") -- only when the existing Mason path does not enable it
+```
+
+Attach buffer-local behavior through `LspAttach` or the repository's current attach module. Preserve server-provided defaults and verify effective clients with `:checkhealth vim.lsp` and `:LspInfo` where available.
+
+## Treesitter main
+
+The repository follows `nvim-treesitter` main. Use its current `require("nvim-treesitter").install(...)` and native Neovim Treesitter APIs. Preserve eager loading when the checked-in main-branch integration requires it; older `require("nvim-treesitter.configs").setup(...)` examples are a different API generation.
+
+## Health checks
+
+```vim
+:checkhealth
+:checkhealth lazy
+:checkhealth vim.lsp
 :checkhealth nvim-treesitter
 ```
 
-Run `:checkhealth` after:
-- Major Neovim version upgrade
-- Adding new LSP servers
-- Updating all plugins (`:Lazy update`)
-- Anything is unexpectedly broken
+Use the health names reported by the installed versions rather than assuming historical providers such as `lspconfig` or `mason` expose a check.
+
+## Completion gate
+
+Done when config loads under the repository's required Neovim version, relevant health output is captured, the changed behavior is exercised, and no older API generation was introduced.

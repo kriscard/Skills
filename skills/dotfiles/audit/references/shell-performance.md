@@ -1,64 +1,39 @@
-> **Read this when:** Shell startup is slow or zsh plugin/init profiling needs deeper optimization patterns.
+> **Read this when:** Repeated shell startup measurements regress or zsh initialization needs source-order profiling.
 
-# Shell Performance Optimization
+# Shell performance
 
-Strategies for keeping shell startup fast and responsive.
+## Establish evidence
 
-## Startup Time Best Practices
+Measure several complete interactive startups and use the median. Compare against a previous baseline when available; machine load and disk cache make a single universal threshold unreliable.
 
-**Target**: Shell startup <500ms
+```sh
+for run in 1 2 3 4 5; do
+  /usr/bin/time -p zsh -i -c exit 2>&1 | awk -v run="$run" '/^real / { print run, $2 }'
+done
+```
 
-**Key strategies**:
+## Profile in source order
 
-1. **Lazy loading for version managers**:
-   - NVM loading eagerly adds 200-400ms
-   - Defer loading until `node`, `npm`, or `nvm` is called
-   - Pattern: Unfunction wrapper that loads on first use
-
-2. **Selective completion loading**:
-   - Only load completions for installed tools
-   - Check with `[[ -x "$(command -v tool)" ]]` before loading
-   - Cache completion dumps for 24 hours
-
-3. **Plugin optimization**:
-   - Audit plugins quarterly, remove unused
-   - Use plugin managers with lazy loading (zinit, zplug)
-   - Prefer native functions over plugins when possible
-
-4. **PATH management**:
-   - Check for duplicates: `echo $PATH | tr ':' '\n' | sort | uniq -d`
-   - Use functions to add paths uniquely
-   - Keep PATH minimal, use absolute paths when possible
-
-## Lazy Loading Pattern
+Temporarily load `zsh/zprof` before the normal module loop and call `zprof` after it. Preserve module order and environment dependencies.
 
 ```zsh
-# Generic lazy loader
-lazy_load() {
-  local cmd=$1
-  local load_cmd=$2
-
-  eval "$cmd() {
-    unfunction $cmd
-    $load_cmd
-    $cmd \"\$@\"
-  }"
-}
-
-# Usage for NVM
-lazy_load nvm 'export NVM_DIR="$HOME/.nvm"; source "$NVM_DIR/nvm.sh"'
-lazy_load node 'export NVM_DIR="$HOME/.nvm"; source "$NVM_DIR/nvm.sh"'
-lazy_load npm 'export NVM_DIR="$HOME/.nvm"; source "$NVM_DIR/nvm.sh"'
-```
-
-## Profiling Tools
-
-```bash
-# Measure total startup time
-time zsh -i -c exit
-
-# Detailed profiling (add to .zshrc temporarily)
 zmodload zsh/zprof
-# ... rest of config ...
-zprof  # Shows function call times
+# existing .zshrc module-loading loop
+zprof
 ```
+
+Remove temporary instrumentation after capturing the profile. Attribute cost to measured functions or commands rather than sourcing each module in an empty shell.
+
+## Optimization branches
+
+- **External commands during startup:** cache stable output or move work behind first use.
+- **Version managers:** use the repository's existing lazy-loader pattern; verify `node`, package managers, and completions after changing it.
+- **Completions:** initialize once, reuse a valid dump, and measure before changing cache policy.
+- **PATH construction:** deduplicate entries while preserving order and intentional precedence.
+- **Plugins:** remove or defer only when profile evidence names them.
+
+A lazy wrapper must preserve arguments, exit status, completion behavior, and command discovery. Prefer an existing repository helper over an `eval`-generated generic wrapper.
+
+## Completion gate
+
+Done when the profile names the dominant measured costs, each change has before/after median samples, and affected commands still pass a first-use smoke test.

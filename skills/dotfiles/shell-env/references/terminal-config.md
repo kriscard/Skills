@@ -1,113 +1,53 @@
-> **Read this when:** The user is changing terminal emulator, tmux/sesh, Starship, yabai, or cross-tool theme configuration. Route Neovim-specific work to the neovim skill.
+> **Read this when:** The user is changing Ghostty, tmux/sesh, Starship, yabai, or cross-tool theme configuration. Route Neovim-specific work to neovim.
 
-# Terminal Configuration
+# Terminal configuration
 
-Terminal emulators, tmux, Starship, yabai, and theme consistency patterns.
+Inspect current files under `~/.dotfiles/home/.config/` before choosing values. Fonts, theme names, plugin paths, bindings, and supported options belong to the installed versions, not a generic template.
 
-## Kitty Best Practices
+## Ghostty
 
-```conf
-# Performance
-repaint_delay 10
-input_delay 3
-sync_to_monitor yes
+Edit `home/.config/ghostty/config`. Preserve the file's existing syntax and confirm option names against the installed Ghostty version. Reload or restart, then verify the changed rendering or behavior.
 
-# Font (with ligatures)
-font_family JetBrains Mono
-font_size 14.0
+## Tmux and sesh
 
-# Theme
-include catppuccin-macchiato.conf
+Edit `home/.config/tmux/tmux.conf`. The current setup keeps TPM under `~/.config/tmux/plugins`; preserve the configured `TMUX_PLUGIN_MANAGER_PATH` and initialize TPM once.
 
-# Tabs
-tab_bar_style powerline
-tab_powerline_style slanted
+After changes:
+
+```sh
+tmux source-file ~/.config/tmux/tmux.conf
+sesh list
 ```
 
-## Ghostty Best Practices
+Inspect reload output, key-table ownership, plugin load state, and session behavior relevant to the change. Resolve duplicate TPM initialization instead of adding another generic `~/.tmux/plugins/tpm/tpm` line.
 
-```conf
-# Theme
-theme = catppuccin-macchiato
+## Starship
 
-# Font
-font-family = "JetBrains Mono"
-font-size = 14
+Edit `home/.config/starship.toml`. Verify syntax and rendered module behavior:
 
-# Performance
-window-padding-x = 10
-window-padding-y = 10
-
-# Shell integration
-shell-integration = true
+```sh
+starship explain
+starship timings
 ```
 
-## Tmux Best Practices
+## yabai
 
-### Plugin Management
+Edit `home/.config/yabai/yabairc`, restart the service, then exercise the changed rule:
 
-Use TPM (Tmux Plugin Manager):
-
-```tmux
-# In tmux.conf
-set -g @plugin 'tmux-plugins/tpm'
-set -g @plugin 'tmux-plugins/tmux-sensible'
-set -g @plugin 'catppuccin/tmux'
-set -g @plugin 'tmux-plugins/tmux-resurrect'
-
-# Initialize TPM (keep at bottom)
-run '~/.tmux/plugins/tpm/tpm'
+```sh
+yabai --restart-service
 ```
 
-### Sensible Defaults
+## Theme consistency
 
-```tmux
-# Use Ctrl-a as prefix (easier than Ctrl-b)
-set -g prefix C-a
-unbind C-b
+Treat the current `THEME_FLAVOUR` flow and checked-in theme files as the source of truth. Before changing a shared flavor, find every consumer:
 
-# Start windows at 1, not 0
-set -g base-index 1
-setw -g pane-base-index 1
-
-# Vi mode
-setw -g mode-keys vi
-
-# Mouse support
-set -g mouse on
-
-# Faster escape time (for Vim)
-set -s escape-time 0
-
-# Increase scrollback
-set -g history-limit 10000
+```sh
+rg -n 'THEME_FLAVOUR|catppuccin|macchiato|frappe|latte|mocha' ~/.dotfiles/home
 ```
 
-## Theme Consistency
+Classify consumers that interpolate a shared value separately from tools that require a fixed theme name or generated file. Verify each changed tool; a shared environment variable does not prove every application consumed it.
 
-### Catppuccin Integration
+## Completion gate
 
-Maintain consistent theming across all tools:
-
-**Supported tools**:
-- Terminal (Kitty, Ghostty, iTerm2)
-- Bat (syntax highlighting)
-- Tmux
-- Starship (prompt)
-- Delta (git diffs)
-
-**Configuration pattern**:
-```zsh
-# In zsh.d/00-env.zsh
-export THEME_FLAVOUR=macchiato  # or frappe, latte, mocha
-
-# Bat
-export BAT_THEME="Catppuccin Macchiato"
-
-# Ensure all tools reference $THEME_FLAVOUR
-```
-
-**Benefits**:
-- Consistent visual experience
-- Single variable to change entire theme
-- Reduces eye strain with cohesive colors
+Done when the installed tool accepts the source, the smallest affected component reloads without error, and the exact setting or interaction is verified live.

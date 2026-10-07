@@ -1,54 +1,38 @@
-> **Read this when:** The user is adding aliases or replacing classic CLI tools with eza, bat, fd, rg, zoxide, fzf, lazygit, or related terminal tools.
+> **Read this when:** The user is adding aliases or evaluating eza, bat, fd, rg, zoxide, fzf, lazygit, or another terminal-tool alternative.
 
-# Modern CLI Tools
+# CLI tool integration
 
-Modern alternatives for common Unix tools — faster, more ergonomic, better defaults.
+Modern tools are alternatives with different contracts, not transparent replacements. Inspect existing aliases and scripts before choosing a name.
 
-## Core Replacements
+## Safe integration pattern
 
-**eza (replaces ls)**
-- **Benefit**: Git integration, icons, better formatting
-- **Configuration**: `alias ls='eza --icons --group-directories-first'`
-- **Advanced**: `alias ll='eza -lah --icons --git'` shows git status inline
-- **Why**: 3-5x faster, colored output, tree view built-in
+Prefer explicit aliases that advertise changed behavior:
 
-**bat (replaces cat)**
-- **Benefit**: Syntax highlighting, line numbers, git integration
-- **Configuration**: `alias cat='bat --paging=never'`
-- **Theme**: Match terminal theme (e.g., Catppuccin)
-- **Why**: Readable code viewing, integrated pager
+```zsh
+alias l='eza --icons --group-directories-first'
+alias ll='eza -lah --icons --git'
+alias catp='bat --paging=never'
+alias ff='fd'
+alias rgg='rg'
+```
 
-**fd (replaces find)**
-- **Benefit**: 5-10x faster, simpler syntax, respects .gitignore
-- **Usage**: `fd pattern` instead of `find . -name "pattern"`
-- **Configuration**: `alias find='fd'` for transparent replacement
-- **Why**: Intuitive defaults, parallel execution
+Keep `find`, `grep`, `cat`, and `cd` available with their standard semantics. Existing scripts and muscle memory may rely on flags that alternatives do not accept.
 
-**ripgrep (replaces grep)**
-- **Benefit**: 10-100x faster, respects .gitignore, multi-line search
-- **Usage**: `rg pattern` instead of `grep -r pattern`
-- **Configuration**: Use config file at `~/.config/ripgrep/ripgreprc`
-- **Why**: Blazing speed, smart defaults
+## Tool checks
 
-**zoxide (replaces cd)**
-- **Benefit**: Frecency-based jumping, interactive selection
-- **Setup**: `eval "$(zoxide init zsh)"`
-- **Usage**: `z project` jumps to frequently used directory
-- **Why**: Eliminates repetitive directory navigation
+- **eza:** verify icon-font availability and behavior outside Git repositories.
+- **bat:** verify theme discovery, binary-file behavior, piping, and pager settings.
+- **fd:** account for ignored and hidden files; use explicit flags when exhaustive search is required.
+- **ripgrep:** account for ignore rules and binary files; keep recursive search intent explicit.
+- **zoxide:** initialize once in the existing module order and preserve ordinary `cd`.
+- **fzf:** verify shell integration and keybindings against current completion bindings.
+- **delta:** test normal diff, staged diff, log, and interactive add.
+- **lazygit:** configure it as an optional interface rather than a replacement for scriptable Git commands.
 
-## Additional Modern Tools
+## Evidence
 
-**starship** - Fast, customizable prompt
-- Cross-shell compatible (zsh, bash, fish)
-- 10-50x faster than Powerlevel10k
-- Minimal configuration with great defaults
+Use local timing only when performance motivates the change. Compare equivalent commands over representative data and retain raw measurements. Generic multiplier claims are not decision evidence.
 
-**delta** - Better git diffs
-- Syntax highlighting for diffs
-- Side-by-side comparison
-- Integrates with bat themes
+## Completion gate
 
-**lazygit** - Terminal UI for git
-- Visual interface for complex operations
-- Keyboard-driven workflow
-- Better than raw git for interactive work
+Done when the selected command has a distinct contract, conflicting aliases and bindings are accounted for, the standard command remains reachable, and one representative invocation plus one edge case pass.
