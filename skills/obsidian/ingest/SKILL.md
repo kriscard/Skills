@@ -1,148 +1,101 @@
 ---
 name: ingest
 description: >-
-  Source synthesis for Obsidian: ingest an article, URL, video, book note, or selected Inbox source
-  into durable Resources notes after discussing the key ideas. Use when the user asks to ingest a
-  source, add source material to the wiki, synthesize an article, or runs /ingest.
-disable-model-invocation: true
+  Discuss and synthesize an article, URL, video, book note, or selected Inbox source into the
+  Obsidian LLM Wiki. Use when the user asks to ingest, synthesize, or add source material to the
+  knowledge base.
+user-invocable: true
 ---
 
 # Ingest
 
-Synthesize source material into the vault's knowledge layer. Ingesting without synthesis just
-creates noise — the value is the conversation that happens before anything gets written.
+Turn one raw source into durable, connected knowledge. Preserve the Karpathy LLM Wiki layers:
+immutable raw source, LLM-maintained wiki, and the schema/index/log that connect them.
 
-Boundaries: use `process-inbox` for PARA triage of raw inbox notes, and `save-note` for saving the
-current conversation answer as a standalone wiki page.
+Use `process-inbox` for general PARA triage. Use `save-note` when the source is the current
+conversation synthesis rather than external material.
 
-**Rule: always discuss before writing.** Never silently file a note.
+## 1. Resolve and read one source
 
-## Step 1 — Find the Source
+Use a supplied file or URL. Otherwise list the schema-defined raw Inbox and ask the user to choose
+one item. Read the complete source; fetch URL content directly when needed. Record whether the raw
+source already exists in the vault or must be archived from an external URL or file.
 
-If the user specified a file or URL, use that directly.
+Do not batch an entire Inbox unless the user explicitly requests repeated one-at-a-time processing.
 
-Otherwise, list the Web Clipper inbox:
+Completion: one source, its type and provenance, and its raw-source archival state are known, and its
+content has been read.
 
-```bash
-obsidian files folder="0 - Inbox/web-clippers/" format=json
-```
+## 2. Discuss before writing
 
-If multiple items, ask which one to process (or process all in sequence).
+Search root `index.md` first for connected wiki pages. Use qmd when the catalog is ambiguous or the
+relevant language may occur only in page bodies. Read likely pages rather than reasoning from search
+snippets.
 
-## Step 2 — Read the Source
+Present:
 
-```bash
-obsidian read path="0 - Inbox/web-clippers/[filename]"
-```
+1. two or three important ideas in your own words;
+2. existing pages each idea could enrich;
+3. contradictions or uncertainty worth preserving;
+4. proposed new pages, updates, raw-source destination, and index changes.
 
-For URLs or web content: fetch the content directly.
+Wait for the user to confirm emphasis and destinations. Discussion is mandatory; silent filing is
+not ingestion.
 
-## Step 3 — Discuss Before Writing (required)
+Completion: the user approved what knowledge to preserve and whether each item creates or enriches a
+page.
 
-Surface for conversation — don't skip this step:
+## 3. Prepare the wiki changes
 
-1. **2–3 most important ideas** from the source, in your own words
-2. **Existing wiki pages this connects to** — search for related notes:
-   ```bash
-   qmd query "<key concept>" --json -n 8 2>/dev/null
-   ```
-3. **Any contradictions** with existing knowledge worth flagging
+Treat search scores as clues, not decisions. Inspect candidates and choose create versus enrich from
+their actual scope, ownership, and content.
 
-Present these and wait for Chris to confirm:
+Follow metadata, writable directories, naming, aliases, tags, and source-citation rules from
+`AGENTS.md`. Write focused reference pages in neutral wiki voice. Every non-obvious claim must trace
+to the raw source; preserve contradictions rather than silently choosing a side.
 
-- Which ideas to capture
-- Whether to update existing pages or create new ones
-- Which subfolder in `3 - Resources/` to target
+A rich source may touch several relevant entity or concept pages. The current schema may define a
+target range; quality and relevance matter more than reaching a quota.
 
-## Step 4 — Write/Update Wiki Pages
+Completion: each proposed page has a destination, ownership permission, source link, and complete
+content or exact section change.
 
-Based on similarity to existing notes:
+## 4. Preview and write safely
 
-**Update existing page** (score ≥ 0.7 match):
+Show the complete write set before mutating the vault. After approval:
 
-```bash
-obsidian read path="3 - Resources/<subfolder>/<existing-page>.md"
-# Then append a dated section:
-obsidian append path="3 - Resources/<subfolder>/<existing-page>.md" \
-  content="\n## Update — $(date +%Y-%m-%d)\n\n<synthesized content>"
-```
+1. when the source is external, archive and verify its raw-source artifact before creating claims
+   that cite it;
+2. create or update wiki pages using the `vault` safe-write flow;
+3. reread every affected page;
+4. update root `index.md` under its current schema-defined sections;
+5. append one ingest operation to root `log.md`;
+6. verify the index links and log entry.
 
-**Ambiguous match** (score 0.5–0.7): show the candidate pages and ask whether to append, create a
-distinct page, or cancel. Do not decide silently.
+Never interpolate generated Markdown into shell commands. Do not modify human-owned pages or
+already-filed immutable sources.
 
-**Create new page** (score < 0.5, genuinely new territory):
+## 5. File the raw source
 
-```bash
-obsidian create path="3 - Resources/<subfolder>/<new-page>.md" content="..."
-```
+Include the raw-source operation in the approved write set:
 
-New page frontmatter:
+- **Inbox source:** after the wiki, index, and log verify, move it to the schema-defined immutable
+  source directory rather than deleting it.
+- **External URL or file:** before writing wiki pages, create the raw-source artifact in the
+  schema-defined immutable directory. Preserve the fetched original content or transcript, canonical
+  URL, title, author/publisher when known, retrieval date, and source type. Clearly mark unavailable
+  original content instead of substituting the synthesis.
+- **Already filed source:** leave it unchanged and verify its path.
 
-```yaml
----
-source: claude-memory
-created: YYYY-MM-DD
-aliases: [<acronyms, alternate names, spelling/casing variants>]
-tags: [claude-memory, <topic-tags>]
----
-```
+Execute the operation through the safe-write or move flow and verify the artifact. After filing,
+treat it as immutable. If filing fails, preserve the original, stop dependent writes, and report the
+partial state.
 
-Generate 2–6 `aliases`: the off-title terms someone would search to find this page (acronyms,
-alternate names, "X vs Y" framings). This is what makes the page recall-able from queries that don't
-match the title verbatim. Skip only when the title is the sole term anyone would use.
-
-Write in wiki style: neutral, reference-focused, no "I learned that..." framing. This is reference
-material, not a diary. Target 3–10 pages per source — focus on durable concepts, not summaries of
-the source itself.
-
-**Source type → subfolder mapping:**
-
-- article → `3 - Resources/Articles/`
-- tweet → `3 - Resources/Tweets/`
-- video → `3 - Resources/Videos/`
-- book → `3 - Resources/Books/`
-
-## Step 5 — Update Index and Log
-
-**Add to index** under the right category heading (`Articles` / `Tweets` / `Videos` / `Books` /
-`Concept notes`). The CLI has no `patch`, so the entry can't be inserted under a specific section
-directly — ask the user: use the MCP `obsidian_patch_content` tool (target the heading,
-`operation: append`) or `read` + `create ... overwrite`. Entry format:
-
-```
-- **<Title>** ($(date +%Y-%m-%d)) — [[<stem>]] (<path>) · from <hostname>. _<summary>_
-```
-
-**Append to log** (chronological — append is fine):
-
-```bash
-obsidian append path="3 - Resources/log.md" content="\n## $(date +%Y-%m-%d)\ningest | <title>"
-```
-
-## Step 6 — Move the Source
-
-After confirming the write succeeded:
-
-```bash
-obsidian move path="0 - Inbox/web-clippers/[filename]" \
-  to="3 - Resources/[Type]/[filename]"
-```
-
-Never delete inbox items — always move to the appropriate Resources subfolder.
-
-## What NOT to do
-
-- Don't silently file without discussing — synthesis is the whole point
-- Don't process a whole inbox queue — use `process-inbox` for PARA triage
-- Don't save the current conversation answer — use `save-note`
-- Don't create duplicate pages — always search first
-- Don't use diary voice in wiki pages — write for reference, not narrative
-- Don't move the source before the knowledge is captured
+Completion: approved wiki pages, root index, root log, and one verified immutable raw-source artifact
+all exist, or every partial failure is explicit.
 
 ## References
 
 | Priority | Load when | Reference |
 | --- | --- | --- |
-| 1 — High   | Creating or linking wiki pages — block refs, aliases, evergreen structure | `references/advanced-workflows.md` |
-| 2 — Medium | User wants Dataview queries or dynamic MOC views inside a note            | `references/dataview-patterns.md`  |
-| 3 — Medium | Creating a MOC or deciding MOC vs standalone note                         | `references/moc-advanced.md`       |
+| 1 — High | Creating interconnected pages or using block references and aliases | `references/advanced-workflows.md` |

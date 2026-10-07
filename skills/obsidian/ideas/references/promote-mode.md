@@ -1,41 +1,41 @@
-> **Read this when:** the user wants to graduate ideas from daily notes or buried vault notes into permanent notes.
+> **Read this when:** the user wants to graduate ideas from daily notes or buried vault notes into durable knowledge.
 
-# Promote Mode — Graduate Daily Note Ideas
+# Promote ideas
 
-## Step 1 — Scan the last 14 days of daily notes
+Promotion turns recurring or developed captures into the appropriate durable artifact. It is not a
+license to convert every thought into a permanent note.
 
-```bash
-obsidian read path="2 - Areas/Daily Ops/<year-from-YYYY-MM-DD>/YYYY-MM-DD.md"  # repeat for each day
-```
+## 1. Confirm a bounded search
 
-Explicit signals: `#idea`, `#expand`, "I should write about", named concepts, unresolved `[[links]]`.
+Read `AGENTS.md` and ask for the date range, folders, or topic to inspect. Offer the last 14 days of
+daily notes as a starting scope, not a hidden default.
 
-Implicit signals: high-energy paragraphs (longer, stronger language), original frameworks, recurring themes across 3+ days, questions that keep reappearing.
+Look for explicit idea markers, named concepts, unresolved links, original frameworks, and recurring
+questions. Treat writing intensity or repetition only as a candidate signal. Exclude routine tasks,
+logistics, and ideas already covered by a durable page.
 
-Not candidates: tasks, meeting logistics, things with existing standalone notes.
+## 2. Check existing knowledge
 
-## Step 2 — Cross-reference existing vault
+Read the catalog at the vault root first. Use qmd or current Obsidian search only when catalog coverage is
+ambiguous. Read likely matches and classify each candidate as:
 
-For each candidate:
+- new concept;
+- useful enrichment to an existing page;
+- already covered;
+- active finite outcome better handled by `project`;
+- still too early and best left in its source note.
 
-```bash
-obsidian search query="<candidate concept>" format=json
-```
+## 3. Present candidates
 
-Categorize: New concept (no note exists) / Underdeveloped (thin note) / Already covered (skip) /
-Recurring unresolved `[[link]]` (high priority).
+For each candidate show its source path, a short exact excerpt, recurrence evidence, related pages,
+and recommended outcome. The user selects what to promote and may change the grouping or target.
 
-## Step 3 — Present candidates table
+## 4. Hand off and verify
 
-| # | Idea | Source | Days Mentioned | Status | Recommendation |
-| --- | --- | --- | --- | --- | --- |
+- Durable conversation or concept synthesis → `save-note`.
+- Active finite outcome → `project`.
+- Existing LLM-managed page enrichment → preview the exact section change.
+- Premature idea → leave it in place.
 
-Include for each: 1–2 sentence summary, exact quote from daily note, and what it connects to in the vault.
-
-## Step 4 — Graduate selected ideas
-
-User review of the candidates table is the gate; do not create, enrich, or backlink notes until the selected ideas and target folders are approved.
-
-For new notes: place in `3 - Resources/` (concept), `1 - Projects/` (actionable + deadline), or `2 - Areas/` (ongoing interest). Write as a mini-essay (3–8 paragraphs) with core claim, context from daily notes, `[[backlinks]]`, and open questions. Go back and add `[[links]]` in source daily notes.
-
-For enriching existing notes: read note, add dated section, add backlinks, update source daily note links.
+After approval, use the `vault` safe-write flow. Add source backlinks only where ownership permits,
+then reread every affected note. Report promoted, enriched, deferred, and skipped candidates.

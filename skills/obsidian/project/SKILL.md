@@ -1,131 +1,78 @@
 ---
 name: project
 description: >-
-  Create, update, or complete Obsidian PARA Project notes in `1 - Projects/`. Use when the user asks
-  for a project note, Obsidian/PARA project tracking, project status updates, or completing a vault
-  project. Do not use for generic software/project planning unless vault notes are requested.
+  Create, update, or complete Obsidian PARA Project notes. Use when the user requests a vault project
+  note, project status update, project completion, or PARA project tracking. Do not use for generic
+  software planning unless a vault artifact is requested.
 user-invocable: true
 ---
 
-# Project Note Manager
+# Project
 
-Create or update project notes in `1 - Projects/`. A Project in PARA requires both an outcome (a
-checkable "done" state) and a deadline — without both, it belongs in `2 - Areas/`.
+Manage finite, outcome-bound work in the vault's live Projects location. Canonical PARA requires a
+defined outcome; apply deadline and metadata requirements only when `AGENTS.md` defines them.
 
-## Mode Detection
+## Choose a mode
 
-Classify the request before doing anything:
+- Create: new, set up, or track.
+- Update: refresh, status, or changed plan.
+- Complete: done, stopped, or archive.
 
-| Signal                             | Mode                                  |
-| ---------------------------------- | ------------------------------------- |
-| "Create / new / set up / track"    | CREATE                                |
-| "Update / refresh / status / done" | UPDATE                                |
-| Ambiguous                          | Ask: "Create new or update existing?" |
+Ask when the mode is ambiguous.
 
-## CREATE Workflow
+## Create
 
-### Step 1 — Search before write
+### 1. Search and validate
 
-Check if a project note already exists:
+Read `AGENTS.md`, discover the current Projects path and template, then search for an existing note.
+Inspect close matches before proposing a duplicate.
 
-```bash
-obsidian search query="<project name>"
-obsidian files folder="1 - Projects/" format=json
-```
+Confirm the work is a Project rather than an Area: it must be an active finite effort with a
+checkable outcome. If it is an ongoing standard, propose an Area instead.
 
-If a close match exists, surface it and confirm before proceeding.
+### 2. Gather the core contract
 
-### Step 2 — Validate it's a Project (not an Area)
+Ask no more than four concise questions in one structured batch when needed:
 
-A project needs **both** a discrete outcome and a deadline. Ask via `AskUserQuestion`:
+1. What outcome marks this project complete?
+2. What does done look like in checkable terms?
+3. What time horizon or target date applies, if any?
+4. What is the first visible action and why does this matter now?
 
-1. "What does 'done' look like for this project?" (free text)
-2. "When does it need to be done?" (specific date / end of quarter / end of year / no deadline)
+Use answers already present in the conversation instead of asking again. Gather additional detail
+only when the schema requires it.
 
-If "no deadline" or no discrete outcome: propose `2 - Areas/` instead. Don't create a project note
-for things that never end.
+### 3. Choose structure and preview
 
-### Step 3 — Gather project details
+Default to one project file. Use a project folder only when the work already needs durable supporting
+notes. Show the target, metadata, outcome, success criteria, horizon, first action, and initial
+sections before writing.
 
-Load `references/interview-questions.md` and use it as the source of truth for exact intake wording.
-Batch the core interview to minimize round-trips.
+After approval, create through the `vault` safe-write flow, then verify the page and any separately
+approved project-index link.
 
-### Step 4 — Decide structure
+## Update
 
-- Default: single file `1 - Projects/<Project Name>.md`
-- Promote to subfolder `1 - Projects/<Project Name>/` only if user mentions sub-notes (architecture
-  docs, PRDs, strategy notes)
+Resolve and read the canonical project note. Compare its recorded state with user-provided evidence.
+Draft only the sections that changed and distinguish observed staleness from assumptions.
 
-### Step 5 — Preview and get approval before writing
+Show the exact change, obtain approval, update safely, and reread. Do not rewrite supporting or
+human-owned notes without permission from `AGENTS.md` and the user.
 
-Show the target path, frontmatter, and initial sections. Do not write until the user explicitly
-approves the target path, frontmatter, and initial content.
+## Complete
 
-After approval:
+Confirm whether the outcome was achieved, deliberately stopped, or superseded. Offer a concise
+retrospective before archiving. Preview:
 
-```bash
-obsidian create path="1 - Projects/<Name>.md" template="Project"
-```
+- final status and outcome;
+- lessons or decisions worth retaining;
+- the live schema-defined archive destination;
+- affected project-index links.
 
-Set frontmatter with `obsidian property:set` and fill the sections with gathered details. The CLI
-has no `patch` for section edits — if a section must be targeted, ask the user (MCP
-`obsidian_patch_content` or recreate via `read` + `create ... overwrite`).
+After approval, write the final state, move the note using current CLI syntax, update approved links,
+and verify both source absence and destination presence.
 
-### Step 6 — Propose Active Projects MOC update (if it exists)
+## Completion
 
-```bash
-obsidian search query="Active Projects"
-```
-
-If found, preview the exact wikilink and target MOC path. Do not append until the user explicitly
-approves this separate MOC update. If the user declines, leave the project note created and report
-that the MOC was not updated.
-
-## UPDATE Workflow
-
-### Step 1 — Identify the project
-
-If named, resolve to file path. Otherwise list and ask:
-
-```bash
-obsidian files folder="1 - Projects/" format=json
-```
-
-### Step 2 — Read and detect staleness
-
-Read the project file. Look for:
-
-- `Updated:` more than 14 days ago → flag for refresh
-- Empty "What's in progress" section → ask what's happening
-- Past due date → ask: extend, archive, or redefine?
-
-### Step 3 — Draft changed sections only
-
-Prefer not to rewrite the full file. Draft the exact `Current Status` update and `Updated: YYYY-MM-DD`
-change, but write nothing yet.
-
-### Step 4 — Show diff, get approval, write
-
-Show the proposed diff and ask for explicit approval. Only after approval, use either MCP
-`obsidian_patch_content` (heading-targeted) or a `read` + `create ... overwrite` rewrite, based on
-the user's chosen method.
-
-## Project Completion
-
-If the user says "this project is done":
-
-1. Ask if they want to fill a retrospective section first (strongly recommended — it's the most
-   valuable artifact and gets lost if skipped)
-2. Preview the archive path `4 - Archives/Projects - YYYY/<Name>.md`, status change, and any MOC
-   updates
-3. Wait for explicit approval
-4. Move to the archive path
-5. Set frontmatter `status: ✅ Done`
-6. Update any MOC that referenced this project
-
-## References
-
-| Priority | Load when | Reference |
-| --- | --- | --- |
-| 1 — First   | Building the intake interview — need exact question wording or option lists                  | `references/interview-questions.md` |
-| 2 — Context | User questions PARA principles, Hot/Cold classification, or why outcome+deadline is required | `references/tiago-principles.md`    |
+Report the canonical path, mode, confirmed outcome/state, writes performed, index changes, and any
+unresolved schema or evidence gap.

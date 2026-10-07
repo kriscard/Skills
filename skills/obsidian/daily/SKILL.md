@@ -1,86 +1,68 @@
 ---
 name: daily
-description: >-
-  Daily startup ritual for the Obsidian vault: create today's workday note, surface exact context,
-  and require the user to choose one daily outcome and next action. Use for "start my day", "daily
-  startup", "today's focus", or /daily.
+description: Daily startup ritual that creates today's Obsidian note and confirms one outcome and next action.
 disable-model-invocation: true
 ---
 
 # Daily Startup
 
-A 5–10 minute workday startup. The note is a cockpit the user revisits, not an AI-generated report.
+Run a short workday startup. This skill owns today's note only; `goals` owns monthly, quarterly, and
+yearly objectives, while `weekly-review` owns retrospective weekly review.
 
-## 1. Workday gate
+## 1. Confirm the date
 
 Derive the real local date and weekday.
 
 - Monday–Friday: continue.
-- Saturday/Sunday: do not create a note. Say weekend notes are intentionally off by default and ask whether the user explicitly wants one.
+- Saturday/Sunday: ask whether the user explicitly wants a weekend note before creating one.
 
-Completion: the run has a confirmed workday date or explicit weekend override.
+Completion: the workday date or weekend override is confirmed.
 
-## 2. Create missing periodic notes
+## 2. Resolve today's note
 
-Batch existence checks before creating anything.
+Read `AGENTS.md` and derive the current daily-note path and template from the live vault. Check
+whether today's note exists. If it does not, resolve the current daily template, preview the target,
+and create a non-empty note safely.
 
-| Period | Condition | Path | Template |
-| --- | --- | --- | --- |
-| Daily | every confirmed workday | `2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md` | `Daily Notes` |
-| Weekly | Monday | `2 - Areas/Daily Ops/YYYY/YYYY-Www.md` | `Weekly Planning` |
-| Monthly | first workday on/after month start | `2 - Areas/Goals/Monthly/M - Month YYYY.md` | `Monthly Goals` |
-| Quarterly | first workday on/after quarter start | `2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md` | `Quarterly Goals` |
+Do not create weekly or goal notes as a side effect. If expected periodic context is missing, report
+it and offer the appropriate ritual instead.
 
-Use `obsidian read`, then `obsidian template:read ... resolve`, then `obsidian create`. Never create an empty note. Preserve the `Quaterly` spelling.
+Completion: today's note exists and its expected sections are known.
 
-Completion: today's note exists and every due periodic note exists or a concrete CLI failure is reported.
+## 3. Gather context
 
-## 3. Gather context in parallel
-
-Read:
+Read in parallel when available:
 
 - today's note;
-- the current flat weekly note;
-- the most recent prior workday note, including its exact `## Carry Forward` section;
-- active projects from `MOCs/bases/Active Projects.base`, falling back to `1 - Projects/`;
+- the current weekly note as context only;
+- the most recent prior workday note and its exact carry-forward section;
+- active projects from the live project index, falling back to current project files;
 - today's open tasks;
 - Inbox count.
 
-Treat carry-forward items as **candidates**, never commitments. Detect overload when the weekly note contains more than one outcome in a lane or today's note already contains multiple competing outcomes.
+Carry-forward items are candidates, not commitments. Flag competing outcomes rather than silently
+choosing among them.
 
-Completion: the user can see the relevant weekly lanes, exact carry-forward candidates with sources, and any overload warning.
+Completion: the user can see sourced candidates, relevant weekly context, and any overload warning.
 
-## 4. Human commitment gate
+## 4. Confirm today's commitment
 
-Propose concise candidates from the gathered context, then ask the user to choose or write:
+Propose concise candidates, then have the user confirm or write:
 
-1. one **Daily Outcome**;
-2. what **Done when** means;
-3. one **Next Action**;
-4. the first **Active Focus Block** finish line.
+1. one Daily Outcome;
+2. a checkable Done When condition;
+3. one Next Action;
+4. the first Active Focus Block finish line.
 
-Do not choose these silently. Do not prepend carry-forward automatically. The user may edit the AI proposal manually in Obsidian instead of answering in chat; reread the note before writing anything else.
+The user may edit in Obsidian instead; reread before continuing. Never silently promote a candidate.
 
-Completion: the outcome and next action are explicitly user-confirmed.
+Completion: all four values are explicitly confirmed.
 
-## 5. Update named sections
+## 5. Update and verify
 
-Write only the confirmed values into `Daily Outcome`, `Next Action`, and `Active Focus Block`.
+Preview the exact named-section changes. After approval, update only the daily commitment sections
+using the safe-write flow from `vault`. Do not duplicate headings or overwrite work-log sections.
+Reread the note and verify one confirmed outcome, next action, and focus finish line.
 
-Prefer a heading-targeted Obsidian patch tool when available. Otherwise show the exact replacement and use a read + overwrite flow only after approval. Never append duplicate headings.
-
-Leave `Parking Lot`, `Work Notes`, `Ideas Worth Sharing`, and `Ready to Resume` ready for manual use during the day.
-
-Completion: the daily note contains exactly one confirmed outcome, next action, and focus finish line.
-
-## Report
-
-Return only:
-
-- notes created;
-- exact carry-forward candidates surfaced;
-- Inbox count;
-- confirmed outcome, next action, and focus block;
-- any overload warning.
-
-If Obsidian CLI fails, say: "Obsidian CLI isn't working — update Obsidian with CLI enabled."
+Return only created files, sourced carry-forward candidates, Inbox count, the confirmed commitment,
+and unresolved warnings.

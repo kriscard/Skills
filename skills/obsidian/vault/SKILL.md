@@ -1,102 +1,70 @@
 ---
 name: vault
 description: >-
-  Foundational Obsidian vault context skill. Make sure to use this skill whenever the user mentions
-  Obsidian, notes, vault, PARA, "in my notes", "check my vault", "second brain", or any interaction
-  that touches the personal knowledge system. Provides vault structure, CLI reference, and PARA
-  rules that all other obsidian skills build on.
+  Foundational Obsidian vault context. Use whenever work touches the user's vault, notes, PARA,
+  second brain, or personal knowledge system. Loads the live schema, ownership boundaries, and safe
+  operating rules that every other Obsidian skill depends on.
 ---
 
 # Vault Context
 
-Core knowledge layer for the Obsidian vault. Always load before any vault operation — this provides
-the map that makes every other skill accurate.
+Load this before any vault operation. The live vault defines its own structure; this skill defines
+how to discover and respect it.
 
-## Ask, Don't Assume
+## Establish the contract
 
-These skills act on the user's personal knowledge — the interpretation is theirs, not yours. This
-principle is shared by every ritual skill (daily, close-day, weekly-review, goals, spot-drift).
+1. Locate the intended vault. The current default is `/Users/kriscard/obsidian-vault-kriscard`, but
+   confirm when the request or environment indicates another vault.
+2. Read vault-root `AGENTS.md` before interpreting paths, ownership, templates, or workflows.
+3. If `AGENTS.md` is missing, report that the vault schema is unavailable. Inspecting files is still
+   safe, but do not infer write permissions or substitute another schema silently.
+4. Inspect current folders and templates when an operation depends on them.
+5. Run `obsidian help` or `obsidian help <command>` when exact CLI syntax matters.
 
-- If you don't know something — a path, a date range, what counts as a "win", which goals are active
-  — **ask**. Don't infer it from context or pick a default silently.
-- Before writing any synthesis or judgment into a note, **present your draft with its source and get
-  explicit confirmation.** Let the user correct, add, or cut before anything is written.
-- Missing or ambiguous data is not permission to invent. Surface the gap and ask — a sparse or
-  missing note does not mean nothing happened.
-- One question at a time for judgment calls; batch only purely factual unknowns.
+Completion: the target vault, live schema, and permissions relevant to the request are known.
 
-## Vault Path
+## Operating boundaries
 
-`/Users/kriscard/obsidian-vault-kriscard`
+- Treat raw-source directories declared immutable by `AGENTS.md` as read-only.
+- Derive LLM-managed and human-managed boundaries from `AGENTS.md`; do not infer ownership from a
+  hardcoded frontmatter marker.
+- Ask when a destination, interpretation, active period, or ownership boundary is ambiguous.
+- Missing or sparse notes are evidence gaps, not evidence that nothing happened.
+- Present synthesized judgments and proposed mutations with their sources before writing.
+- Require explicit confirmation before deleting, moving, publishing, or overwriting a note.
+- Keep root `index.md` and root `log.md` in the LLM Wiki workflow when the schema requires them.
 
-## PARA Structure
+## Safe writes
 
-| Layer     | Path             | What belongs here                           |
-| --------- | ---------------- | ------------------------------------------- |
-| Inbox     | `0 - Inbox/`     | Unprocessed captures, raw ideas             |
-| Projects  | `1 - Projects/`  | Active deliverables with outcome + deadline |
-| Areas     | `2 - Areas/`     | Ongoing responsibilities (no end date)      |
-| Resources | `3 - Resources/` | Reference material, TIL, wiki pages         |
-| Archives  | `4 - Archives/`  | Inactive projects, old resources            |
+Generated Markdown is data, not shell code. Never place user- or model-generated content inside an
+executable shell command string.
 
-**PARA rule of thumb:**
+For a new page, use a file-write capability whose content is passed separately from its path. For a
+named-section update, prefer a heading-targeted edit capability. If none is available:
 
-- Project = outcome + deadline. No deadline → Area.
-- Area = standard to maintain, not a finish line to cross.
-- Resource = potentially useful reference, not actionable.
-- Archive = anything from the other three that's no longer active.
+1. read the complete note;
+2. prepare the exact replacement;
+3. show the proposed change;
+4. obtain approval;
+5. overwrite through a file-write capability;
+6. reread and verify the result.
 
-## Key Paths
+Use the Obsidian CLI for discovery, navigation, metadata, moves, and other commands after checking
+its current help. Do not cache command flags or plugin state in this skill.
 
-```
-2 - Areas/Daily Ops/YYYY/YYYY-MM-DD.md          # Daily notes
-2 - Areas/Daily Ops/YYYY/YYYY-Www.md             # Weekly notes (flat beside dailies)
-2 - Areas/Goals/Quaterly/Quaterly Goals - QN YYYY.md   # Quarterly goals (typo preserved)
-2 - Areas/Goals/Monthly/M - Month YYYY.md        # Monthly goals
-2 - Areas/Goals/OKR Dashboard.base               # OKR base query
-3 - Resources/TIL/til-YYYY-MM-DD.md             # TIL notes
-0 - Inbox/                                       # Processing queue
-```
+## PARA interpretation
 
-Note: the quarterly folder is spelled "Quaterly" — preserve this to match the existing vault
-structure.
+Use `AGENTS.md` for local conventions. When explaining canonical PARA, classify by actionability:
 
-## Obsidian CLI Quick Map
+- **Project:** active, finite effort with a defined outcome.
+- **Area:** ongoing responsibility or standard.
+- **Resource:** potentially useful information without a current finite outcome.
+- **Archive:** inactive material from the other categories.
+- **Inbox:** undecided capture awaiting classification.
 
-Use the native `obsidian` CLI for concrete operations. Common verbs: `read`, `create`, `append`,
-`prepend`, `move`, `files`, `search`, `search:context`, `tasks`, `task`, `orphans`, `deadends`,
-`unresolved`, `backlinks`, `links`, `vault info=files`, `tags`, `property:read`, `property:set`,
-`template:read`, and `base:query`. Load `references/cli-reference.md` when exact syntax matters.
+Label stricter local requirements as vault-schema rules rather than universal PARA rules.
 
-**No `patch` command.** The CLI cannot edit a specific section in place. To write to a note:
-`append`/`prepend` when landing the content anywhere in the note is fine. When it must update or
-replace a _named section_, ask the user: use the MCP `obsidian_patch_content` tool (supports
-heading/block/frontmatter targeting), or recreate the note via `read` + `create ... overwrite`.
+## Completion
 
-**No `daily:*` commands.** `daily` is only a flag on `task`/`tasks`, and that flag needs the Daily
-Notes core plugin enabled (currently disabled). Work the daily note by its path:
-`TODAY="2 - Areas/Daily Ops/$(date +%Y)/$(date +%Y-%m-%d).md"`, then `obsidian read path="$TODAY"` /
-`append` / `prepend`. Today's open tasks: `obsidian tasks todo path="$TODAY"` (note `tasks path=`
-takes a file, not a folder).
-
-If any `obsidian` command fails: tell the user "Obsidian CLI isn't working — update Obsidian with
-CLI enabled."
-
-## Templates Location
-
-`Templates/` folder in vault root. Key templates:
-
-- `Templates/Daily Notes.md`
-- `Templates/Weekly Planning.md`
-- `Templates/Project.md`
-- `Templates/TIL.md`
-
-## References
-
-| Priority | Load when | Reference |
-| --- | --- | --- |
-| 1 — High   | Full CLI command needed beyond the inline reference            | `references/cli-reference.md`      |
-| 2 — High   | obsidian-utils script commands or invocation syntax            | `references/obsidian-utils.md`     |
-| 3 — Medium | Complete folder tree, metadata patterns, or naming conventions | `references/detailed-structure.md` |
-| 4 — Medium | Tag taxonomy or tagging best practices                         | `references/tagging-system.md`     |
-| 5 — Medium | Which template to use for a note type                          | `references/templates-guide.md`    |
+Before finishing any write operation, verify the destination exists, reread the affected content,
+and report exactly what changed. Report failures without claiming success.

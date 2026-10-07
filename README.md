@@ -1,6 +1,6 @@
 # Skills
 
-A collection of 45 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
+A collection of 42 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
 
 ## Install
 
@@ -51,22 +51,19 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 
 | Skill | Description |
 | --- | --- |
-| `audit-para` | Audits vault organization against PARA principles |
-| `capture-receipt` | Captures concrete work or learning evidence for later sharing |
-| `close-day` | Runs the end-of-day review and prepares tomorrow's carry-forward |
-| `daily` | Creates the daily note and chooses one outcome and next action |
-| `goals` | Reviews and updates monthly or quarterly goals |
-| `ideas` | Captures, develops, and promotes ideas into permanent notes |
-| `ingest` | Synthesizes source material into durable resource notes |
-| `maintain` | Checks vault health, broken links, orphaned notes, and tag consistency |
+| `capture-receipt` | Preserves sourced evidence for possible future sharing without losing task context |
+| `close-day` | Records a resume state, triages receipts, and confirms carry-forward |
+| `daily` | Creates the daily note and confirms one outcome and next action |
+| `goals` | Creates or revises monthly, quarterly, and yearly objectives |
+| `ideas` | Captures and promotes ideas through the vault Inbox |
+| `ingest` | Discusses and synthesizes source material into the LLM Wiki |
 | `memory-recall` | Finds prior knowledge, decisions, and connections across the vault |
-| `money` | Diagnoses the revenue system and surfaces monetization opportunities |
-| `process-inbox` | Triages inbox notes into PARA destinations with approval |
-| `project` | Creates, updates, and completes PARA project notes |
-| `save-note` | Saves a conversation answer as a self-contained wiki page |
-| `spot-drift` | Compares stated priorities with recent behavior in the vault |
-| `vault` | Provides shared vault structure, CLI, and PARA context |
-| `weekly-review` | Reviews the week and prepares the next weekly note |
+| `process-inbox` | Triages Inbox notes into PARA destinations with approval |
+| `project` | Creates, updates, and completes PARA Project notes |
+| `save-note` | Files conversation synthesis into the LLM Wiki |
+| `vault` | Loads live vault schema, ownership, and safe-operation context |
+| `vault-audit` | Audits PARA, links, metadata, LLM Wiki quality, and vault statistics |
+| `weekly-review` | Retrospectively reviews an existing completed weekly note |
 
 ### Writing
 

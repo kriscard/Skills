@@ -1,83 +1,68 @@
 ---
 name: capture-receipt
 description: >-
-  Capture a concrete work or learning receipt in today's Obsidian note, then optionally hand it to
-  tweet-today or blog. Use when the user says "save this for sharing", "capture this receipt",
-  "tweet this now", or when close-day promotes an Idea Worth Sharing.
+  Preserve concrete work or learning evidence for possible future sharing without interrupting the
+  active task. Use for "save this for sharing", "capture this receipt", "tweet this now", or a
+  receipt promoted during close-day.
 user-invocable: true
-argument-hint: "[lesson, decision, proof, or source context]"
+argument-hint: '[lesson, decision, proof, or source context]'
 ---
 
 # Capture Receipt
 
-A receipt is concrete proof worth reconsidering for publication. Capture first; choose format second.
+The goal is to preserve a sourced insight while it is fresh, decide whether it is safe to share,
+and return attention to the work in progress. A receipt is evidence for future writing—not a draft
+and never proof that something was published.
 
 ## 1. Preserve the active task
 
-Before branching into content, identify:
+Record the active task, its next action, and the file, link, or command needed to resume. Use `none`
+when no task is active.
 
-- the task currently active;
-- its ready-to-resume next action;
-- the file, link, or command to reopen.
+Completion: the skill can name where attention returns.
 
-If no active task exists, record `none`. Do not let content drafting silently replace the work block.
+## 2. Build one sourced receipt
 
-Completion: the skill can name what attention returns to.
+Use the nearest trustworthy evidence: current session, today's note, project artifact, screenshot,
+commit, code snippet, decision, or user-provided text.
 
-## 2. Harvest the receipt
+Capture:
 
-Use the nearest trustworthy source: current session, today's note, explicit project evidence, screenshot, commit, code snippet, decision, or user-provided text.
+- ID: `YYYYMMDD-short-slug`;
+- idea or lesson;
+- proof or link;
+- project or context;
+- daily-note backlink when applicable;
+- stable source reference when available;
+- safety: `public-safe`, `needs-review`, or `private`;
+- state: `captured`.
 
-Build one receipt:
+Do not invent proof. Ask the smallest question needed for a missing essential field.
 
-- **ID:** `YYYYMMDD-short-slug`
-- **Idea / lesson:** the non-obvious change, decision, or insight
-- **Proof / link:** concrete evidence
-- **Project:** Roofr, Markly, learning, or other
-- **Daily source:** today's wikilink
-- **Source session:** stable reference when available
-- **Safety:** `public-safe`, `needs-review`, or `private`
-- **State:** `captured`
+## 3. Apply the safety gate
 
-Do not invent proof. Thin context triggers the smallest possible question.
+Credentials, private URLs or repositories, customer data, unreleased metrics, internal code,
+employer-confidential details, and uncertain ownership are `private` or `needs-review`. Only
+`public-safe` receipts may enter a writing workflow. A generalized internal lesson requires approval
+of the sanitized version.
 
-Completion: every field is sourced or explicitly marked unavailable.
+Completion: the safety state is explicit and unsafe evidence remains private.
 
-## 3. Safety gate
+## 4. Choose the outcome
 
-`private` or `needs-review` applies to secrets, credentials, private URLs/repositories, customer data, unreleased metrics, internal code, employer-confidential details, and uncertain ownership.
+Offer four choices:
 
-Only `public-safe` receipts may be handed to writing skills. Generalize an internal pattern only after the user approves the sanitized version.
+1. save only;
+2. save, then hand a public-safe receipt to `tweet-today`;
+3. save, then hand a public-safe receipt to `blog` for an outline;
+4. cancel and return to the active task.
 
-Completion: the receipt has an explicit safety state and unsafe evidence stays private.
+When `close-day` promoted the receipt, also prepare the schema-defined publication-queue update.
 
-## 4. Choose one branch
+## 5. Preview, write, and return
 
-Ask:
+Show the exact receipt and destinations before writing. After approval, use the `vault` safe-write
+flow, verify each destination, and start only the requested writing handoff. Publication requires an
+explicit published state or public URL.
 
-1. **Save only** — append to today's `## Ideas Worth Sharing` section.
-2. **Draft tweet now** — save first, then hand the public-safe receipt to `tweet-today`.
-3. **Create blog outline** — save first, then hand the public-safe receipt to `blog`; stop at outline approval.
-4. **Cancel** — write nothing and return to the active task.
-
-When invoked by `close-day` for a promoted receipt, also append the approved structured receipt to the `## 🧾 Receipt Queue` table in `1 - Projects/Public Technical Presence/Public Technical Presence.md` with state `promoted`.
-
-Completion: the user explicitly selected a branch.
-
-## 5. Approval-gated write
-
-Show the exact receipt before writing. Use heading-targeted patching when available; otherwise use read + overwrite only after approval. Never duplicate `Ideas Worth Sharing` or publishing-project headings.
-
-Do not mark a draft as published. Publication requires a user-confirmed public URL or explicit published state.
-
-Completion: the approved receipt is stored in the intended section and any requested writing handoff has started.
-
-## 6. Return attention
-
-End with:
-
-- active task;
-- next action;
-- reopen target.
-
-If the branch created a draft, make clear that returning to the active task is the default next move.
+End by restating the active task, next action, and reopen target.

@@ -1,86 +1,54 @@
 ---
 name: ideas
 description: >-
-  Idea capture and promotion for Obsidian: quick thoughts land in Inbox, conversation idea clusters
-  are reviewed before writing, and daily-note ideas can be promoted to permanent notes. Use when the
-  user asks to capture an idea, brain dump, write down a thought, find buried ideas, or graduate
-  ideas from daily notes.
+  Capture ideas into the Obsidian Inbox, group idea clusters from a conversation, or promote buried
+  ideas into durable notes. Use for "capture this idea", "brain dump", "write down this thought",
+  "find buried ideas", or "graduate this idea".
 user-invocable: true
 ---
 
-# Ideas Capture
+# Ideas
 
-Get ideas out of your head and into the vault immediately. Low friction is the whole point — capture
-first, organize later. The Inbox is the landing zone.
+Capture first and organize later. The Inbox is the low-friction landing zone; durable promotion is a
+separate, approval-gated operation.
 
-## Quick Capture (single idea)
+## Quick capture
 
-Write to inbox immediately, no questions:
+Read `AGENTS.md` and resolve the live Inbox convention. Draft one short idea note with a timestamp,
+source context when known, and only schema-supported metadata. Write it through a file capability
+that passes content separately from its path—never through interpolated shell text.
 
-```bash
-obsidian create path="0 - Inbox/idea-$(date +%Y%m%d-%H%M).md" content="..."
-```
+Do not interrupt a clear “just capture it” request with classification questions. After verifying
+the file, optionally offer a project note only when the idea clearly describes a finite outcome.
 
-Frontmatter to add:
+Completion: one verified Inbox note exists and its path is reported.
 
-```yaml
----
-type: idea
-captured: YYYY-MM-DD HH:MM
-context: <project name or topic, if obvious>
-tags: [idea]
----
-```
+## Conversation extraction
 
-After capturing, ask ONE optional follow-up:
+When several ideas are scattered through the conversation:
 
-> "This looks like a [project / area / resource] idea — want a full project note now, or just inbox
-> for later?"
+1. identify distinct ideas;
+2. group only ideas that share a problem or intended outcome;
+3. present the proposed clusters;
+4. let the user keep, regroup, or discard them;
+5. write one approved Inbox note per cluster and verify each file.
 
-Only ask if the answer isn't already obvious. If they say "just capture it", stop there.
+Do not merge unrelated ideas merely to reduce note count.
 
-## Idea Extraction from Conversation
+## Project handoff
 
-When the conversation contains multiple ideas scattered through the discussion:
+When an idea has a finite outcome and credible intent to act, offer the `project` skill. A date may be
+a local schema requirement, but lack of a deadline alone does not make the idea an Area under
+canonical PARA.
 
-1. **Identify all distinct ideas** — don't lump unrelated things together
-2. **Group related ideas** into clusters (same problem space, same project, same technology)
-3. **Write one note per cluster** — related ideas together, unrelated ideas separately
+## Promote mode
 
-```bash
-# One note per distinct cluster
-obsidian create path="0 - Inbox/idea-$(date +%Y%m%d-%H%M)-<slug>.md" content="..."
-```
-
-Present the clusters to the user before writing, in case grouping is wrong. Write only after the
-user confirms which clusters to save and which to discard.
-
-## When to Suggest a Project Note Instead
-
-If the idea clearly has:
-
-- A concrete outcome ("build X", "ship Y", "learn Z")
-- An implicit deadline or urgency
-
-...ask: "This sounds like more than an idea — want me to set up a project note in `1 - Projects/`?"
-Then hand off to the `project` skill if yes.
-
-## Naming Convention
-
-- Single idea: `idea-YYYYMMDD-HHMM.md`
-- Named idea: `idea-YYYYMMDD-HHMM-<short-slug>.md`
-- Extracted cluster: `idea-YYYYMMDD-HHMM-<topic>.md`
-
-Keep slugs short (2–3 words max). The timestamp is the primary identifier.
-
-## Promote Mode
-
-When the user wants to promote ideas from daily notes or buried vault notes, load
-`references/promote-mode.md`. The approval gate stays the same: present candidates before writing,
-then create, enrich, or backlink only the ideas the user selects.
+When the user wants to graduate ideas from daily notes or buried vault notes, load
+`references/promote-mode.md`. Present candidates before writing, then create, enrich, or backlink
+only what the user selects.
 
 ## References
 
 | Priority | Load when | Reference |
 | --- | --- | --- |
-| 1 | Graduating ideas from daily notes or buried vault notes into permanent notes | `references/promote-mode.md` |
+| 1 | Graduating daily-note or buried ideas into permanent notes | `references/promote-mode.md` |

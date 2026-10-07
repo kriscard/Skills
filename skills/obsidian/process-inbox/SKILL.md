@@ -1,105 +1,60 @@
 ---
 name: process-inbox
 description: >-
-  PARA triage for Obsidian Inbox notes: read each raw inbox note, suggest the correct PARA
-  destination, confirm with the user, and move only on approval. Use when the user asks to process,
-  clear, sort, or triage inbox notes, or runs /process-inbox.
-disable-model-invocation: true
+  Triage Obsidian Inbox notes into PARA destinations one at a time with explicit approval. Use when
+  the user asks to process, clear, sort, or triage the vault Inbox.
+user-invocable: true
 ---
 
 # Process Inbox
 
-Work through every note in `0 - Inbox/` one by one. This is PARA triage, not source synthesis and
-not conversation-answer saving. Use `ingest` for synthesizing selected source material into wiki
-notes, and `save-note` for filing the current answer. The user confirms each move; nothing moves
-without explicit approval.
+Classify captures; do not synthesize source knowledge here. Use `ingest` when a selected source
+should become connected LLM Wiki knowledge, and `save-note` for a conversation synthesis.
 
-**Execute this workflow — do not describe it.**
+## 1. Establish scope
 
-## Obsidian Access
+Read `AGENTS.md`, resolve the live Inbox path, and list its notes. Report the count. Stop when empty.
 
-Use Obsidian CLI via Bash. On failure: "Obsidian CLI isn't working — update Obsidian with CLI
-enabled."
+Ask whether nested raw-source inboxes should be included when the schema distinguishes them from
+general capture.
 
-## Step 1 — List Inbox
+Completion: the ordered queue and scope are confirmed.
 
-```bash
-obsidian files folder="0 - Inbox/"
-```
+## 2. Process one note at a time
 
-Report: "Found X notes to process." If 0: "Inbox is empty!" and stop.
+For each note:
 
-## Step 2 — Process Each Note
+1. read enough content and metadata to classify it;
+2. show its filename and concise summary;
+3. apply the PARA decision tree from `AGENTS.md`, falling back to canonical actionability:
+   - active finite outcome → Project;
+   - ongoing responsibility or standard → Area;
+   - useful information without current finite outcome → Resource;
+   - inactive material → Archive;
+   - unclear → remain in Inbox;
+4. propose one specific destination and explain the evidence;
+5. wait for the user's decision.
 
-Iterate in order. For EACH note:
+Offer at most four authored choices:
 
-### 2.1 Read
+1. move to the suggested destination;
+2. choose a different destination;
+3. skip this note;
+4. stop processing.
 
-```bash
-obsidian read path="0 - Inbox/[filename]"
-```
+A delete request may come through the custom-answer path or follow-up conversation. Confirm deletion
+separately immediately before executing it.
 
-Show: `[N/TOTAL] Note: "[filename]"` + first 15 lines.
+When the note is an external source that merits synthesis, offer `ingest`; do not move it as ordinary
+reference material first.
 
-### 2.2 Suggest Destination
+## 3. Execute and verify
 
-Use the **para-organizer agent** to analyze the note content when available. The agent applies the
-PARA decision tree and returns a specific folder path, reasoning, and suggested tags.
+Use the current Obsidian CLI help for move/delete syntax. After each approved operation, verify the
+source and destination state. On failure, stop that item and report it rather than incrementing the
+processed count.
 
-If the agent is unavailable, apply the fallback PARA decision tree:
+## 4. Report
 
-- outcome + deadline → `1 - Projects/`
-- ongoing responsibility/standard → `2 - Areas/`
-- reference material with no action required → `3 - Resources/`
-- inactive or no longer useful → `4 - Archives/`
-
-If the category is still ambiguous, ask instead of guessing.
-
-### 2.3 Confirm with User
-
-Present the para-organizer's suggestion, then use `AskUserQuestion`:
-
-```yaml
-options:
-  - label: 'Move to [suggested location]'
-    description: '(Recommended)'
-  - label: 'Move to different location'
-  - label: 'Skip for now'
-  - label: 'Delete note'
-  - label: 'Stop processing'
-```
-
-**Wait for response before continuing.**
-
-### 2.4 Execute the Choice
-
-**Move (suggested location):**
-
-```bash
-obsidian move path="0 - Inbox/[filename]" to="[target]/[filename]"
-```
-
-**Different location:** Ask where, then move with `obsidian move`.
-
-**Skip:** Leave in inbox, continue to next note.
-
-**Delete:** Confirm once explicitly, then:
-
-```bash
-obsidian delete path="0 - Inbox/[filename]"
-```
-
-**Stop:** Show summary and end.
-
-### 2.5 Report Progress
-
-After each note: `Progress: X/Y processed (Z remaining)`
-
-## Step 3 — Final Summary
-
-```
-Inbox Processing Complete!
-Processed: X | Projects: X | Areas: X | Resources: X | Archives: X | Deleted: X | Skipped: X
-Remaining in inbox: X
-Every moved note used obsidian move; every delete had explicit confirmation.
-```
+Return counts for Projects, Areas, Resources, Archives, skipped, deleted, handed to ingest, failed,
+and remaining. State that every move and deletion was individually approved.

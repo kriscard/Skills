@@ -1,149 +1,71 @@
 ---
 name: weekly-review
-description: Review one week of Obsidian evidence and prepare the next weekly note.
+description: Retrospective review of an existing completed weekly Obsidian note.
 disable-model-invocation: true
+argument-hint: '[ISO week — omit for the most recently completed week]'
 ---
 
 # Weekly Review
 
-An approval-gated weekly closure and planning ritual.
+Review what happened in one completed week. This skill does not create the next weekly plan or edit
+monthly, quarterly, or yearly goals.
 
-A **commitment** is an outcome explicitly chosen for one week. Active projects are candidates, not
-commitments. The reviewed weekly note owns its closure; the next weekly note owns the next
-commitments.
+## 1. Confirm the review period
 
-## 1. Resolve the review
+Read `AGENTS.md`, resolve the requested or most recently completed ISO week, and identify its weekly
+note from the live vault convention. Ask when a partial or current week makes the period ambiguous.
 
-Determine:
+The weekly note must already exist and be complete enough to review. If it is missing or still being
+written, stop and ask the user to finish it first.
 
-- whether the user wants review, planning, or both;
-- the ISO week being reviewed;
-- the ISO week being planned.
+Completion: one existing completed weekly note and exact date range are confirmed.
 
-Canonical path:
+## 2. Gather evidence
 
-`2 - Areas/Daily Ops/<ISO week year>/<YYYY-Www>.md`
+Read:
 
-Ask when a partial week makes the intended period ambiguous.
-
-Completion: the operation and exact week paths are confirmed.
-
-## 2. Gather review evidence
-
-For the reviewed week, read in parallel:
-
-- its weekly note, when present;
-- Monday–Friday daily notes;
+- the weekly note;
+- daily notes within its date range;
 - notes explicitly linked from those notes;
-- active monthly and quarterly goals;
-- the previous weekly note when continuity matters.
+- active goals and projects only when needed to evaluate stated alignment.
 
-Extract planned commitments, completed and unfinished work, decisions, blockers, friction, unplanned
-accomplishments, radar items, and credible next actions. Cite the source note for every extracted
-claim. Missing or sparse notes are evidence gaps, not evidence of inactivity.
+Extract original commitments, outcomes, unfinished work, decisions, blockers, friction, unplanned
+wins, and lessons. Cite a source note for each claim. Missing notes are evidence gaps, not proof of
+inactivity.
 
-Completion: every existing weekly commitment and every proposed accomplishment has a source or an
-explicit user correction.
+Completion: each proposed review claim has a source or an explicit user correction.
 
-## 3. Close the reviewed week
+## 3. Close each commitment
 
-For every commitment recorded in the reviewed weekly note, ask the user to confirm one state:
+For every commitment recorded in the weekly note, have the user confirm one state:
 
-- `complete`;
-- `scheduled`, with a real future week or calendar cue;
-- `retired`.
+- complete;
+- intentionally carried forward, with its destination;
+- retired.
 
-Record completed work outside the original commitments under `Unplanned Wins`. Preserve the
-original plan rather than adding retrospective commitments to it.
+Keep unplanned accomplishments under Unplanned Wins rather than rewriting the original plan.
 
-Prepare a closure draft containing:
+Completion: every original commitment has one confirmed closure state.
 
-- commitment states and evidence;
+## 4. Draft the retrospective
+
+Prepare only:
+
+- commitment outcomes with evidence;
 - unplanned wins;
-- evidence worth keeping;
+- decisions and lessons worth preserving;
 - friction;
-- Keep / Change / Remove.
-
-Present the draft before writing.
-
-Completion: every planned commitment has one confirmed closure state and every closure claim has
-evidence or an explicit user correction.
-
-## 4. Discover candidate work
-
-Query the project index first:
-
-```bash
-obsidian base:query path="MOCs/bases/Active Projects.base" format=json
-```
-
-If the Base is unavailable, fall back to:
-
-```bash
-obsidian files folder="1 - Projects/" format=json
-```
-
-Both commands provide discovery, not active status. Group support files under their top-level project
-and resolve one canonical project note. A root-level project file is canonical; for a project folder,
-prefer a same-named note or the note carrying the project's outcome, deadline, and status. Ask when
-the canonical note is ambiguous.
-
-Read each canonical note's outcome, deadline, status, current state, and next action. Exclude completed
-or inactive projects based on their metadata, not the Base name or folder location. Also gather
-non-project candidates from active goals, the reviewed week's radar and friction, recent daily-note
-evidence, and work supplied by the user.
-
-If project metadata is missing or stale, surface the discrepancy and offer an approval-gated
-`/project` update. Weekly consumes project state; it does not maintain project lifecycle.
-
-Completion: every candidate is identified as a project or non-project commitment and carries a
-source.
-
-## 5. Choose the next commitments
-
-Present the candidates as options, not commitments. Ask the user what deserves focus in the planned
-week. The user may choose, rename, combine, or introduce any outcome.
-
-For every chosen commitment, confirm:
-
-- outcome;
-- done-when condition;
-- appetite;
-- first visible action;
-- reason it matters this week.
-
-Link project commitments to their project notes. Place Area responsibilities, learning, maintenance,
-and other work under `Other Commitments`. Surface competing independent outcomes as an overload
-question.
-
-Nothing rolls forward automatically. A scheduled commitment enters the future weekly note only when
-the user explicitly accepts it there.
-
-Completion: every next-week commitment is explicitly chosen and has a checkable done-when condition
-and first action.
-
-## 6. Write the notes
-
-After approval:
-
-1. update the reviewed note's closure sections;
-2. create or update the planned weekly note with only the confirmed commitments.
-
-Use `Templates/Weekly Planning.md` when creating a note. Preserve existing human-written content.
-Prefer heading-targeted patching; otherwise show the exact replacement before using read +
-overwrite. Keep one copy of every heading.
-
-Completion: the reviewed note contains the confirmed retrospective and the planned note contains
-the confirmed commitments without duplicated outcomes or headings.
-
-## Report
-
-Return:
-
-- reviewed commitment closures;
-- unplanned wins;
 - Keep / Change / Remove;
-- the next confirmed commitments;
-- unresolved evidence gaps, project updates, or scheduling decisions.
+- confirmed carry-forward candidates.
 
-If Obsidian CLI fails, say: "Obsidian CLI isn't working — update Obsidian with CLI enabled."
+Report goal alignment as evidence, but do not revise goals. When evidence suggests an objective
+needs changing, offer `/goals` after the review.
+
+## 5. Approve, write, and verify
+
+Show the complete retrospective draft before writing. After approval, update only the reviewed
+weekly note through the `vault` safe-write flow. Preserve the original plan and existing
+human-written content. Reread and verify that each commitment has exactly one closure state.
+
+Return the closure summary, unplanned wins, Keep / Change / Remove, confirmed carry-forward, and
+unresolved evidence gaps.

@@ -1,99 +1,65 @@
 ---
 name: save-note
 description: >-
-  Files the current conversation answer as a permanent wiki page in Obsidian. Make sure to use this
-  skill whenever the user says "save this to my notes", "add this to my knowledge base", "create a
-  wiki page for this", "save what we discussed", or "file this answer". Converts session synthesis,
-  insights, or technical decisions into a self-contained reference note. Never writes a note that
-  references "the conversation above" — the body must stand alone.
+  File a valuable conversation synthesis into the Obsidian LLM Wiki so it can be retrieved and
+  compounded later. Use for "save this to my notes", "add this to my knowledge base", "create a
+  wiki page", or "file this answer".
 user-invocable: true
 argument-hint: '[title — omit to infer from context]'
 ---
 
 # Save Note
 
-File this session's answer as a permanent wiki page in Obsidian. The note must be self-contained — a
-reader with no context should be able to understand it.
+File the current answer as durable LLM Wiki knowledge, not as a transcript or generic capture. The
+page must stand alone for a future reader with no conversation context.
 
-## Step 1 — Determine Title and Folder
+## 1. Define the artifact
 
-If `$ARGUMENTS` provides a title, use it. Otherwise ask: "What should this note be titled, and which
-folder?" using `AskUserQuestion`.
+Infer or ask for the title and intended knowledge domain. Read `AGENTS.md` to discover writable wiki
+directories and metadata rules. Do not choose a destination from a cached folder list.
 
-Default subfolders in `3 - Resources/`:
+Completion: title, scope, and permitted destination are known.
 
-| Subfolder        | When to use                                          |
-| ---------------- | ---------------------------------------------------- |
-| `Coding/`        | Engineering patterns, technical decisions, API notes |
-| `Reflections/`   | Personal insights, mental models, lessons learned    |
-| `Concepts/`      | General concepts, frameworks, ideas                  |
-| `Communication/` | Leadership, writing, comms patterns                  |
+## 2. Search before writing
 
-## Step 2 — Search Before Writing
+Read root `index.md` first. Use qmd when the catalog is ambiguous or likely matches may exist only in
+page bodies. Treat scores as ranking hints; read plausible candidates before deciding.
 
-```bash
-qmd query "<topic>" --json -n 8 2>/dev/null
-```
+Choose one outcome:
 
-- Score ≥ 0.7 → append a dated section to the existing page
-- Score 0.5–0.7 → show candidates and ask whether to append, create a distinct page, or cancel
-- Score < 0.5 → create a new page
+- enrich an existing LLM-managed page;
+- create a distinct page;
+- cancel because the answer is already covered.
 
-## Step 3 — Write the Note
+Never append to a human-owned page without explicit permission from `AGENTS.md` and the user.
 
-**New page:**
+Completion: create versus enrich is justified from the actual candidate pages.
 
-```bash
-obsidian create path="3 - Resources/<subfolder>/<title>.md" content="<note>"
-```
+## 3. Draft a standalone wiki page
 
-**Append to existing:**
+Follow the schema's current frontmatter, alias, tag, citation, and linking conventions. Preserve
+source attribution and mark unsupported claims as required by the schema.
 
-```bash
-obsidian append path="3 - Resources/<subfolder>/<existing>.md" \
-  content="\n## Update — $(date +%Y-%m-%d)\n\n<content>"
-```
+The body must:
 
-Frontmatter for new pages:
+- explain the topic without phrases such as “above” or “as we discussed”;
+- use reference-focused rather than transcript voice;
+- link related wiki pages;
+- separate evidence, decisions, and open questions when relevant.
 
-```yaml
----
-source: claude-memory
-created: YYYY-MM-DD
-aliases: [<acronyms, alternate names, spelling/casing variants>]
-tags: [claude-memory, <topic-tags>]
----
-```
+Completion: the destination, duplicate-search result, metadata, self-contained body, and links are
+ready for review.
 
-Generate 2–6 `aliases`: off-title terms someone would search to find this page (acronyms, alternate
-names, "X vs Y" framings). This is what makes the page recall-able from queries that don't match the
-title. Skip only when the title is the sole term anyone would use.
+## 4. Preview, write, and register
 
-Body: the synthesized answer from this session. Neutral, reference-focused voice — no "I learned
-that..." framing. Should make sense to a reader with no context. Completion: the note has a title,
-chosen folder, duplicate-search result, self-contained body, aliases for likely search terms, and no
-references to "above" or "this conversation."
+Show the complete page or exact existing-page change, plus root index and log changes. After explicit
+approval:
 
-## Step 4 — Update Index and Log
+1. write through the `vault` safe-write flow;
+2. reread the affected page;
+3. update root `index.md` in its live schema-defined section;
+4. append one `save-note` operation to root `log.md`;
+5. verify that the index entry resolves to the saved page.
 
-Add to `index.md` under the `## Concept notes (claude-memory)` heading. The CLI has no `patch`, so
-this section-targeted insert means either the MCP `obsidian_patch_content` tool (target the heading,
-`operation: append`) or `read` + `create ... overwrite`. Ask the user which. Entry format:
-
-```
-- **<Title>** ($(date +%Y-%m-%d)) — [[<stem>]] (<path>). _<one-line summary>_
-```
-
-Append to `log.md` (chronological — append is fine):
-
-```bash
-obsidian append path="3 - Resources/log.md" content="\n## $(date +%Y-%m-%d)\nsave-note | <title>"
-```
-
-## Hard Rules
-
-- Body must be self-contained — no "as we discussed" or "see above"
-- Search before writing — never create duplicate pages
-- Write in wiki style: neutral, reference-focused, not diary voice
-- If Obsidian CLI fails: tell the user "Obsidian CLI isn't working — update Obsidian with CLI
-  enabled"
+Never interpolate generated Markdown into shell commands. Report partial failures without claiming
+the note was fully registered.

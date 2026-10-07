@@ -1,88 +1,68 @@
 ---
 name: close-day
-description: >-
-  End-of-day Obsidian ritual: close the active focus loop, triage Ideas Worth Sharing, and confirm
-  tomorrow's carry-forward. Use for "close my day", "end of day", "wrap up today", or /close-day.
+description: End-of-day ritual that records a resume state, triages sharing receipts, and confirms carry-forward.
 disable-model-invocation: true
 ---
 
 # Close Day
 
-A 5–10 minute closure ritual, not a generated daily report.
+Close today's active loop without turning the ritual into a portfolio review.
 
-## 1. Load the cockpit
+## 1. Load today's cockpit
 
-Read today's workday note and parse only these named sections first:
+Read `AGENTS.md`, resolve today's note, and inspect the schema-defined sections corresponding to:
 
-- `Daily Outcome`
-- `Next Action`
-- `Active Focus Block`
-- `Parking Lot`
-- `Work Notes`
-- `Ideas Worth Sharing`
-- `Ready to Resume`
-- `Carry Forward`
+- daily outcome and next action;
+- active focus and work notes;
+- ideas or receipts worth sharing;
+- ready-to-resume state;
+- carry-forward items.
 
-If the note is missing, stop and suggest `/daily`. If sections are sparse, ask what happened; do not infer inactivity.
+If the note is missing, stop and offer `/daily`. Sparse sections trigger a question, not an
+inference of inactivity.
 
-Completion: the current state, unresolved commitments, and captured sharing ideas are visible.
+Completion: current state, unresolved work, and captured receipts are visible.
 
-## 2. Close the active loop
+## 2. Record a resume state
 
-Ask the user to confirm or edit:
+Have the user confirm:
 
-- outcome state: complete / deliberately stopped / blocked;
+- outcome state: complete, deliberately stopped, or blocked;
 - what is now true;
 - the next visible action;
-- the file, link, or command to reopen.
+- the file, link, or command needed to resume.
 
-Write one credible `Ready to Resume` state. Do not restart the whole portfolio or generate a long retrospective.
+Draft one concise resume state and obtain approval before writing it.
 
 Completion: future-you can resume without reconstructing the task.
 
-## 3. Triage Ideas Worth Sharing
+## 3. Triage receipts
 
-For every non-empty receipt, ask for one decision:
+For every captured sharing idea, ask for one decision:
 
-- **Promote** — durable enough for `Public Technical Presence`;
-- **Defer** — keep in the daily note for the weekly review;
-- **Discard** — remove it from the publishing pipeline without deleting the underlying work note.
+- **Promote:** hand the sourced idea to `capture-receipt`.
+- **Defer:** leave it for the weekly review.
+- **Discard from pipeline:** remove its sharing candidacy without deleting the underlying work note.
 
-On promotion, preserve receipt ID, idea/lesson, proof, project, daily-note backlink, source session, and safety state. Hand off to `capture-receipt` for the approved write and offer:
+Only explicitly public-safe material may proceed to publication drafting. Never publish, claim
+publication, or expose confidential information.
 
-1. save only;
-2. draft a tweet now through `tweet-today`;
-3. create a blog outline through `blog`.
+Completion: each receipt is promoted, deferred, or discarded.
 
-Never publish, claim publication, or expose private Roofr information. Anything marked `no` or `needs review` stays private until the user explicitly clears it.
+## 4. Confirm carry-forward
 
-Completion: every captured sharing idea is promoted, deferred, or discarded.
+Extract unfinished promises and blockers with source locations. Ask which items truly belong to the
+next workday. Prepare one canonical carry-forward section containing only confirmed items.
 
-## 4. Confirm tomorrow candidates
+Nothing rolls forward automatically; unselected work remains in its source system.
 
-Extract promises, blockers, and unfinished work from today's note. Show exact source lines and ask what truly belongs tomorrow.
+Completion: tomorrow's candidates are confirmed and no commitment was inferred.
 
-Update exactly one `## Carry Forward` section with confirmed tomorrow items only. Unselected work stays in its source system or weekly radar; it does not become silent debt.
+## 5. Write and verify
 
-Completion: the note has one canonical Carry Forward section and no inferred commitments.
+Preview all named-section changes together. After approval, use the `vault` safe-write flow and
+respect ownership declared in `AGENTS.md`. Reread the note and verify the resume state and single
+carry-forward section.
 
-## 5. Optional project maintenance
-
-Only propose a project update when today's note contains meaningful status, decision, or insight evidence.
-
-- Never modify a human-written note without `source: claude-memory`.
-- For an LLM-owned project note, show the exact named-section change and require approval.
-- Public Technical Presence writes are limited to its receipt/draft/published sections.
-
-Completion: protected notes remain untouched and approved LLM-owned updates are targeted.
-
-## Report
-
-Return only:
-
-- outcome state and ready-to-resume action;
-- receipt decisions and any handoff started;
-- confirmed Carry Forward items;
-- optional approved project update.
-
-If Obsidian CLI fails, say: "Obsidian CLI isn't working — update Obsidian with CLI enabled."
+Return only the outcome state, resume action, receipt decisions, confirmed carry-forward, and any
+unresolved item.

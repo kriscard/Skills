@@ -1,108 +1,62 @@
 ---
 name: goals
-description: >-
-  Obsidian goals review for quarterly or monthly goal notes. Use when the user asks to review goals,
-  run an OKR check-in, update goals, set monthly or quarterly goals, check whether goals are on
-  track, or runs /goals.
+description: Create or revise monthly, quarterly, or yearly objectives in the Obsidian vault.
 disable-model-invocation: true
-argument-hint: '[quarterly | monthly — omit to choose]'
+argument-hint: '[monthly | quarterly | yearly]'
 ---
 
-# Goals Review
+# Goals
 
-Check-in and update goal notes across quarterly and monthly levels. Goal reviews only matter if they
-connect to action — this skill always ends with concrete next steps, not just status updates.
+Set and revise forward-looking objectives. Weekly retrospectives belong to `/weekly-review`; this
+skill does not own weekly notes or weekly commitments.
 
-## Ask, Don't Assume
+## 1. Choose the horizon
 
-Shared principle (canonical version in the `vault` skill): never guess, deduce, or fill gaps with
-assumptions about the user's notes, priorities, or intent. If you don't know — a date range, what
-counts as a win, which goals are active — **ask**. Before writing any synthesis or judgment into a
-note, show your draft with its source and get explicit confirmation. Missing data is not permission
-to invent.
+Read `AGENTS.md` and use `$ARGUMENTS` when it names `monthly`, `quarterly`, or `yearly`. Otherwise ask
+the user to choose one of those horizons.
 
-## Step 1 — Determine Review Level
+Determine whether the user is:
 
-If `$ARGUMENTS` is provided, validate it against `quarterly` or `monthly`. If it is missing or
-anything else, ask via `AskUserQuestion`:
+- creating the next period;
+- checking current progress;
+- closing a period and setting the next one.
 
-> "Which goals review would you like?"
->
-> - Quarterly
-> - Monthly
+Completion: the horizon, operation, and exact date range are confirmed.
 
-Weekly execution and weekly-to-monthly alignment belong to the `weekly-review` skill. It owns weekly
-note creation, lane closure, and next-week preparation, and already loads active monthly and quarterly
-goals. If the user asks for a weekly goals review, route to `weekly-review` instead of continuing here.
+## 2. Resolve live context
 
-## Step 2 — Load Context (run in parallel)
+Discover the current goal path, filename convention, template, and dashboard from the live vault.
+Do not rely on cached spellings or create a parallel folder.
 
-```bash
-# OKR dashboard
-obsidian base:query path="2 - Areas/Goals/OKR Dashboard.base" format=json 2>/dev/null
+Read the relevant current and preceding goal notes, aligned projects, and source evidence supplied by
+the user. Use a dashboard as discovery, not as proof that every result is active.
 
-# Active projects (goal alignment check)
-obsidian files folder="1 - Projects/" format=json
-```
+Completion: the target note and evidence for each objective are known.
 
-## Step 3 — Level-Specific Workflow
+## 3. Draft objectives or adjustments
 
-### Monthly Review
+For each objective, confirm:
 
-```bash
-MONTHLY="2 - Areas/Goals/Monthly/M - $(date +'%B %Y').md"
-obsidian read path="$MONTHLY" 2>/dev/null || \
-  obsidian create path="$MONTHLY" template="Monthly Goals"
-```
+- outcome;
+- checkable success criteria;
+- why it matters in this horizon;
+- aligned projects or milestones;
+- next review point.
 
-Check quarterly progress: which quarterly objectives is this month advancing? Flag at-risk goals
-only when source-bound evidence exists: a missed milestone, elapsed due date, explicit blocker, or
-user-confirmed concern. Otherwise frame it as a question to verify.
+During a check-in, label progress only from sourced milestones, elapsed dates, explicit blockers, or
+user confirmation. Ask whether a struggling objective should be adjusted, retired, or retained;
+never silently mark it failed.
 
-Update with: progress status per goal, adjustments, and next month's focus.
+Monthly objectives should advance current quarterly objectives. Quarterly objectives should support
+yearly direction when a yearly note exists. Do not invent alignment to fill a hierarchy.
 
-### Quarterly Review
+Completion: every proposed objective or adjustment is checkable and explicitly confirmed.
 
-Read the current quarterly note:
+## 4. Preview, write, and verify
 
-```bash
-# Note: folder and file use "Quaterly" spelling — preserve exactly.
-# Derive Q<N> and YYYY from the review date.
-QTR_PATH="2 - Areas/Goals/Quaterly/Quaterly Goals - Q<N> YYYY.md"
-obsidian read path="$QTR_PATH" 2>/dev/null
-```
+Show the target path and complete proposed change. After explicit approval, create from the resolved
+live template or update named sections through the `vault` safe-write flow. Reread and verify the
+written objectives, success criteria, and period.
 
-For a **mid-quarter check-in**: assess progress, flag at-risk objectives only from missed milestones,
-elapsed due dates, explicit blockers, or user-confirmed concerns, and surface blockers.
-
-For a **quarter wrap + new quarter**: review previous quarter outcomes (hit / partial / missed),
-extract learnings, then set new quarterly objectives broken into monthly milestones.
-
-Ask via `AskUserQuestion`: "Is this a check-in or quarter transition?"
-
-For new quarter setup, create the new quarterly note:
-
-```bash
-obsidian create path="2 - Areas/Goals/Quaterly/Quaterly Goals - Q<N> YYYY.md" \
-  template="Quarterly Goals"
-```
-
-## Step 4 — Update the Goal Note
-
-Update the relevant note with:
-
-- Progress status per objective, with source evidence
-- Adjustments to goals (if circumstances changed)
-- Next actions tied to each objective
-
-The CLI has no `patch`. If the update can append to the note, use `obsidian append`. If it must
-change a specific section, ask the user: MCP `obsidian_patch_content` (heading-targeted) or `read` +
-`create ... overwrite`. Always show a preview before writing and wait for explicit approval.
-
-## Gotchas
-
-- The quarterly folder is `Quaterly` (not "Quarterly") — this is a known vault typo. Match it
-  exactly or file creation will break.
-- Don't create a new quarterly note mid-quarter — read the existing one.
-- Don't mark a goal "missed" without asking if it should be adjusted instead. Goals can be refined;
-  they shouldn't just silently fail.
+Return the horizon, confirmed objectives or adjustments, aligned projects, next review point, and
+unresolved evidence gaps.
