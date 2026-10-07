@@ -1,100 +1,70 @@
 ---
 name: refactor
 description: >-
-  Performs behavior-preserving refactors to improve readability, reduce
-  complexity, and enhance maintainability without altering functionality. Use
-  when the user says "refactor", "simplify this code", "clean up", "reduce
-  complexity", "extract method", "this is too complex", or asks to improve
-  naming/structure without changing behavior. Preserves all public APIs unless
-  explicitly authorized.
+  Behavior-preserving code refactoring. Use when the user asks to simplify
+  complex or duplicated code, improve naming, control flow, or module structure,
+  extract code, or clean up an implementation without changing functionality.
+  Preserve public APIs unless the user explicitly authorizes a change.
 ---
 
 # Refactor
 
-Behavior-preserving refactor: improve code quality without changing externally
-observable behavior or public APIs unless explicitly authorized.
+Make the smallest structural change that produces a specific improvement while preserving the
+code's observable contract.
 
-## Methodology
+## Process
 
-### Step 1 — Characterize Current Behavior
+### 1. Define the contract and target
 
-Done when public interfaces, side effects, error behavior, performance
-assumptions, and available tests or characterization checks are listed. If
-behavior is ambiguous and untested, pause with the ambiguity instead of
-rewriting.
+Read applicable project guidance, the target code, its callers, and nearby tests. Name one
+structural target, such as duplicated decisions, nested control flow, mixed responsibilities,
+unclear ownership, or misleading names. Record the behavior that must remain stable: public APIs,
+outputs, side effects, error behavior, ordering, and any performance-sensitive invariant.
 
-### Step 2 — Identify the Refactor Target
+Completion: the target improvement is checkable, the preserved contract is explicit, and affected
+callers are accounted for.
 
-Read the code fully and name the specific problem: complexity, duplication,
-naming, coupling, dead code, unclear data structure, or control flow. Done only
-when the intended improvement can be checked after the change.
+### 2. Establish preservation evidence
 
-### Step 3 — Apply Simplification Techniques (in priority order)
+Run the narrowest existing checks that exercise the contract. When coverage is missing, add or
+record a focused characterization check for the behavior at risk. Resolve ambiguous behavior with
+the user before changing it. Treat a discovered bug, API change, dependency change, or architectural
+choice as separate work requiring approval.
 
-1. **Reduce Complexity** — simplify nested conditionals, use early returns
-2. **Eliminate Redundancy** — remove duplicate code, apply DRY principles
-3. **Improve Naming** — descriptive names that reveal intent
-4. **Extract Methods** — break large functions into smaller, focused ones
-5. **Simplify Data Structures** — use appropriate collections and types
-6. **Remove Dead Code** — eliminate unreachable or unused code
-7. **Clarify Logic Flow** — make the happy path obvious, handle edge cases clearly
+Completion: the baseline result is captured, every behavior at risk has a repeatable check or a
+reported coverage gap, and ambiguities are resolved or excluded from scope.
 
-### Step 4 — Quality Checks Per Refactoring
+### 3. Apply one coherent simplification
 
-For each change:
-- Verify behavior is preserved with tests or characterization notes
-- Confirm tests still pass, or report why they could not be run
-- Check that complexity genuinely decreased
-- Confirm the code is more readable than before
+Keep the change centered on the named structural target. Choose only the techniques it needs:
 
-### Step 5 — Communication Protocol
+- flatten control flow or make the happy path explicit;
+- remove genuine duplication or dead code;
+- rename concepts to match their role;
+- extract a cohesive function, type, or module;
+- replace an awkward data structure with one that expresses the invariant.
 
-- Explain each refactoring and its benefit
-- Highlight risks or assumptions
-- Provide before/after comparisons for significant changes
-- If a public API change would significantly improve the code, ask for permission first
+Follow local conventions and keep public APIs, dependencies, and architectural boundaries stable.
+Supporting renames or extractions belong in the same change only when they serve the target.
 
-### Step 6 — Constraints and Boundaries
+Completion: the target is measurably improved and every changed line supports that improvement or
+preserves its contract.
 
-- Never change public APIs without explicit permission
-- Maintain backward compatibility and documented behavior
-- Don't introduce new dependencies without discussion
-- Respect existing code style and conventions
-- Keep performance neutral or better unless explicitly improving it
-- One concern per refactor — don't mix renaming, extraction, and logic changes
+### 4. Verify the contract
 
-### Step 7 — When to Seek Clarification
+Repeat the baseline checks and run the repository's relevant typecheck, tests, lint, or build.
+Inspect the final diff and affected callers for accidental behavior or API changes. Compare the
+before and after using the target's evidence: fewer branches, less duplication, narrower ownership,
+clearer names, or a smaller public surface.
 
-Pause and ask when:
-- Behavior is ambiguous and no tests document it
-- A potential bug would be exposed or fixed by the refactor
-- A public API change would greatly simplify the code
-- Performance trade-offs exist
-- Architectural decisions affect the refactoring approach
+Completion: relevant checks pass, or unrelated failures are reported with evidence; compatibility
+is confirmed; and the improvement is demonstrated by a specific before/after comparison.
 
-## Completion Gate
+## Report
 
-Do not call a refactor complete until:
+State:
 
-- behavior characterization is documented
-- tests or characterization checks were run, or the gap is explicitly reported
-- public API compatibility is confirmed
-- before/after complexity or readability improvement is stated
-- any behavior changes are separated and approved as non-refactor work
-
-## Output Format
-
-Every refactoring response includes:
-- The refactored code
-- Summary of changes made and why each improves the code
-- Evidence that behavior was preserved
-- Any caveats or areas requiring attention
-- Suggestions for further improvements if applicable
-
-## Anti-Patterns to Avoid
-
-- Abstracting things that are only similar on the surface
-- Adding layers of indirection that make code harder to follow
-- Renaming without a clear semantic improvement
-- Refactoring code you don't fully understand yet
-- Mixing refactoring with bug fixes or feature additions in the same commit
+- the structural target and what changed;
+- the preservation evidence and commands run;
+- the concrete before/after improvement;
+- unresolved coverage gaps, assumptions, or separately scoped opportunities.
