@@ -1,17 +1,14 @@
 ---
 name: tutorial
-description: >-
-  Checkpointed tutorial writer for step-by-step technical teaching: visible end
-  state, dependency-ordered steps, working checkpoints, and mechanism
-  explanations. Use when the user asks to create, draft, revise, or outline a
-  tutorial, step-by-step guide, onboarding guide, or documentation that teaches a skill.
+description: Write or revise a learning-oriented technical tutorial that builds a transferable skill through a visible end state, dependency-ordered practice, checkpoints, and mechanism explanations.
 argument-hint: "[topic or technology]"
-disable-model-invocation: true
 ---
 
 # Tutorial Writer
 
 Tutorials fail when they front-load theory or hide the result until the end. This structure builds toward a visible goal with checkpoints that confirm understanding along the way.
+
+Use `docs` for an operational how-to whose reader already understands the system and needs to complete one task. Continue here when the reader should gain a reusable mental model or skill.
 
 ## Structure (non-negotiable order)
 

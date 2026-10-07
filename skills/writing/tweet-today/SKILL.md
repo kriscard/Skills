@@ -1,154 +1,69 @@
 ---
 name: tweet-today
-description: >-
-  Tweet Today creates categorized Twitter/X post options from today's work, a
-  conversation, a draft, or a technical topic. Use when the user asks what to
-  tweet today or wants software dev, programming, UI/frontend, startup/product,
-  tech, code-snippet, or AI-agent tweet options.
-disable-model-invocation: true
+description: Draft specific Twitter/X posts from a concrete work receipt, lesson, opinion, code detail, or user draft. Use when the user asks what to tweet or a receipt workflow requests social options.
 argument-hint: "[topic, today summary, or conversation excerpt]"
 ---
 
 # Tweet Today
 
-Turn available context into categorized tweet options the user can choose from today: specific, peer-level, and non-cringe.
+Produce at least three distinct single-post options grounded in real evidence. Use `blog` for an essay and `standup` for a team update.
 
-## Boundary
+## 1. Find receipts
 
-Default to at least 3 single-tweet options under 280 characters, grouped by category. Do not create a thread, LinkedIn post, or blog outline unless the user asks. Never claim the tweet was posted; this skill only drafts.
+Use the nearest source: current conversation, user draft, supplied daily summary, or structured receipt from another workflow. A receipt is a shipped change, fixed bug, observed detail, tested tool, decision, mistake, screenshot, or changed opinion.
 
-If the user asks for a longer essay, use the blog skill. If they ask for a daily standup, use the standup skill.
+If the source lacks a subject, stance, or concrete proof, ask only for the missing piece. Request permission before inspecting notes or Git.
 
-## Workflow
+Complete when the evidence supports three genuinely different signals rather than three phrasings of one claim.
 
-### 1. Harvest receipts
+## 2. Run the public-safety gate
 
-Use the nearest available source first, then extract concrete receipts:
+Remove or generalize credentials, private URLs and repository names, customer data, unreleased metrics, internal architecture, config values, copied logs, and private backlinks. Keep receipt IDs and vault links as private workflow metadata.
 
-| Branch | Source |
-|--------|--------|
-| Conversation | Current visible conversation, agent session, or pasted transcript |
-| Today | User-provided bullets about today's work; if missing, ask for them or permission to inspect notes/git |
-| Topic | The named topic plus any opinion, lesson, or example already provided |
-| Draft | The user's rough tweet or idea |
-| Structured receipt | A public-safe receipt promoted by `capture-receipt` or `close-day`, including proof and private source backlinks |
+For code, retain only the minimal public-safe lines and replace sensitive values with unmistakable placeholders.
 
-Receipts are shipped changes, bugs fixed, screenshots, code snippets, tools tried, decisions made, mistakes noticed, or opinion shifts.
+Complete when every retained fact is publishable and traceable to the source.
 
-Complete when the source can support 3 distinct tweet options. For a full-day request, aim for 3-5 receipts. If the source lacks subject, stance/lesson, or a concrete receipt, do a mini-grill before drafting.
+## 3. Choose three signals
 
-### 2. Mini-grill thin context
+Choose evidence-backed categories such as shipped work, learned lesson, UI detail, programming judgment, product trade-off, agent workflow, or tiny code example. Name why each signal is distinct.
 
-Ask only the smallest set of questions needed to make the tweet real. Prefer these, adapted to the source:
+Useful frames:
 
-- What changed your mind today?
-- What did you actually do, build, debug, or notice?
-- What is the non-obvious lesson?
-- Who should care, and what should they do differently?
-- What concrete receipt proves it?
-- Are there Twitter/X accounts whose style should inspire this batch?
+- I thought X; evidence Y changed it to Z.
+- I did X; the reusable lesson was Y.
+- X works poorly under condition Y; Z handled it better.
+- The visible bug was X; the underlying cause was Y.
 
-Complete when the answer can support categorized tweets without inventing facts.
+## 4. Draft
 
-### 3. Safety gate
+Write one option per signal, each within the current platform limit unless the user requests a longer format. Make one point, keep claims proportional to evidence, and use a tiny snippet only when it communicates better than prose.
 
-Scan the source before drafting. Remove or generalize anything unsafe: secrets, credentials, tokens, API keys, private URLs, private repo names, customer data, unreleased metrics, `.env` values, config values, or copied logs.
+Load `references/twitter-voice.md` for the final voice pass. A candidate fails when it could be posted unchanged by a generic developer account; repair it with a sharper receipt, named detail, or actual opinion.
 
-For code snippets, keep only public-safe examples. Replace sensitive values with placeholders like `YOUR_API_KEY`, `<internal-url>`, or `example.com`.
+Complete when every option is safe, source-grounded, distinct, and recognizable as the user's voice.
 
-Complete when every usable receipt is safe to publish, or unsafe receipts have been dropped.
-
-For a structured receipt, keep receipt ID, daily/project/session backlinks, and safety state as **private draft metadata**. Never include those internal references in the tweet text.
-
-### 4. Propose categories
-
-Pick the 3 strongest tweet categories for the day. Start from the user's lane — software development, programming, UI/frontend craft, startup/product, AI/agent workflows, and broader tech — then choose what the source can actually support.
-
-Useful categories:
-
-- **What I shipped** — visible progress, demo, launch, refactor, feature, or tool.
-- **What I learned** — a concrete technical lesson, debugging insight, or changed mind.
-- **Frontend/UI craft** — interaction detail, design engineering, accessibility, polish, taste.
-- **Programming take** — opinion about code structure, tools, abstractions, or workflow.
-- **Startup/product note** — user pain, positioning, distribution, pricing, scope, trade-off.
-- **Agent workflow** — what AI agents made easier/harder, prompt/process lessons, automation.
-- **Code snippet** — a tiny before/after, API shape, bug pattern, CSS detail, or command that makes the lesson concrete.
-
-Complete when each chosen category has a one-line reason and at least one receipt tied to today's source.
-
-### 5. Extract the signal per category
-
-For each chosen category, find one tweetable idea. It should fit one of these frames:
-
-- `I used to think X, but Y made me think Z.`
-- `Today I did X; the useful lesson was Y.`
-- `People reach for X, but Y works better when Z.`
-- `The bug/project/detail looked like X, but the real issue was Y.`
-
-Complete when there are at least 3 distinct signals, not the same idea rewritten three times.
-
-### 6. Draft options
-
-Write at least 3 tweet candidates, one per chosen category. Use different shapes when possible:
-
-1. **Tiny lesson** — direct takeaway from the work.
-2. **Micro-story** — one concrete moment, then the lesson.
-3. **Point of view** — a crisp claim with a receipt.
-4. **Code snippet** — a tiny snippet only when code makes the insight sharper than prose.
-
-Rules:
-- keep each option under 280 characters unless the user requested X Premium length
-- no hashtags unless the user asks
-- no engagement bait: "Agree?", "Thoughts?", "Hot take", "Here's the truth"
-- no generic AI cadence: "game-changer", "unlock", "dive into", "leveraging"
-- keep first-person only when the source is genuinely personal
-- when a code snippet helps, prefer 1-4 lines, real syntax, and enough surrounding prose to explain the point
-- if a useful snippet needs sensitive values, use the sanitized placeholders from the safety gate
-
-Complete when every option is sendable, grounded in the source, clearly labeled with its category, and safe to publish.
-
-### 7. Voice pass
-
-Before finalizing, read `references/twitter-voice.md` and revise for the user's Twitter/X voice.
-
-Run the boring-tweet test: if a tweet could be posted by any generic AI/dev account, rewrite it around a sharper receipt, stronger opinion, or more specific wording.
-
-Complete when the candidates sound like Chris's X voice: casual, technical, lightly opinionated, specific, non-boring, and free of generic AI/influencer cadence.
-
-### 8. Present the choice
-
-Show the categories first, then the tweets. Pick the strongest option by specificity, receipt quality, voice match, and conversation potential — not by safest/polished wording. Say why in one short sentence, but make it easy for the user to choose another.
-
-Output format:
+## 5. Present the choice
 
 ```markdown
-Categories I’d use today:
-1. [Category] — [why it fits today]
-2. [Category] — [why it fits today]
-3. [Category] — [why it fits today]
-
 Recommended:
-> [tweet]
+> [strongest option]
 
-Why this one: [one sentence]
+Why this one: [specificity, evidence, or voice reason]
 
 Other options:
-1. **[Category]** — [tweet]
-2. **[Category]** — [tweet]
+1. **[signal]** — [post]
+2. **[signal]** — [post]
 ```
 
-If the context is too thin, output the mini-grill questions instead of weak drafts.
+Return clarification questions instead of generic filler when evidence remains thin. Drafting does not imply posting or publication.
 
-### 9. Optionally save the approved draft
+## Completion gate
 
-After the user chooses or edits a candidate, offer to append it under `## ✍️ Drafts` in `1 - Projects/Public Technical Presence/Public Technical Presence.md` with its receipt ID and private source backlinks. Show the exact write and require approval.
-
-Save state as `draft`, never `published`. Only a user-confirmed public URL or explicit publication confirmation may move it to `## 🚀 Published`.
-
-Complete when the approved draft is either saved with metadata or deliberately left in chat.
+The result is complete when at least three distinct candidates pass safety and voice checks, the recommendation is justified in one sentence, and no private workflow metadata appears in post text.
 
 ## References
 
 | Priority | Load when | Reference |
-|----------|-----------|-----------|
-| 1 | Finalizing tweet candidates in the user's Twitter/X voice, choosing tweet shapes, or deciding whether a code snippet fits | `references/twitter-voice.md` |
+| --- | --- | --- |
+| 1 | Finalizing candidates in the user's voice or deciding whether a code/image-led post fits | `references/twitter-voice.md` |

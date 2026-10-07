@@ -1,74 +1,58 @@
-> **Read this when:** The user asks whether they are on track for Staff Engineer, needs promotion evidence, or wants quantitative career signal tracking.
+> **Read this when:** evaluating Staff-level trajectory or assembling promotion evidence against a company ladder.
 
-# Staff Engineer Progress Tracking
+# Staff-level evidence
 
-When the user asks about Staff Engineer trajectory, analyze the four signals quantitatively. If Obsidian goals exist and the user points to them, read them for context but do not modify them.
+Staff scope varies by company. Begin with the employer's current ladder, promotion packet format, manager feedback, and examples of accepted evidence. Mark missing context rather than substituting universal activity targets.
 
-## The Four Staff Engineer Signals
+## Evidence dimensions
 
-### 1. Technical Writing
+### Technical direction
 
-ADRs, RFCs, design docs, technical specs.
+Look for consequential decisions: architecture, standards, migrations, risk reduction, and technical strategy. Record the decision, alternatives, the user's contribution, who adopted it, and the resulting outcome.
 
-```bash
-git log --all --grep="ADR" --grep="RFC" --grep="design doc" --oneline
-find . -name "*adr*" -o -name "*rfc*" -o -name "*design*" | grep -v node_modules
+### Organizational leverage
+
+Look for teams unblocked, recurring work removed, review quality improved, or mechanisms that let others move faster. Volume of reviews or documents is supporting evidence only when it changed outcomes.
+
+### Ownership and judgment
+
+Look for durable stewardship: anticipating failure, improving operability, making trade-offs explicit, and leaving a system healthier and less dependent on one person. Commit concentration is not ownership evidence by itself.
+
+### Cross-boundary influence
+
+Look for alignment across teams or disciplines, conflict resolved, shared interfaces established, and decisions moved forward without formal authority.
+
+### Multiplication
+
+Look for mentoring, sponsorship, delegation, documentation, and systems that increased other engineers' autonomy. Strong evidence shows successors and reduced bottlenecks.
+
+## Evidence table
+
+```markdown
+| Level expectation | Evidence | Outcome | Corroboration | Gap / next opportunity |
+| --- | --- | --- | --- | --- |
+| [ladder language] | [specific action] | [observable effect] | [doc, metric, feedback] | [missing proof or scope] |
 ```
 
-Target: 2+ docs/quarter after Q1. Quality indicator: doc influences team decisions and contains trade-off analysis.
+Distinguish:
 
-### 2. Code Review Quality/Quantity
+- **activity:** wrote an RFC, reviewed a PR, joined a project
+- **output:** RFC accepted, review changed the design, project shipped
+- **outcome:** incidents fell, another team adopted the pattern, delivery time improved
 
-Total reviews, substantive reviews (>3 comments with reasoning).
+Promotion cases lead with outcomes and use activities as provenance.
 
-```bash
-gh search prs --reviewed-by @me --limit 100
-```
+## Assessment
 
-Target: 20+/month, 30%+ substantive rate.
+For every relevant ladder expectation, mark:
 
-### 3. System Ownership
+- demonstrated with corroborated evidence
+- emerging but missing scope, duration, or outcome
+- not yet demonstrated
+- unavailable because the ladder or evidence is missing
 
-Percent of commits in specific dirs/modules over time.
+Avoid invented scores and cross-company quotas. Trend evidence over the period used by the actual promotion process.
 
-```bash
-for dir in $(find src -maxdepth 2 -type d); do
-  total=$(git log --oneline -- "$dir" | wc -l)
-  yours=$(git log --author="$(git config user.email)" --oneline -- "$dir" | wc -l)
-  [ "$total" -gt 20 ] && echo "$dir: $((yours * 100 / total))% ($yours/$total)"
-done
-```
+## Completion gate
 
-Threshold: >50% of commits in an area for 3+ months.
-
-### 4. Cross-Team Impact
-
-PRs touching multiple team dirs, cross-functional projects.
-
-```bash
-gh pr list --author @me --json files | \
-  jq '.[] | select(.files | map(.path | split("/")[1]) | unique | length > 1)'
-```
-
-## Report Format
-
-```text
-Staff Engineer Progress ([Period])
-
-Technical Writing: X docs (Goal: Y/quarter) — [On track / Behind]
-Code Reviews: X reviews, Y substantive (Goal: Z/month) — [Trending up/down]
-System Ownership: X areas at >50% — [Established / Emerging]
-Cross-Team Impact: X active projects — [Scope: which teams]
-
-Top 3 actions for next 30 days:
-1. [Specific action with expected signal impact]
-```
-
-Completion criterion: every available signal is marked measured, unavailable, or needs user-supplied data, and the report ends with the top 3 actions for the next 30 days.
-
-## Warning Signs to Flag
-
-- No technical writing in 60+ days → suggest converting recent code review feedback into an ADR.
-- Substantive review rate <20% → suggest adding reasoning to next 3 reviews.
-- No clear ownership (all areas <30%) → suggest focusing commits.
-- All work in one team → suggest cross-team opportunity.
+The assessment is complete when every relevant expectation has a status, evidence and assumptions are separated, the largest gaps are named, and the user has up to three next opportunities chosen for organizational value rather than metric collection.

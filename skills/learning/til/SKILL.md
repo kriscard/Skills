@@ -1,138 +1,95 @@
 ---
 name: til
-description: >-
-  TIL capture for explicit requests to save learned material from a session into an engaging
-  Obsidian note. Use when the user runs /til or asks to save, document, or write up what they
-  learned.
-disable-model-invocation: true
+description: Save demonstrated learning, corrected misconceptions, and useful examples from a session as a durable Obsidian TIL note. Use when a learning workflow hands off a session or the user asks to save what they learned.
 argument-hint: "[project or topic name — omit to infer from context]"
 ---
 
-# TIL (Today I Learned) Capture
+# TIL capture
 
-Turn a session into a durable, engaging knowledge note. The goal is a note future-you will actually
-want to read — not a dry changelog. This skill is the single source of truth for TIL note format.
+Create a note future-you can understand without the conversation. Invoke `vault` for vault conventions and `obsidian-cli` for safe read, create, append, and verification operations.
 
-## Step 1 — Identify the Topic
+## 1. Establish the topic
 
-Use `$ARGUMENTS` if provided. Otherwise infer from:
+Use `$ARGUMENTS` when present. Otherwise infer from the conversation and current project, then state the inferred topic before writing.
 
-1. Current working directory (`pwd`)
-2. Git repo name (`git remote get-url origin`)
-3. Dominant topic from the conversation
+Complete when the title describes the learned concept rather than only the repository name.
 
-Complete when the topic/project name is explicit or the inferred topic is shown to the user.
+## 2. Inspect today's note
 
-## Step 2 — Check for an Existing TIL Today
+Target `3 - Resources/TIL/til-YYYY-MM-DD.md` unless the vault skill identifies a newer convention. Read the existing note before deciding between creation and append.
 
-```bash
-obsidian read path="3 - Resources/TIL/til-$(date +%Y-%m-%d).md" 2>/dev/null
-```
+For an existing note, count its `## Session N` headings and use the next integer. Preserve its frontmatter and top-level title.
 
-If a note exists, append a session entry. Never overwrite — today may have multiple sessions.
+Complete when the operation is classified as new note or append and the destination plus next session number are known.
 
-## Step 3 — Extract Learnings from the Conversation
+## 3. Extract evidence
 
-Analyze the full conversation and pull out only evidence-backed material:
+Include only conversation-backed material:
 
-- **What was built, learned, or designed** — the artifact or insight
-- **Key decisions and trade-offs** — why this approach over alternatives
-- **Bugs or blockers encountered and fixed** — symptom, root cause, fix
-- **Aha moments** — insights that reframe how you think about something
-- **What would be done differently** — honest retrospective
+- what the learner can now explain or apply
+- corrected misconceptions and the evidence that corrected them
+- decisions or trade-offs that changed their model
+- a minimal example worth reusing
+- unresolved questions or a useful next experiment
 
-Completion: every listed learning category has either extracted evidence from the conversation or is
-intentionally omitted as not applicable. Do not pad empty categories.
+Omit categories without evidence.
 
-## Step 4 — Write with an Engaging Voice
+## 4. Write the note
 
-Write like telling a story to a friend, not filing a report.
+Use first person and a concrete title. Prefer explanation over a session transcript.
 
-Use:
-
-- analogies: "it's like a cache, but for..."
-- anecdotes: "We tried X first — it broke because..."
-- before/after code for bug fixes and pattern changes
-- Mermaid diagrams for architecture or data flow when they clarify structure
-
-Required frontmatter tags: 3–5 tags using the `til/` prefix.
-
-| Category | Examples |
-| --- | --- |
-| Technology | `til/react`, `til/typescript`, `til/nextjs`, `til/python` |
-| Patterns | `til/architecture`, `til/testing`, `til/debugging`, `til/performance` |
-| Libraries | `til/tanstack-query`, `til/zod`, `til/prisma` |
-| Concepts | `til/accessibility`, `til/security`, `til/composition` |
-
-### New-note shape
+### New note
 
 ```markdown
 ---
-tags: [til/typescript, til/architecture]
+tags: [til/topic]
 date: YYYY-MM-DD
-project: <topic or project name>
+project: <topic or project>
 ---
 
-# TIL: <engaging title that captures the insight>
+# TIL: <specific insight>
 
-## What We Covered
+## What I Learned
 
-<brief context — one sentence>
+<context and explanation>
 
-## The Story
+## The Example
 
-<narrative with anecdotes, analogies, code snippets>
+<minimal example when useful>
 
 ## Key Insight
 
-<the one thing to remember>
+<one durable takeaway>
 
-## What I'd Do Differently
+## Next Question
 
-<honest retrospective — omit if nothing stands out>
+<omit when none remains>
 ```
 
-### Existing-note append shape
+### Existing note
 
-Append only a session section. Do not repeat frontmatter or the top-level `# TIL` title.
+Append only:
 
 ```markdown
-## Session N — <engaging title>
+## Session <next integer> — <specific insight>
 
-### What We Covered
+### What I Learned
 
-<brief context>
-
-### The Story
-
-<narrative>
+<session-specific explanation>
 
 ### Key Insight
 
-<the one thing to remember>
-
-### What I'd Do Differently
-
-<omit if nothing stands out>
+<one durable takeaway>
 ```
 
-## Step 5 — Save the Note
+Use 3–5 `til/` tags derived from actual subjects. Keep project or session backlinks only when the vault convention calls for them.
 
-```bash
-# New note
-obsidian create path="3 - Resources/TIL/til-$(date +%Y-%m-%d).md" \
-  content="<full note content>"
+## 5. Save safely
 
-# Existing note — append a session entry only
-obsidian append path="3 - Resources/TIL/til-$(date +%Y-%m-%d).md" \
-  content="\n## Session N — <title>\n\n<session content>"
-```
+Use the Obsidian integration's create or append operation. Pass note content as tool data or through a safely written temporary file; conversation-derived Markdown must not be interpolated into executable shell text.
 
-After saving, confirm the note title, location, and categories included.
+Read the destination after writing and confirm that frontmatter, heading level, session number, and content are intact.
 
-## Hard Rules
+## Completion gate
 
-- Never mention Claude or AI assistance in the note — write in first person
-- Never overwrite an existing TIL — always append a session entry
-- Write for future-you in 6 months, not for the PR description
-- If Obsidian CLI fails: tell the user "Obsidian CLI isn't working — update Obsidian with CLI enabled"
+Report the note title, vault path, create/append mode, session number when appended, and the concepts included. A successful command without a read-back is incomplete.

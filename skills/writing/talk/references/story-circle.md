@@ -1,76 +1,28 @@
-> **Read this when:** building the narrative arc or structuring the talk story.
+> **Read this when:** shaping a technical article or talk whose value comes from tension, failed attempts, discovery, and changed practice.
 
-# Story Circle for Tech Talks
+# Technical narrative arc
 
-Eight-step narrative framework for structuring conference presentations.
+Use the smallest arc that preserves causality. The eight beats are prompts, not required headings.
 
-## The Structure
+1. **Status quo:** what was normal before the problem became visible?
+2. **Need:** what failure, constraint, or question made change necessary?
+3. **First move:** what plausible direction did the author or team try?
+4. **Search:** what evidence, experiments, or failures changed the model?
+5. **Insight:** what became newly clear?
+6. **Cost:** what trade-off or implementation difficulty remained?
+7. **Application:** how was the insight used in real work?
+8. **Change:** what result or durable practice followed?
 
-```
-        ORDER (Comfort Zone)
-           1. Introduction
-           2. Problem
-    8. Results      3. Exploration
-           ↑           ↓
-    7. Apply      4. Experiment
-           ↑           ↓
-    6. Challenges  5. Solution
-           CHAOS (Unknown)
-```
+## Choose the compression
 
-## Mapping to Tech Talks
+- **Full journey:** use when failed attempts establish credibility and explain the final design.
+- **Discovery arc:** status quo → need → search → insight → application → change.
+- **Quick lesson:** need → insight → evidence → changed practice.
 
-### 1. Introduction (You)
-Set the scene with existing workflow or technology.
-- "Our codebase was..."
-- "We were using..."
+Skip the framework for reference material, straightforward procedures, or posts whose evidence is clearer without a personal journey.
 
-### 2. Problem Statement (Need)
-Articulate what's not working.
-- "But then we noticed..."
-- "The problem was..."
+## Evidence gate
 
-### 3. Exploration (Go)
-First steps into the unknown.
-- "We started researching..."
-- "Our first attempt was..."
+Each retained beat must be supported by the speaker's or author's real experience, supplied source material, or explicitly attributed evidence. Preserve uncertainty and omit invented incidents, metrics, emotions, and production outcomes.
 
-### 4. Experimentation (Search)
-The messy middle of discovery.
-- "We tried several approaches..."
-- "After some digging..."
-
-### 5. Solution (Find)
-The breakthrough.
-- "The key insight was..."
-- "What finally worked..."
-
-### 6. Challenges (Take)
-Implementation difficulties.
-- "It wasn't perfect..."
-- "We had to deal with..."
-
-### 7. Apply Knowledge (Return)
-Bringing it back to real-world use.
-- "In production..."
-- "We rolled this out..."
-
-### 8. Results & Insights (Change)
-The new status quo and lessons.
-- "Now we..."
-- "The key takeaway..."
-
-## Example: TypeScript Migration
-
-1. **Introduction**: JavaScript codebase, 50k LOC
-2. **Problem**: Runtime errors, refactoring fear
-3. **Exploration**: Researched TypeScript, talked to teams using it
-4. **Experimentation**: Pilot on one module
-5. **Solution**: Incremental migration with strict mode
-6. **Challenges**: Third-party types, build time increase
-7. **Apply**: Full codebase over 6 months
-8. **Results**: 40% fewer bugs, confident refactoring
-
-## Key Principle
-
-**You don't need to be an expert.** Focus on how you approached a problem and solved it. The journey is the story.
+The arc is ready when removing any remaining beat would break the causal explanation and adding another would only repeat context.

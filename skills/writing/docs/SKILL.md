@@ -1,9 +1,6 @@
 ---
 name: docs
-description: >-
-  Reader-job technical documentation: READMEs, API docs, architecture docs, how-tos, RFCs,
-  design docs, and ADRs. Use when writing, revising, or reviewing docs for other developers.
-disable-model-invocation: true
+description: Write or revise technical documentation around one reader job: reference, operation, review, decision, or product alignment. Use for READMEs, API docs, operational how-tos, RFCs, product design docs, architecture proposals, and ADRs.
 ---
 
 # Technical Documentation Writer
@@ -22,8 +19,8 @@ that does not serve that job is still a failed doc.
 
 ### 1. Name the doc type and reader job
 
-Identify the document type before drafting: README, API docs, architecture docs, how-to, RFC,
-design doc, architecture proposal, or ADR.
+Identify the document type before drafting: README, API docs, how-to, RFC or architecture proposal,
+product design doc, or ADR.
 
 Complete when:
 
@@ -82,9 +79,8 @@ Complete when all applicable checks pass or failures are called out explicitly.
 | Priority | Load when | Reference |
 | --- | --- | --- |
 | 1 | Decision already made; capture context, decision, and consequences | `references/adr-template.md` |
-| 1 | Change not decided; solicit review before committing | `references/rfc-template.md` |
+| 1 | Change not decided; solicit review, including system design with migration concerns | `references/rfc-template.md` |
 | 1 | Scoping new product work with goals, non-goals, user stories, and metrics | `references/design-doc-template.md` |
-| 1 | System design or pattern change with trade-offs and migration concerns | `references/architecture-proposal-template.md` |
 | 2 | Creating or revising a README | `references/readme-guide.md` |
 | 2 | Creating or revising API documentation | `references/api-docs-guide.md` |
 | 2 | Creating or revising a task-oriented how-to guide | `references/how-to-guide.md` |

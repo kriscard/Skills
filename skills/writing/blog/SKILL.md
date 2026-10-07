@@ -1,153 +1,77 @@
 ---
 name: blog
-description: >-
-  Use when writing or revising developer-facing blog posts: technical articles,
-  opinion pieces, project writeups, TILs, or learned-in-public posts that need
-  one sharp angle/aha.
-disable-model-invocation: true
+description: Write or revise a developer-facing article with one defensible angle, current technical evidence, and a publishable draft. Use for technical posts, opinion pieces, project writeups, TIL articles, and learned-in-public stories.
 argument-hint: "[topic or title]"
 ---
 
-# Blog Post Writer
+# Blog writer
 
-Writing for developers who've read too much mediocre content. The goal is one sharp **aha** the reader will actually share.
+A post earns its length through one **angle**:
 
-## Boundary
+> Readers think or do X, but they should think or do Y because Z.
 
-A blog post may teach, but it must still have an angle. If the user wants pure step-by-step instruction, use the tutorial skill instead. If they want a publishable article with a lesson, story, opinion, or project narrative, continue here.
+Use `tutorial` when the reader's main job is to learn a procedure. Continue here when the artifact needs an argument, lesson, opinion, or project narrative.
 
-## Philosophy
+## 1. Establish evidence and angle
 
-**One insight, clearly stated, well supported.** Not a survey. Not "here's everything I know about X."
+Treat user-provided receipts, project evidence, and source backlinks as private inputs. Identify the reader, current belief or behavior, replacement, and proof.
 
-The angle test:
+Complete when the angle sentence is specific, supported by available evidence, and narrow enough for one primary takeaway. Ask for missing evidence before outlining.
 
-> Readers think/do X, but they should think/do Y because Z.
+## 2. Verify current claims
 
-If that sentence is weak, the post is not ready to outline.
+Use primary sources for changing libraries, APIs, benchmarks, or ecosystem claims. Gather only evidence that can support or challenge the angle. Personal or reflective claims can rely on clearly framed experience.
 
-## Workflow
+Complete when each consequential technical claim is sourced, reproduced, or labeled as experience/opinion, and credible counterevidence is represented.
 
-When invoked with a structured receipt from `capture-receipt` or `close-day`, treat its proof as the starting evidence. Preserve receipt ID and daily/project/session backlinks as private draft metadata, run a public-safety gate, and never expose internal references in the article.
+## 3. Choose the shape
 
-### 1. Find the angle
+Choose the smallest shape that supports the angle: argument, project story, comparison, short TIL, or tutorial article with a public lesson. Load `references/story-circle.md` only when tension, failed attempts, or transformation carry the post.
 
-Identify the post's one-sentence angle before researching or outlining.
+Complete when every planned section advances the angle.
 
-Complete when:
-- the angle fits `Readers think/do X, but they should think/do Y because Z`
-- the reader, misconception, and payoff are specific
-- the post has one primary **aha**, not a pile of related points
-
-If the angle is missing or mushy, ask follow-up questions before continuing.
-
-### 2. Research only what the angle needs
-
-Check current facts before drafting technical claims. Use available research tools for official docs, recent discussions, benchmarks, counterarguments, and examples.
-
-Complete when:
-- current docs or source material have been checked for any library/framework/API claims
-- 2-3 concrete examples, data points, or counterarguments support the angle
-- outdated or common-but-wrong advice is identified when relevant
-
-Skip external research only when the post is explicitly personal, reflective, or based entirely on user-provided material.
-
-### 3. Choose the post shape
-
-Pick the smallest structure that serves the angle:
-
-| Shape | Use when |
-|-------|----------|
-| Tutorial article | Teaching a process with a publishable lesson, not just instructions |
-| Project writeup | Sharing what was built and what it proves |
-| Opinion | Arguing for a clear technical judgment |
-| TIL | Capturing one small useful discovery |
-| Comparison | Helping readers choose between options |
-
-Complete when the shape is named and every planned section supports the angle.
-
-### 4. Draft the outline and wait
-
-Present an outline before writing the full post. Do not draft the article until the user approves.
-
-Outline format:
+## 4. Outline and get approval
 
 ```markdown
-Title: [specific and direct; avoid "A Guide to X" / "Everything about X"]
+Title: [specific working title]
 Angle: Readers think/do X, but they should think/do Y because Z.
-Hook: [why this matters now]
-Tension: [the common mistake or misconception]
-Resolution: [the insight with evidence]
-Example: [the concrete code/example/story that proves it]
-Takeaway: [one sentence readers remember]
+Hook: [concrete reason to care]
+Tension: [mistake, constraint, or failed approach]
+Evidence: [example, code, data, or experience]
+Resolution: [replacement mental model or practice]
+Takeaway: [one sentence worth remembering]
 ```
 
-Complete when the user explicitly approves the outline or asks for changes and those changes are incorporated.
+Write the full draft after the user approves the outline or explicitly asks to skip approval.
 
-### 5. Write the draft
+## 5. Draft
 
-Follow the approved outline. Keep the reader moving toward the **aha**.
+Follow the approved structure. Start with evidence or tension. Use concrete examples, runnable focused code, and explicit trade-offs. Explain fundamentals only when the target reader needs them.
 
-Rules:
-- start with the interesting part, not "In this post..."
-- write first-person and direct; avoid corporate hedging
-- use short paragraphs, usually 1-3 sentences
-- prefer concrete numbers, examples, and trade-offs over vague claims
-- assume intermediate developer knowledge; do not explain basics unless the angle requires it
-- show the wrong way before the right way when contrast teaches the insight
-- keep code examples runnable, focused, and under 20 lines unless length is the point
+Complete when the draft has a suggested title, a supported argument, and an ending that lands the angle rather than summarizing every section.
 
-Complete when the draft includes:
-- suggested title
-- body with evidence or examples
-- code blocks with languages when code is present
-- one-sentence ending that lands the insight
+## 6. Review
 
-### 6. Review before delivering
+Check:
 
-Review the draft for technical correctness, voice, and angle discipline.
-
-Complete when:
 - every section supports the angle
-- technical claims are sourced, verified, or clearly framed as experience/opinion
-- filler phrases and AI-sounding transitions are removed
-- the hook, tension, resolution, and takeaway are visible
+- claims match their evidence and confidence
+- private receipts, names, URLs, metrics, and backlinks remain private
+- code is verified when an environment exists, otherwise marked unverified
+- filler and generic transitions are removed
 
-### 7. Add publishing metadata only when needed
+Invoke `deslopify` when the draft needs a dedicated anti-slop pass.
 
-Run SEO checks only when the user intends to publish publicly, asks for SEO, or the post targets search traffic.
+## Publishing metadata
 
-When SEO applies, include:
-- meta description
-- URL slug
-- primary keyword
-- 2-3 internal/external link suggestions
+Add a slug, description, keyword/search intent, and link suggestions only when the user requests SEO or plans public search acquisition. Check current platform and search guidance rather than enforcing fixed character, keyword-density, link-count, or word-count formulas.
 
-SEO must stay subordinate to the human reader.
+## Completion gate
 
-### 8. Optionally save the approved artifact
-
-After outline approval—or after a later full-draft approval—offer to append the artifact under `## ✍️ Drafts` in `1 - Projects/Public Technical Presence/Public Technical Presence.md` with receipt ID and private source backlinks. Show the exact write and require approval.
-
-Use state `outline` or `draft`, never `published`. Only a user-confirmed public URL or explicit publication confirmation moves it to `## 🚀 Published`.
-
-Complete when the approved artifact is saved with metadata or deliberately left in chat.
-
-## Output
-
-Default sequence:
-
-1. Outline and approval request
-2. Full draft after approval
-3. Optional publishing metadata when SEO applies
-
-Default length: 800-1500 words. Use shorter for TILs and longer only when the angle genuinely needs it.
+The result is complete when the approved angle survives the final draft, material claims are verified or qualified, public-safety checks pass, and any unverified code or publication assumption is explicit.
 
 ## References
 
 | Priority | Load when | Reference |
-|----------|-----------|-----------|
-| 1 | The angle needs a narrative arc, personal story, migration story, or before/after transformation | `references/story-circle.md` |
-| 2 | A post shape has been chosen and a concrete section template is needed | `references/post-templates.md` |
-| 3 | Revising a draft for voice, clarity, authenticity, or AI-slop removal | `references/voice-tone.md` |
-| 4 | User wants SEO, public publishing metadata, or search traffic | `references/seo-checklist.md` |
+| --- | --- | --- |
+| 1 | Tension, failed attempts, discovery, or transformation carries the article | `references/story-circle.md` |

@@ -1,77 +1,28 @@
-> **Read this when:** shaping a narrative arc, choosing a story structure, or turning a lesson/project into a post with tension and resolution.
+> **Read this when:** shaping a technical article or talk whose value comes from tension, failed attempts, discovery, and changed practice.
 
-# Story Circle Framework
+# Technical narrative arc
 
-Eight-step narrative framework adapted from Dan Harmon's storytelling technique.
+Use the smallest arc that preserves causality. The eight beats are prompts, not required headings.
 
-## The Structure
+1. **Status quo:** what was normal before the problem became visible?
+2. **Need:** what failure, constraint, or question made change necessary?
+3. **First move:** what plausible direction did the author or team try?
+4. **Search:** what evidence, experiments, or failures changed the model?
+5. **Insight:** what became newly clear?
+6. **Cost:** what trade-off or implementation difficulty remained?
+7. **Application:** how was the insight used in real work?
+8. **Change:** what result or durable practice followed?
 
-```
-        ORDER (Comfort Zone)
-           1. You
-           2. Need
-    8. Change      3. Go
-           ↑        ↓
-    7. Return    4. Search
-           ↑        ↓
-    6. Take      5. Find
-           CHAOS (Unknown)
-```
+## Choose the compression
 
-## The Eight Steps
+- **Full journey:** use when failed attempts establish credibility and explain the final design.
+- **Discovery arc:** status quo → need → search → insight → application → change.
+- **Quick lesson:** need → insight → evidence → changed practice.
 
-### 1. Introduction (You)
-Introduce the current status quo.
-- "I was using X, and it worked fine..."
+Skip the framework for reference material, straightforward procedures, or posts whose evidence is clearer without a personal journey.
 
-### 2. Problem Statement (Need)
-Identify the problem or motivation.
-- "But then I noticed..." or "The problem was..."
+## Evidence gate
 
-### 3. Exploration (Go)
-Stepping into the unknown.
-- "I decided to try..." or "My first attempt was..."
+Each retained beat must be supported by the speaker's or author's real experience, supplied source material, or explicitly attributed evidence. Preserve uncertainty and omit invented incidents, metrics, emotions, and production outcomes.
 
-### 4. Experimentation (Search)
-Process of discovery.
-- "After some digging..." or "I discovered that..."
-
-### 5. Solution (Find)
-The breakthrough moment.
-- "Then I found..." or "The key insight was..."
-
-### 6. Challenges (Take)
-Implementation difficulties.
-- "It wasn't perfect..." or "The challenge was..."
-
-### 7. Apply Knowledge (Return)
-Bringing the solution back.
-- "I applied this to..." or "In practice..."
-
-### 8. Results & Insights (Change)
-The new status quo.
-- "Now I..." or "The key takeaway is..."
-
-## When to Use
-
-**Good fit:**
-- Tutorial posts with discovery journey
-- "How I solved X" posts
-- Migration or adoption stories
-- Problem → Solution narratives
-
-**Not every post needs it:**
-- Quick TILs
-- Reference documentation
-- Pure how-to guides
-
-## Simplified Patterns
-
-### The Discovery Arc (5 steps)
-1. Status quo → 2. Problem → 5. Solution → 7. Application → 8. Insights
-
-### The Learning Journey (4 steps)
-1. I thought X → 4. I tried Y → 5. I learned Z → 8. Now I do W
-
-### The Quick Win (3 steps)
-2. Problem → 5. Solution → 8. Takeaway
+The arc is ready when removing any remaining beat would break the causal explanation and adding another would only repeat context.

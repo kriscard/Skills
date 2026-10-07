@@ -1,6 +1,6 @@
 # Skills
 
-A collection of 46 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
+A collection of 45 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
 
 ## Install
 
@@ -82,12 +82,10 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 
 | Skill | Description |
 | --- | --- |
-| `career` | Advises on job searches, interviews, compensation, promotion, and Staff trajectory |
+| `career` | Produces evidence-based career decisions, artifacts, and promotion cases |
 | `check-communication` | Reviews messages for clarity, tone, framing, and next steps |
 | `deslopify` | Removes AI-sounding filler from prose and code diffs |
-| `ideation` | Develops early ideas through options, trade-offs, and lightweight specs |
-| `prototype` | Scopes and ships working MVPs from validated ideas |
-| `standup` | Produces a concise daily standup from recent git activity and notes |
+| `standup` | Produces an evidence-backed daily standup from Git and non-code work |
 
 ### Dotfiles
 
@@ -101,8 +99,8 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 
 | Skill | Description |
 | --- | --- |
-| `learn` | Runs Socratic teaching sessions with comprehension checks |
-| `til` | Saves session learnings as engaging Obsidian TIL notes |
+| `learn` | Runs Socratic teaching sessions with demonstrated comprehension |
+| `til` | Saves demonstrated learning as a durable Obsidian TIL note |
 
 ## Repository structure
 

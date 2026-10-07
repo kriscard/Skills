@@ -1,8 +1,8 @@
-> **Read this when:** proposing a change before the decision is made and soliciting team feedback or objections.
+> **Read this when:** proposing an unresolved product, technical, or architectural change for review, trade-off analysis, and decision.
 
-# RFC Template
+# RFC and Architecture Proposal Template
 
-A Request for Comments proposes a change and gathers feedback **before** the decision is made. The goal is to surface objections early.
+An RFC proposes a change and gathers feedback before the decision is made. For system-boundary, datastore, infrastructure, or major-pattern changes, use the architecture additions below.
 
 ## Sections
 
@@ -36,8 +36,9 @@ What this explicitly does **not** try to do. Critical for scope control — with
 ## Proposal
 
 The actual change being proposed. Include:
-- Concrete design / API / behavior
-- Diagrams if architectural
+- Concrete design, API, or behavior
+- Diagrams and component responsibilities when architectural
+- Data flow, interface contracts, and failure modes when architectural
 - Code samples for interface changes
 - Examples of before/after
 
@@ -57,7 +58,7 @@ What this proposal gives up. No design is free — being explicit about costs bu
 
 ## Migration / Rollout
 
-How do we get from current state to proposed state? Who has to change what? Timeline?
+How do we get from current state to proposed state? Name ordered phases, owners, compatibility strategy, detection, rollback, and the observable completion criterion for each phase.
 
 ## Open Questions
 
@@ -78,7 +79,8 @@ Use RFC when:
 - Decision isn't made yet
 - Multiple teams or stakeholders need to weigh in
 - Reversing the decision would be expensive
-- You want async review (people comment on the doc rather than meeting)
+- You want async review
+- System boundaries, infrastructure, or migration cost need architecture review
 
 Don't use RFC when:
 - The decision is already made — use an ADR instead
@@ -92,3 +94,4 @@ Don't use RFC when:
 - **No "Open Questions"** — reviewers don't know what to react to, so they don't react
 - **Alternatives Considered = "we picked the best one"** — reviewers don't trust the analysis
 - **No status field** — readers don't know if this is settled or still up for debate
+- **Architecture without failure modes or migration gates** — reviewers cannot evaluate operational cost

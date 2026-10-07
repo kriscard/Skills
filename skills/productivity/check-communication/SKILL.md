@@ -1,10 +1,6 @@
 ---
 name: check-communication
-description: >-
-  Reviews draft communication before sending: Slack, email, PR comments, status
-  updates, proposals, feedback, and pushback. Use when the user asks if a
-  message sounds right, wants a rewrite, or pastes a draft for tone, clarity,
-  buried asks, passive aggression, length, or next-step review.
+description: Review and rewrite a draft message for clarity, tone, action, context, length, and relationship impact.
 disable-model-invocation: true
 ---
 
@@ -20,7 +16,7 @@ Infer the channel, relationship, stakes, and communication goal before rewriting
 
 Use **Empathetic** when the message involves feedback, disagreement, apology, performance, conflict, disappointment, power dynamics, or anything that could land as cold or dismissive.
 
-Use UserQuestionTool only when tone or stakes are ambiguous enough that guessing would change the rewrite. Ask one question:
+Use the structured question tool only when tone or stakes are ambiguous enough that guessing would materially change the rewrite. Ask one question:
 
 > What tone should this land with?
 
@@ -35,9 +31,9 @@ Options:
 
 Complete when the output tone mode is chosen, either inferred from the draft or selected by the user.
 
-## The Five Checks
+## The Six Checks
 
-Run all five on every piece of communication.
+Run all six on every piece of communication.
 
 Completion criterion: output includes the detected message type, selected tone mode, a sendable revision, and 2–3 notes explaining the highest-impact changes. For non-FYI messages, the ask or intended reader action is explicit.
 
@@ -81,18 +77,9 @@ Usually yes. Prune:
 
 Check from the reader's perspective: could they respond or take action without a follow-up question? If not, add the missing piece.
 
-### 6. Empathy — Does it preserve the relationship?
+### 6. Relationship — Will the message preserve working trust?
 
-Clear is not enough if the revision lands cold. Check whether the message acknowledges effort, context, or impact when that would help the reader receive it.
-
-A good revision:
-
-- keeps the ask clear
-- avoids sounding annoyed, dismissive, or transactional
-- acknowledges effort or context when useful
-- avoids over-apologizing or burying the point in cushioning
-
-Complete when the revision is direct enough to act on and warm enough for the relationship/stakes.
+For feedback, conflict, apology, disappointment, or power imbalance, acknowledge relevant effort or impact without cushioning the ask. Complete when the reader can act without being needlessly diminished, blamed, or surprised.
 
 ## Auto-Detect Message Type
 
@@ -108,7 +95,7 @@ Before evaluating, identify the message type from content:
 | Slack message | Casual tone, async communication |
 | Email / formal | Recipients, subject-like structure, formal tone |
 
-State the detected type, then apply the type-specific check below in addition to the five core checks.
+State the detected type, then apply the type-specific check below in addition to the six core checks.
 
 ## Type-Specific Checks
 

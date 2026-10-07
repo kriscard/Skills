@@ -1,96 +1,65 @@
 ---
 name: standup
-description: >-
-  Generates a casual, human-sounding daily standup from git activity in the
-  requested period, defaulting to the last workday. Use when the user says
-  "standup", "daily standup", "write my standup", "what did I do yesterday",
-  "write my daily update", or invokes /standup — even if they just ask "can you
-  write my standup?"
-disable-model-invocation: true
+description: Draft a concise daily standup from Git evidence and user-provided non-code work. Use for standups, daily updates, or summaries of the requested work period.
 ---
 
-# Daily Standup Generator
+# Daily standup
 
-Transform git history into a human standup update. Nobody cares about commit messages — translate them into what you actually accomplished.
+Translate evidence into teammate-readable outcomes. Git is one source, not proof that no other work happened.
 
-Completion criterion: git activity has been checked for the requested period (default: last workday), in the current repo or every repo the user names. If the evidence is insufficient, leave placeholders instead of inventing work.
+## 1. Set the window and repositories
 
-## Step 1 — Fetch Git Activity
+Use the requested period. Otherwise choose the previous workday in the user's local calendar and state the exact `since` and `until` values used. Include every repository the user names; ask when repository scope changes the result.
 
-Use the user-requested period when provided; otherwise use the last workday rather than blindly assuming the last 24 hours.
+Complete when repository paths and the date window are explicit.
 
-```bash
-# Replace <since> / <until> with the requested period, or the last workday window.
-git log --since="<since>" --until="<until>" --author="$(git config user.email)" --oneline
+## 2. Gather evidence
+
+Resolve the effective Git identity inside each repository, then match author email exactly rather than passing an unescaped email as a regex:
+
+```sh
+email=$(git config user.email)
+git log --all --since="$since" --until="$until" \
+  --format='%ae%x09%h%x09%s' |
+  awk -F '\t' -v email="$email" '$1 == email { print $2 "\t" $3 }'
 ```
 
-If multiple repos are relevant, run in each named repo. If no commits are found, skip to Step 3.
+When available, include user-provided reviews, planning, pairing, incidents, support, meetings, or shipped artifacts. Label unavailable sources instead of inferring work from silence.
 
-Done when the repo path(s), date window, and commit evidence are known or marked unavailable.
+Complete when each named repository has been checked and non-commit evidence is included or explicitly unavailable.
 
-## Step 2 — Transform Commits into Accomplishments
+## 3. Convert activity to outcomes
 
-Map raw commit messages → casual language. The rule: write what you'd say out loud to a teammate, not what you typed in the terminal.
+Group commits that contribute to one result. Lead with what changed for users, teammates, or the system; retain implementation detail only when it helps the audience.
 
-| Raw commit | Translated |
-|---|---|
-| `feat(modal): add purchase modal skeleton` | Shipped the purchase modal skeleton |
-| `fix: resolve pagination bug` | Finally got that pagination bug squashed |
-| `refactor: migrate to React Query` | Got the React Query migration working |
-| `chore: update dependencies` | Bumped deps (skip — not worth a bullet) |
-| `docs: update README` | Updated the README (skip unless it's notable) |
+Examples:
 
-**Rules:**
+- `feat(modal): add purchase modal skeleton` → “Shipped the first purchase-flow UI.”
+- `fix: resolve pagination bug` → “Fixed pagination dropping results between pages.”
+- dependency or formatting churn → omit unless it unblocked or repaired something material.
 
-- Active verb first: "Shipped", "Fixed", "Got X working", "Finished", "Wired up"
-- Specific beats vague: "modal skeleton" not "UI changes"
-- Skip pure chores (dep bumps, lint fixes) unless something broke
-- If multiple commits touch the same thing, merge into one bullet
-- Highlight if you unblocked teammates: "Reviewed and merged X's PR"
+Every bullet must be traceable to gathered evidence. Preserve uncertainty instead of upgrading “started” to “finished.”
 
-## Step 3 — Handle No Commits
+## 4. Establish today's plan
 
-If no commits are found, do not invent work. Ask what they worked on, or return placeholders:
+Use an explicit user plan first. A descriptive branch name can suggest a candidate, but confirm it before presenting it as intent. Otherwise ask one question or leave a placeholder.
+
+## Output
 
 ```text
 Yesterday I:
-- [Fill in non-git work: meetings, planning, reviews, debugging, support]
+- [Outcome]
+- [Outcome]
 
 Today I plan to:
-- [Fill in today's focus]
-```
-
-Never mention the absence of commits in the standup body unless the user asks for evidence.
-
-## Step 4 — Infer "Today I Plan To"
-
-In order of preference:
-
-1. Current branch name: `git branch --show-current` → parse intent
-   - `feat/payment-flow` → "Continue the payment flow"
-   - `fix/auth-timeout` → "Fix the auth timeout issue"
-2. If branch name is unclear, ask: "What are you working on today?"
-3. If the user is reluctant, leave the Today section as a fill-in placeholder.
-
-## Output Format
-
-```text
-Yesterday I:
-- [Accomplishment — active verb, specific]
-- [Accomplishment 2]
-
-Today I plan to:
-- [Inferred from branch, asked, or placeholder]
+- [Confirmed focus or placeholder]
 
 Blockers:
-- [Specific blocker only if mentioned]
+- [Only evidence-backed blockers]
 ```
 
-Omit the Blockers section when there are no blockers or the user did not mention any.
+Omit empty sections, including Blockers. Keep three to five one-line bullets across Yesterday and Today. Return only the standup unless the user asks for evidence.
 
-## Style Rules
+## Completion gate
 
-- Casual, not corporate. "Shipped" not "Implemented". "Fixed" not "Resolved".
-- 3–5 bullets total across Yesterday and Today.
-- No bullet should exceed one line.
-- Don't add preamble ("Here's your standup:") — just the standup.
+The response is complete when the date window and repository scope were checked, every accomplishment is evidence-backed, non-Git work was accepted when supplied, and today's plan is confirmed or visibly incomplete.
