@@ -1,121 +1,120 @@
 ---
 name: test
 description: >-
-  Applies test-pyramid, red-green-refactor, and behavioral testing practices for
-  common JS/Python/Ruby stacks and other projects after detecting the runner.
-  Use when the user says "write tests", "add tests", "TDD", "test coverage",
-  "this test is failing", or mentions Jest/Vitest/pytest/RSpec/Playwright/
-  Cypress. Also use when a feature is implemented without tests.
+  Behavior-first testing workflow for adding regression coverage, writing tests,
+  test-driving changes, or repairing tests across stacks. Use when the requested
+  output includes tests or executable test evidence, including TDD, coverage
+  gaps, or a failing test whose expected behavior is known. Also use when an
+  implementation changes observable behavior without test evidence. Diagnose
+  unexplained failures with debug before changing tests.
 ---
 
 # Test
 
-## Pick the Right Layer First
+Treat tests as executable behavior contracts. Preserve the contract while allowing implementation details to change.
 
-Writing tests at the wrong layer is the most common testing mistake. A unit test that mocks everything doesn't catch integration bugs; an E2E test for a pure function is slow and fragile.
+## Workflow
 
-| Layer | What it tests | Speed | When to use |
-|-------|--------------|-------|-------------|
-| **Unit** | Pure functions, isolated logic | ~ms | Business logic, utilities, transformations |
-| **Integration** | Service boundaries, DB queries, API contracts | ~seconds | Repository layer, HTTP handlers, queue consumers |
-| **E2E** | User flows in a real browser | ~minutes | Critical paths only (checkout, auth, onboarding) |
+### 1. Frame the behavior
 
-The pyramid holds: many units, fewer integrations, minimal E2E. Done only when
-the selected layer is named and justified.
+Identify the actor, preconditions, public action, and observable outcome from the request, accepted spec, bug report, current public contract, and callers. For a regression, separate intended behavior from the current failure and name the smallest reproduction.
 
-## Detect the Framework
+Resolve contradictions before writing assertions. Existing tests are evidence, not authority, when they conflict with an accepted requirement or public contract.
 
-Check before choosing:
+Completion: the intended behavior, observation point, and source of truth are explicit.
 
-```bash
-cat package.json | grep -E '"jest"|"vitest"|"mocha"|"jasmine"'
-cat pyproject.toml | grep -E 'pytest|unittest'
-cat Gemfile | grep rspec
-```
+### 2. Discover the test environment
 
-Don't assume Jest. Vitest is increasingly common in Vite/Next.js projects.
-Mixing test runners in a project is rarely intentional. For unfamiliar stacks,
-inspect project config and docs before writing tests.
+Inspect repository guidance, manifests, lockfiles, scripts, runner configuration, nearby tests, setup files, installed package versions or types, and CI commands. In a workspace, inspect the owning package rather than assuming the repository root owns the test command.
 
-## Universal Quality Checks
+Determine:
 
-- [ ] Tests cover error paths and edge cases, not just the happy path
-- [ ] Tests verify behavior, not implementation — if you rename a private method, tests shouldn't break
-- [ ] Mocks are used sparingly — over-mocking makes tests pass while real code breaks
-- [ ] Test names read like specs: `should return 404 when user is not found` beats `test user endpoint`
-- [ ] AAA pattern: Arrange → Act → Assert, with a blank line between sections
+- the established runner and exact installed version;
+- the command for one relevant test or file;
+- local naming, fixture, assertion, and cleanup conventions;
+- whether the current behavior already has coverage;
+- any required service, browser, database, or environment setup.
 
-## Red-Green-Refactor Flow (when requested)
+When investigating a failure, run the smallest existing command that reproduces it before editing.
 
-1. **Red** — write a failing behavioral test that describes the desired behavior;
-   done only when the relevant test command fails for the expected reason
-2. **Green** — write the minimal code to make it pass; done only when the same
-   command passes
-3. **Refactor** — clean up while keeping tests green; done only when the command
-   still passes after cleanup
+Completion: the runner, version, conventions, focused command, and baseline state are known.
 
-## Integration Test Methodology
+### 3. Choose the observation boundary
 
-Integration tests validate service boundaries — not business logic (that's unit
-tests) and not full user flows (that's E2E).
+Choose the narrowest boundary that can observe the behavior without replacing the subject under test with mocks.
 
-**What to test at this layer:**
-- API endpoints: request/response structure, auth, error codes
-- Database queries: ORM behavior, transactions, constraint violations
-- Service-to-service contracts (Pact consumer-driven contract tests)
-- Message queue consumers and event handlers
+| Boundary | Choose when the outcome is observed through |
+|---|---|
+| Unit | A pure function or isolated domain operation |
+| Component | A rendered component's public interaction contract |
+| Integration | A database, filesystem, queue, HTTP handler, or service boundary |
+| Contract | A consumer/provider schema or protocol agreement |
+| Browser/E2E | A user flow that depends on real navigation, browser behavior, or deployed wiring |
 
-**Data isolation — non-negotiable:**
-- Wrap each test in a transaction and roll back, or reset the test DB between runs
-- Tests that share state cause order-dependent failures — the hardest class of flakiness to debug
-- Mock third-party APIs, not your own services
+Prefer the repository's established boundary when it can prove the requirement. Cost alone does not make a lower layer sufficient.
 
-Load references for runner-specific APIs, mocks, environments, MSW, Browser
-Mode, snapshots, type testing, coverage, and configuration.
+Completion: the selected boundary is named and can fail when the observable behavior is wrong.
 
-## E2E Test Methodology
+### 4. Load applicable guidance
 
-E2E tests are expensive. Use them only for critical paths: checkout, auth,
-onboarding, file upload. Prefer accessible selectors, smart waits, unique test
-data, and cleanup via API or DB reset. Cover edge cases in unit/integration
-tests, not E2E.
+Read `references/behavior.md` before writing, changing, reviewing, or relying on test evidence. Load other references only when their branch applies.
 
-## Common Pitfalls
+For runner-specific syntax, apply the runner-skill routing table below. Runner guidance supplies syntax; this skill owns behavioral scope, evidence, and completion.
 
-- **Testing the mock, not the code** — if the test only asserts a mock was called, it may not test behavior
-- **Fragile E2E selectors** — use roles or stable test IDs instead of layout selectors
-- **No cleanup in integration tests** — shared DB state causes order-dependent failures
-- **Snapshot tests as a crutch** — use snapshots only for stable, serializable outputs
+Completion: behavior guidance and every applicable branch reference are loaded, and runner syntax matches the installed version.
 
-## Completion Gate
+### 5. Write the smallest credible test
 
-Complete test work only after:
+Call the system through the interface its consumer uses and assert the outcome that consumer observes. Follow nearby conventions unless they weaken the behavior contract.
 
-- the selected layer is named
-- the relevant test command has been run
-- failures are either fixed or reported with evidence
-- new tests would fail against the old behavior when that can be checked
-- red/green command output is reported for TDD work
+- For explicit TDD or a bug with an obvious cheap regression target, load `references/tdd.md` and establish red evidence before the production change.
+- For database, HTTP, queue, filesystem, process, provider, or service boundaries, load `references/integration-boundaries.md`.
+- For component browser behavior or end-to-end flows, load `references/browser-and-e2e.md`.
 
-## References
+Keep setup proportional to the behavior. A test is complete only when its failure would identify a broken contract rather than an incidental refactor.
+
+Completion: the test reaches the selected observation point, fails when the contract is broken, and contains no assertion disconnected from the behavior.
+
+### 6. Execute the evidence loop
+
+Run the focused command first. Classify failures as product behavior, test logic, environment/setup, or an unresolved contract. Correct the responsible layer; preserve unexpected evidence instead of updating assertions merely to make the run green.
+
+After the focused check passes, run the smallest broader suite and static checks capable of detecting collateral breakage. Use repository commands rather than inventing a parallel test path.
+
+Completion: focused and affected checks have run, and every failure is fixed or reported with its command and evidence.
+
+### 7. Report
+
+Report:
+
+- the behavior and selected boundary;
+- test files added or changed;
+- focused and broader commands with results;
+- failing-before and passing-after evidence for TDD or regression work;
+- skipped evidence, unresolved failures, and residual risk.
+
+Completion: another engineer can reproduce every reported result from the commands and paths provided.
+
+## Reference routing
 
 | Priority | Load when | Reference |
-|----------|-----------|-----------|
-| 1 — High | Writing Vitest test blocks, `test.each`, or test modifiers | `references/core-test-api.md` |
-| 1 — High | Writing Vitest assertions, spies, soft assertions, or custom matchers | `references/core-expect.md` |
-| 1 — High | Mocking modules, timers, globals, or partial implementations in Vitest | `references/features-mocking.md` |
-| 2 — High | Configuring Vitest projects, pools, environments, globals, or `defineConfig` | `references/core-config.md` |
-| 2 — High | Using Vitest hooks such as `beforeEach`, `afterEach`, `beforeAll`, `afterAll`, `aroundEach`, or `onTestFinished` | `references/core-hooks.md` |
-| 3 — Medium | Coverage providers, thresholds, reporters, or ignore comments | `references/features-coverage.md` |
-| 3 — Medium | Real browser testing via Vitest Browser Mode / Playwright provider | `references/browser-mode.md` |
-| 3 — Medium | Snapshots, inline snapshots, custom serializers, or updating snapshots | `references/features-snapshots.md` |
-| 3 — Medium | CLI filtering, `--changed`, tags, `test.only`, or `test.skip` | `references/features-filtering.md` |
-| 4 — Low | Nested suites, `describe.concurrent`, or `describe.each` | `references/core-describe.md` |
-| 4 — Low | Vitest CLI watch mode, sharding, or package.json scripts | `references/core-cli.md` |
-| 4 — Low | `test.concurrent`, file parallelism, sequence, or shuffle | `references/features-concurrency.md` |
-| 4 — Low | `test.extend`, fixture scopes, or auto fixtures | `references/features-context.md` |
-| 4 — Low | `jsdom` vs `happy-dom` vs `node`, custom environments, or CSS handling | `references/advanced-environments.md` |
-| 4 — Low | `expectTypeOf`, `assertType`, `.test-d.ts`, or `vitest typecheck` | `references/advanced-type-testing.md` |
-| 4 — Low | Fake timers, `vi.waitFor`, or `vi.mocked` deep dive | `references/advanced-vi.md` |
-| 4 — Low | Monorepo or multi-project Vitest setups | `references/advanced-projects.md` |
-| 4 — Low | MSW v2 `http.*`/`HttpResponse` handlers, Node setup, or v1→v2 migration | `references/msw-v2.md` |
+|---|---|---|
+| 1 — Required | Writing, changing, reviewing, executing, or deciding to keep any test evidence | `references/behavior.md` |
+| 2 — Conditional | Explicit TDD, requested regression coverage, or an obvious cheap local bug reproduction | `references/tdd.md` |
+| 2 — Conditional | Behavior crosses a database, HTTP, queue, filesystem, process, provider, or service boundary | `references/integration-boundaries.md` |
+| 2 — Conditional | Testing rendered browser behavior, navigation, or an end-to-end user flow | `references/browser-and-e2e.md` |
+
+## Runner skill routing
+
+Use the host's skill mechanism by name rather than an installation path.
+
+| Discovered runner | Invoke if installed and model-invocable | Fallback |
+|---|---|---|
+| Vitest | `vitest` | Installed types, configuration, then version-matched official documentation |
+| Any other named runner | A matching runner skill advertised by the host | Installed types, configuration, then version-matched official documentation |
+
+An unavailable runner skill is not a blocker when repository evidence and official documentation establish the required syntax. Load only the matching runner skill.
+
+## Boundaries
+
+A tests-only request changes tests and test support code only. Production changes require explicit implementation, bug-fix, or TDD scope. Snapshot or fixture updates require reviewing the semantic change they encode. An unexplained failing test is a diagnosis task first; route to `debug` when the intended behavior is not already established.

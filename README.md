@@ -45,7 +45,7 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 | `research` | Retrieves current, source-grounded framework and API documentation |
 | `review` | Reviews selected or local code changes for production-impacting defects and project-rule violations |
 | `spec` | Builds separately reviewed requirements, technical design, and an executable plan, then records approval and stops before implementation |
-| `test` | Applies test-pyramid, behavioral testing, and red-green-refactor practices |
+| `test` | Builds behavior-focused tests, selects credible boundaries, and records executable evidence across test runners |
 
 ### Obsidian
 
