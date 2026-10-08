@@ -1,68 +1,56 @@
 ---
 name: daily
-description: Daily startup ritual that creates today's Obsidian note and confirms one outcome and next action.
+description: Open or create today's Obsidian daily note and optionally capture a few tasks, thoughts, or observations.
 disable-model-invocation: true
 ---
 
-# Daily Startup
+# Daily Note
 
-Run a short workday startup. This skill owns today's note only; `goals` owns monthly, quarterly, and
-yearly objectives, while `weekly-review` owns retrospective weekly review.
+Use the existing daily log for human capture. One bullet is sufficient; planning is optional.
 
-## 1. Confirm the date
+## 1. Resolve today's note
 
-Derive the real local date and weekday.
+Derive the real local date. Read the vault's `AGENTS.md` and `../vault/SKILL.md` for paths, ownership,
+and safe writes. Resolve today's daily-note path and current template.
 
-- Monday–Friday: continue.
-- Saturday/Sunday: ask whether the user explicitly wants a weekend note before creating one.
+Open the note if it exists. Otherwise, preview the target and template content, obtain any approval
+required by the vault contract, and create it through the shared safe-write flow. Weekdays and weekends
+behave alike when invoked; no additional weekend confirmation is needed.
 
-Completion: the workday date or weekend override is confirmed.
+Only today's daily note is in the write scope.
 
-## 2. Resolve today's note
+Completion: today's note exists, or a missing permission or template has been reported and writes stopped.
 
-Read `AGENTS.md` and derive the current daily-note path and template from the live vault. Check
-whether today's note exists. If it does not, resolve the current daily template, preview the target,
-and create a non-empty note safely.
+## 2. Prepare user-supplied entries
 
-Do not create weekly or goal notes as a side effect. If expected periodic context is missing, report
-it and offer the appropriate ritual instead.
+Use tasks, thoughts, events, ideas, links, or observations supplied by the user. If they only invoked
+the skill, ask at most one optional question:
 
-Completion: today's note exists and its expected sections are known.
+> What are you doing, noticing, or thinking about today?
 
-## 3. Gather context
+Preserve their wording and voice:
 
-Read in parallel when available:
+- explicit actions become `- [ ]` tasks;
+- completed actions become `- [x]` only when the user says they are complete;
+- everything else becomes an ordinary `-` bullet.
 
-- today's note;
-- the current weekly note as context only;
-- the most recent prior workday note and its exact carry-forward section;
-- active projects from the live project index, falling back to current project files;
-- today's open tasks;
-- Inbox count.
+Append entries without rewriting earlier content or reconstructing activity. Leave unresolved work
+in its original note unless the user explicitly selects it for today. An empty answer requires no entry.
 
-Carry-forward items are candidates, not commitments. Flag competing outcomes rather than silently
-choosing among them.
+Gather additional context only when the user explicitly asks for planning help. In that branch, read
+only the sources needed for the request, propose up to three candidate tasks, and obtain confirmation
+before preparing them for capture.
 
-Completion: the user can see sourced candidates, relevant weekly context, and any overload warning.
+Completion: entries reflect explicit user input or confirmed selections, or nothing needs adding.
 
-## 4. Confirm today's commitment
+## 3. Write and verify
 
-Propose concise candidates, then have the user confirm or write:
+Preview the proposed entries and obtain approval using the shared vault safe-write flow.
+Append under `## Today` when present. For a legacy note without that heading, append at the end without
+migrating its existing sections. Replace an empty starter bullet with the first approved entry when
+applicable; leave all substantive content intact.
 
-1. one Daily Outcome;
-2. a checkable Done When condition;
-3. one Next Action;
-4. the first Active Focus Block finish line.
+Reread the affected content and verify that existing entries were preserved, only approved content was
+added, bullet types match user intent, and no unrelated sections or notes changed.
 
-The user may edit in Obsidian instead; reread before continuing. Never silently promote a candidate.
-
-Completion: all four values are explicitly confirmed.
-
-## 5. Update and verify
-
-Preview the exact named-section changes. After approval, update only the daily commitment sections
-using the safe-write flow from `vault`. Do not duplicate headings or overwrite work-log sections.
-Reread the note and verify one confirmed outcome, next action, and focus finish line.
-
-Return only created files, sourced carry-forward candidates, Inbox count, the confirmed commitment,
-and unresolved warnings.
+Return the daily-note path and exact entries added. If nothing was added, return only the path.
