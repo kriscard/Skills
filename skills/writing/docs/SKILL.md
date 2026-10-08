@@ -1,6 +1,6 @@
 ---
 name: docs
-description: Write or revise technical documentation around one reader job: reference, operation, review, decision, or product alignment. Use for READMEs, API docs, operational how-tos, RFCs, product design docs, architecture proposals, and ADRs.
+description: "Write or revise technical documentation around one reader job: reference, operation, review, decision, or product alignment. Use for READMEs, API docs, operational how-tos, RFCs, product design docs, architecture proposals, and ADRs."
 ---
 
 # Technical Documentation Writer
