@@ -10,7 +10,7 @@ A post earns its length through one **angle**:
 
 > Readers think or do X, but they should think or do Y because Z.
 
-Use `tutorial` when the reader's main job is to learn a procedure. Continue here when the artifact needs an argument, lesson, opinion, or project narrative.
+The user-invoked `teach` skill owns persistent learning workspaces and HTML lessons. Continue here when the artifact needs an argument, public-facing lesson, opinion, or project narrative.
 
 ## 1. Establish evidence and angle
 

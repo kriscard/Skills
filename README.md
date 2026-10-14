@@ -72,7 +72,6 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 | `blog` | Writes and revises developer-facing posts around one sharp insight |
 | `docs` | Creates READMEs, API docs, architecture docs, RFCs, design docs, and ADRs |
 | `talk` | Builds technical CFP submissions, talk outlines, and slide flows |
-| `tutorial` | Writes checkpointed, step-by-step technical tutorials |
 | `tweet-today` | Generates categorized Twitter/X post options from current work or a topic |
 
 ### Productivity
@@ -96,7 +95,7 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 
 | Skill | Description |
 | --- | --- |
-| `learn` | Runs Socratic teaching sessions with demonstrated comprehension |
+| `teach` | Builds a persistent, researched teaching workspace with interactive HTML lessons |
 | `til` | Saves demonstrated learning as a durable Obsidian TIL note |
 
 ## Repository structure

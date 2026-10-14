@@ -11,7 +11,7 @@ that does not serve that job is still a failed doc.
 ## Boundaries
 
 - Use `blog` for publishable articles with an argument, story, or public-facing lesson.
-- Use `tutorial` for learning-oriented step-by-step teaching with checkpoints.
+- The user-invoked `teach` skill owns persistent learning workspaces and HTML lessons.
 - Use this skill for reference docs, team proposals, decision records, READMEs, API docs, and
   how-to docs whose primary purpose is work, review, or operation.
 
