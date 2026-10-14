@@ -12,7 +12,8 @@ skill does not own weekly notes or weekly commitments.
 
 ## 1. Choose the horizon
 
-Read `AGENTS.md` and use `$ARGUMENTS` when it names `monthly`, `quarterly`, or `yearly`. Otherwise ask
+Read `../vault/SKILL.md` and the live `AGENTS.md`. Use `$ARGUMENTS` when it names `monthly`,
+`quarterly`, or `yearly`. Otherwise ask
 the user to choose one of those horizons.
 
 Determine whether the user is:
@@ -26,7 +27,8 @@ Completion: the horizon, operation, and exact date range are confirmed.
 ## 2. Resolve live context
 
 Discover the current goal path, filename convention, template, and dashboard from the live vault.
-Do not rely on cached spellings or create a parallel folder.
+Exclude archived templates. If the requested horizon has no active template, show a minimal proposed
+structure for approval rather than reviving an archived template or creating a parallel folder.
 
 Read the relevant current and preceding goal notes, aligned projects, and source evidence supplied by
 the user. Use a dashboard as discovery, not as proof that every result is active.
@@ -50,7 +52,11 @@ never silently mark it failed.
 Monthly objectives should advance current quarterly objectives. Quarterly objectives should support
 yearly direction when a yearly note exists. Do not invent alignment to fill a hierarchy.
 
-Completion: every proposed objective or adjustment is checkable and explicitly confirmed.
+Keep family and relationship goals qualitative as required by the schema; a checkable intention need
+not be a numeric target.
+
+Completion: every proposed objective or adjustment is grounded in the chosen horizon and explicitly
+confirmed.
 
 ## 4. Preview, write, and verify
 

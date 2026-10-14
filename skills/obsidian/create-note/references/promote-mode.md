@@ -1,6 +1,6 @@
 > **Read this when:** the user wants to graduate ideas from daily notes or buried vault notes into durable knowledge.
 
-# Promote ideas
+# Promote useful material
 
 Promotion turns recurring or developed captures into the appropriate durable artifact. It is not a
 license to convert every thought into a permanent note.
@@ -23,7 +23,8 @@ ambiguous. Read likely matches and classify each candidate as:
 - useful enrichment to an existing page;
 - already covered;
 - active finite outcome better handled by `project`;
-- still too early and best left in its source note.
+- an open question worth a Knowledge note even though unfinished;
+- a fleeting capture best left in its source note.
 
 ## 3. Present candidates
 
@@ -32,10 +33,15 @@ and recommended outcome. The user selects what to promote and may change the gro
 
 ## 4. Hand off and verify
 
-- Durable conversation or concept synthesis → `save-note`.
+- Durable explanation or concept synthesis → the parent skill's agent-written Knowledge mode.
 - Active finite outcome → `project`.
 - Existing LLM-managed page enrichment → preview the exact section change.
-- Premature idea → leave it in place.
+- Open question with lasting value → offer a human-owned Atomic Note draft or an agent-written
+  Knowledge note, according to the user's intent.
+- Fleeting capture → leave it in place.
+
+Resolve destinations and active templates from the live schema. Preserve the source daily note;
+promotion creates or enriches an approved destination rather than moving or rewriting the journal.
 
 After approval, use the `vault` safe-write flow. Add source backlinks only where ownership permits,
 then reread every affected note. Report promoted, enriched, deferred, and skipped candidates.

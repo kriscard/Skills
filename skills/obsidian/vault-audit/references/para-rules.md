@@ -20,16 +20,30 @@ Primary source: [Tiago Forte, “The PARA Method”](https://fortelabs.com/blog/
 A Project benefits from a time horizon, but a specific calendar due date is not the defining PARA
 criterion. If `AGENTS.md` requires one, report its absence as a local-schema issue.
 
+## Apply the local knowledge extension
+
+Before using the broad Resource category, read the live schema's additional destinations:
+
+- Reusable explanation, practical technique, principle, or open question → Knowledge.
+- Context and selected connections across notes, with Base-backed discovery → MOC.
+- Dated personal record or learning receipt → Journal, using its daily, weekly, or TIL convention.
+- Templates, Bases, and vault operations → System.
+
+These are local additions, not canonical PARA categories. A Knowledge note can be unfinished or longer
+than one screen. An immutable source remains a source; a synthesis belongs in a separate permitted
+note. Age alone does not make knowledge or a journal entry inactive.
+
 ## Decision order
 
-1. Active finite outcome? → Project.
+1. Active finite effort with an outcome? → Project.
 2. Ongoing responsibility or standard? → Area.
-3. Useful without current action? → Resource.
-4. Inactive material retained for reference? → Archive.
-5. Still unclear? → Keep in Inbox and ask what future action it supports.
+3. Does the local Knowledge, MOC, Journal, or System role fit? → Use that role.
+4. Explicitly inactive work or a record the user wants archived? → Archive after approval.
+5. Source-specific record or reference material? → Resource.
+6. Still unclear? → Keep in Inbox and ask how the user expects to use it.
 
-Prefer the most actionable current category. Moving a note later is normal; classification describes
-its present relationship to action.
+Classification describes purpose and present use. Keep Knowledge independent of project completion;
+link to it from the Project rather than moving it into the project's archive.
 
 ## Evidence standards
 

@@ -1,7 +1,7 @@
 ---
 name: process-inbox
 description: >-
-  Triage Obsidian Inbox notes into PARA destinations one at a time with explicit approval. Use when
+  Triage Obsidian Inbox notes into the vault's PARA, Knowledge, and Journal destinations one at a time with explicit approval. Use when
   the user asks to process, clear, sort, or triage the vault Inbox.
 user-invocable: true
 ---
@@ -9,11 +9,12 @@ user-invocable: true
 # Process Inbox
 
 Classify captures; do not synthesize source knowledge here. Use `ingest` when a selected source
-should become connected LLM Wiki knowledge, and `save-note` for a conversation synthesis.
+should become connected LLM Wiki knowledge, and `create-note` for a conversation synthesis.
 
 ## 1. Establish scope
 
-Read `AGENTS.md`, resolve the live Inbox path, and list its notes. Report the count. Stop when empty.
+Read `../vault/SKILL.md` and the live `AGENTS.md`, resolve the Inbox path, and list its notes.
+Report the count. Stop when empty.
 
 Ask whether nested raw-source inboxes should be included when the schema distinguishes them from
 general capture.
@@ -26,12 +27,15 @@ For each note:
 
 1. read enough content and metadata to classify it;
 2. show its filename and concise summary;
-3. apply the PARA decision tree from `AGENTS.md`, falling back to canonical actionability:
-   - active finite outcome → Project;
+3. apply the live schema's PARA and knowledge conventions:
+   - active finite effort with an outcome → Project;
    - ongoing responsibility or standard → Area;
-   - useful information without current finite outcome → Resource;
-   - inactive material → Archive;
+   - reusable explanation, technique, principle, or open question → Knowledge;
+   - dated personal or learning record → Journal, using the live convention;
+   - source-specific record, reference material, or script → Resource;
+   - explicitly inactive work or a record the user wants archived → Archive;
    - unclear → remain in Inbox;
+   classify by purpose rather than age, length, or polish; preserve content during a move;
 4. propose one specific destination and explain the evidence;
 5. wait for the user's decision.
 
@@ -56,5 +60,5 @@ processed count.
 
 ## 4. Report
 
-Return counts for Projects, Areas, Resources, Archives, skipped, deleted, handed to ingest, failed,
-and remaining. State that every move and deletion was individually approved.
+Return counts for Projects, Areas, Resources, Knowledge, Journal, Archives, skipped, deleted,
+handed to ingest, failed, and remaining. State that every move and deletion was individually approved.

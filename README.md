@@ -1,6 +1,6 @@
 # Skills
 
-A collection of 42 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
+A collection of 46 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
 
 ## Install
 
@@ -51,19 +51,19 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 
 | Skill | Description |
 | --- | --- |
-| `capture-receipt` | Preserves sourced evidence for possible future sharing without losing task context |
-| `close-day` | Records a resume state, triages receipts, and confirms carry-forward |
-| `daily` | Creates the daily note and confirms one outcome and next action |
+| `atomic-note-to-moc` | Classifies an atomic note into Base-backed MOCs and suggests meaningful cross-links |
+| `close-day` | Reviews today's log and available Granola meetings, proposes Atomic Notes, and suggests next-day actions |
+| `create-note` | Creates Inbox captures, human-owned Atomic Note drafts, or approved reusable Knowledge |
 | `goals` | Creates or revises monthly, quarterly, and yearly objectives |
-| `ideas` | Captures and promotes ideas through the vault Inbox |
-| `ingest` | Discusses and synthesizes source material into the LLM Wiki |
+| `import-meetings` | Imports date-prefixed Granola meeting snapshots while preserving their titles and content |
+| `ingest` | Synthesizes sources into the LLM Wiki and offers a personal Atomic Note draft |
 | `memory-recall` | Finds prior knowledge, decisions, and connections across the vault |
 | `process-inbox` | Triages Inbox notes into PARA destinations with approval |
-| `project` | Creates, updates, and completes PARA Project notes |
-| `save-note` | Files conversation synthesis into the LLM Wiki |
+| `project` | Keeps project goals, decisions, questions, thoughts, and lessons in a thinking notebook |
+| `save-session` | Saves dated session recaps with outcomes, decisions, examples, and deferred work |
 | `vault` | Loads live vault schema, ownership, and safe-operation context |
-| `vault-audit` | Audits PARA, links, metadata, LLM Wiki quality, and vault statistics |
-| `weekly-review` | Retrospectively reviews an existing completed weekly note |
+| `vault-audit` | Audits hybrid PARA/Atomic Note organization, linked knowledge, journals, metadata, and statistics |
+| `weekly-review` | Summarizes a completed week into findings, atomic-note candidates, and outstanding actions |
 
 ### Writing
 

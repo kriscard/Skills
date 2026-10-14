@@ -1,65 +1,52 @@
-> **Read this when:** user asks about advanced linking strategies, block references, inline vs reference-style links, or precision linking techniques.
+> **Read this when:** creating connections between wiki pages, selecting aliases, or citing a specific heading or block.
 
-## Advanced Linking Strategies
+# Links that explain the connection
 
-### Block References for Precision
+## Choose a precise target
 
-Link specific paragraphs, not entire notes:
-
-```markdown
-## In Source Note
-This is an important insight. ^key-insight
-
-## In Referencing Note
-As noted: ![[Source Note#^key-insight]]
-```
-
-Use when: quoting specific claims in arguments, referencing exact specs in projects, building composite documents, tracking idea evolution.
-
-### Contextual Backlinks
-
-When reviewing backlinks, add context to the link so future-you knows why the connection exists:
+Link the page for a general relationship, an existing heading for a section, and an existing block ID
+for a particular passage. Use an embed only when displaying the source passage helps the reader.
 
 ```markdown
-## Mentioned In
-[[Other Note]] - Discusses related concept X
-[[Project Note]] - Application in [Project Name]
+[[Source Note#Limitations]]
+![[Source Note#^existing-block-id]]
 ```
 
-### Alias System for Common Terms
+Verify the target exists. Preserve immutable sources and human-owned notes: cite their existing
+headings or the whole page rather than inserting a block ID. Add a new ID only to an approved writable
+page and include that edit in the preview.
+
+Completion: each link resolves to the intended evidence without changing protected content.
+
+## Explain the relationship
+
+Place links next to the claim they support or qualify. For a separate connection, state why it matters:
 
 ```markdown
----
-aliases: [ML, machine learning, ML models]
----
-# Machine Learning
+- [[Event Loop]] — explains when this callback can run.
+- [[Closure Lifetime]] — explains which captured values remain reachable.
 ```
 
-Now `[[ML]]` auto-links to this note. Use for acronyms, alternative names, common misspellings.
+A related page does not need a reciprocal edit merely to create a backlink; Obsidian discovers inbound
+links automatically. Read both pages before proposing a substantive change to either one.
 
-### Inline vs Reference-style Links
+Completion: every proposed connection adds context or evidence, not merely a shared topic tag.
 
-**Inline** (default, most notes): `The [[PARA Method]] organizes notes by actionability.`
+## Use searchable aliases
 
-**Reference-style** (long-form writing): Use when multiple references to same note or publishing outside Obsidian.
+Follow the live schema's alias rules. Add genuine alternate names, such as an acronym, when they help
+recall. Verify ambiguous aliases resolve to the intended page before using them in a link.
 
-## Evergreen Note Structure (3-Layer)
+Completion: aliases describe this page and do not silently point the reader to another meaning.
 
-**Layer 1 — Definition:** Core explanation in your own words. Rarely changes.
+## Extend knowledge without replacing its structure
 
-**Layer 2 — Related:** 2–5 links with explicit reasons:
-```markdown
-## Related
-- [[Event Loop]] — closures power async callbacks
-- [[Garbage Collection]] — closures affect GC behavior
-```
+Read the live Atomic Note template for new pages and preserve the existing structure when enriching
+a page. There is no required link count or additional "Encounters" section. Add an example or learning
+receipt only when actual evidence supports it and the user approves the edit.
 
-**Layer 3 — Encounters:** Real-world usage added over time:
-```markdown
-# Encounters
-## 2026-02-05 - Debugging closure scope issue
-Discovered closures in forEach captured loop variable by reference.
-Link: [[TIL 2026-02-05]]
-```
+Use MOCs and their embedded Bases to discover related material. Preserve their embeds and curated
+anchors unless the approved write set names a specific change.
 
-Layer 3 (Encounters) is the most valuable and most neglected — actively add encounters when revisiting concept notes.
+Completion: the enrichment stays within the page's subject and ownership boundary, and each new claim
+has a traceable source.

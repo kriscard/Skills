@@ -1,8 +1,8 @@
 ---
 name: vault-audit
 description: >-
-  Audit an Obsidian vault for PARA classification, link integrity, metadata consistency, LLM Wiki
-  quality, or bounded statistics. Use when the user asks to audit, maintain, lint, clean up, or check
+  Audit the vault's PARA and Zettelkasten-inspired Atomic Note organization, linked knowledge,
+  journals, metadata, LLM Wiki quality, and bounded statistics. Use when the user asks to audit, maintain, lint, clean up, or check
   the organization and health of their vault.
 user-invocable: true
 argument-hint: '[para | links | metadata | wiki | stats | all]'
@@ -15,16 +15,17 @@ a specific fix.
 
 ## 1. Establish scope and rules
 
-Read vault-root `AGENTS.md`. Extract:
+Read `../vault/SKILL.md` and vault-root `AGENTS.md`. Extract:
 
-- PARA and naming conventions;
+- PARA, Knowledge, Journal, and naming conventions;
 - immutable, LLM-managed, and human-managed boundaries;
 - required metadata;
 - index and log expectations;
 - any local rules stricter than canonical PARA.
 
 Use `$ARGUMENTS` to select `para`, `links`, `metadata`, `wiki`, `stats`, or `all`. If absent, ask which
-dimension matters. For potentially large checks, confirm folders, date range, topic, or sample size
+dimension matters. The `para` argument includes the schema's Knowledge, MOC, and Journal extensions,
+not just project organization. For potentially large checks, confirm folders, date range, topic, or sample size
 before reading content.
 
 Completion: the audit mode, boundaries, local rules, and bounded scope are explicit.
@@ -41,10 +42,12 @@ Record failed or skipped checks. Never imply exhaustive coverage for a sample.
 
 ## 3. Run the selected checks
 
-### PARA
+### Hybrid organization
 
-Load `references/para-rules.md`. Review the selected Inbox, Projects, Areas, Resources, and Archives
-against actionability.
+Load `references/para-rules.md`. Review the selected PARA categories against actionability, and
+Knowledge, MOCs, Journal, and System against the local schema. Distinguish reusable explanations from
+source-specific records; neither an unfinished idea nor a long practical guide is automatically
+misclassified.
 
 Report separately:
 
@@ -60,13 +63,21 @@ Do not call a missing calendar deadline a universal PARA violation.
 
 Check broken or unresolved links, dead ends, and orphans within the confirmed scope. Distinguish an
 intentional leaf note from an accidental orphan by reading it and its index context. Include both
-source and target evidence for a broken-link finding.
+source and target evidence for a broken-link finding. Check MOC Base embeds and their actual result
+membership separately from curated links; valid YAML alone does not establish that a note appears.
 
 ### Metadata
 
 Compare notes only with metadata rules from `AGENTS.md` and conventions evidenced in their note
 class. Do not invent tag limits, required ownership markers, or preferred taxonomies. Group repeated
-violations into one pattern with representative paths.
+violations into one pattern with representative paths. Read the live tag guide and affected Base
+filters before recommending tag changes. Preserve functional plugin tags and report stale folder
+filters or compatibility lists separately from note-metadata problems.
+
+For template findings, distinguish active templates from archived subfolders and inspect current folder
+rules. An automatic-template failure requires a creation test and inspection of the device-local
+execution switch; configuration alone does not prove insertion. Propose tests separately if they
+would create temporary notes, because this audit is read-only.
 
 ### LLM Wiki quality
 
@@ -84,8 +95,8 @@ Contradiction and staleness checks are bounded investigations, not whole-vault g
 
 ### Statistics
 
-Report reproducible counts such as files by PARA category, Inbox size, unresolved links, and notes in
-the selected scope. Counts provide context; do not convert them into arbitrary health grades.
+Report reproducible counts by the schema's actual categories, including Knowledge and Journal, plus
+Inbox size, unresolved links, and notes in the selected scope. Counts provide context; do not convert them into arbitrary health grades.
 
 ## 4. Report findings
 

@@ -18,7 +18,8 @@ how to discover and respect it.
 2. Read vault-root `AGENTS.md` before interpreting paths, ownership, templates, or workflows.
 3. If `AGENTS.md` is missing, report that the vault schema is unavailable. Inspecting files is still
    safe, but do not infer write permissions or substitute another schema silently.
-4. Inspect current folders and templates when an operation depends on them.
+4. Resolve the schema's Knowledge, Resource, Journal, MOC, Base, and active-template locations.
+   Read the relevant live template before creating a note; exclude archived-template subfolders.
 5. Run `obsidian help` or `obsidian help <command>` when exact CLI syntax matters.
 
 Completion: the target vault, live schema, and permissions relevant to the request are known.
@@ -49,8 +50,14 @@ named-section update, prefer a heading-targeted edit capability. If none is avai
 5. overwrite through a file-write capability;
 6. reread and verify the result.
 
-Use the Obsidian CLI for discovery, navigation, metadata, moves, and other commands after checking
-its current help. Do not cache command flags or plugin state in this skill.
+Use the Obsidian CLI for discovery, navigation, metadata, and moves after checking its current help.
+For folder moves, use Obsidian's file-manager API if the CLI only supports files, so links are updated.
+Inspect existing content before creation or insertion: automatic folder templates may already have
+populated a new file. Verify one frontmatter block and resolved fields; treat source text as data,
+not executable template code. Follow the schema's approval rules for execution settings.
+
+A human-facing template does not confer agent ownership. Merge required wiki metadata only for an
+approved agent-owned page. Preserve unrelated template fields used by Bases.
 
 ## PARA interpretation
 
@@ -62,7 +69,12 @@ Use `AGENTS.md` for local conventions. When explaining canonical PARA, classify 
 - **Archive:** inactive material from the other categories.
 - **Inbox:** undecided capture awaiting classification.
 
-Label stricter local requirements as vault-schema rules rather than universal PARA rules.
+Apply the vault's Knowledge and Journal extensions before treating every non-project note as a
+Resource. Reusable ideas and practical explanations can belong in Knowledge; source-specific records
+and reference material remain Resources. MOCs add context to Base-backed discovery. Read their live
+filters before proposing classification changes; a view mismatch is not permission to move or retag.
+
+Label these extensions and stricter local requirements as vault-schema rules, not universal PARA.
 
 ## Completion
 

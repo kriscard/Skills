@@ -12,13 +12,13 @@ user-invocable: true
 Turn one raw source into durable, connected knowledge. Preserve the Karpathy LLM Wiki layers:
 immutable raw source, LLM-maintained wiki, and the schema/index/log that connect them.
 
-Use `process-inbox` for general PARA triage. Use `save-note` when the source is the current
-conversation synthesis rather than external material.
+Use `process-inbox` for general triage, `create-note` for reusable conversation knowledge, and
+`save-session` for a session recap. The optional human-owned reflection below is part of ingest.
 
 ## 1. Resolve and read one source
 
-Use a supplied file or URL. Otherwise list the schema-defined raw Inbox and ask the user to choose
-one item. Read the complete source; fetch URL content directly when needed. Record whether the raw
+Read `../vault/SKILL.md` and the live `AGENTS.md` first. Use a supplied file or URL. Otherwise list
+the schema-defined raw Inbox and ask the user to choose one item. Read the complete source; fetch URL content directly when needed. Record whether the raw
 source already exists in the vault or must be archived from an external URL or file.
 
 Do not batch an entire Inbox unless the user explicitly requests repeated one-at-a-time processing.
@@ -54,8 +54,28 @@ Follow metadata, writable directories, naming, aliases, tags, and source-citatio
 `AGENTS.md`. Write focused reference pages in neutral wiki voice. Every non-obvious claim must trace
 to the raw source; preserve contradictions rather than silently choosing a side.
 
-A rich source may touch several relevant entity or concept pages. The current schema may define a
-target range; quality and relevance matter more than reaching a quota.
+A rich source may enrich several pages, one page, or none. Keep reusable explanations in the
+schema-defined Knowledge location; keep the original source in its Resource location. Read the live
+Atomic Note template for a new concept page, adapting its prompts into supported prose rather than
+inventing the user's experience.
+
+When a source warrants its own summary, use this outline with the schema's agent-owned metadata:
+
+```markdown
+# Source title
+
+## Source
+Original source link and author when known.
+
+## Summary
+The important ideas, explained clearly with citations.
+
+## Connections and questions
+Relevant existing notes, disagreements, and open questions.
+```
+
+Omit unsupported or empty sections. This is a synthesis, not the immutable original. Show its exact
+destination during discussion; a source summary is optional and does not add a required ingest stage.
 
 Completion: each proposed page has a destination, ownership permission, source link, and complete
 content or exact section change.
@@ -93,6 +113,33 @@ partial state.
 
 Completion: approved wiki pages, root index, root log, and one verified immutable raw-source artifact
 all exist, or every partial failure is explicit.
+
+## 6. Offer a human-owned Atomic Note draft
+
+Before continuing to another source, ask whether the user wants to create a personal Atomic Note
+now, defer it, or skip it. This is separate from the agent-written synthesis. The user supplies their
+own explanation and framing; do not generate a personal review on their behalf.
+
+If accepted:
+
+1. Read the live Atomic Note template and inspect existing related notes to avoid duplicate drafts.
+2. Confirm the title, approved topic tags, and the actual ingested synthesis note to link. If no
+   synthesis was created, ask which existing ingested note should be the target; do not create an
+   extra synthesis merely to satisfy this step.
+3. Resolve template fields, retain its writing prompts, and add a link to the ingested note under
+   the template's related-notes section. Leave the explanation and questions for the user to fill.
+   Omit agent ownership markers and agent-only tags. Preserve an existing human draft rather than
+   replacing it.
+4. Preview the exact draft, destination, and human-note catalog/log additions. After approval, create
+   it through the safe-write flow, accounting for automatic template insertion, and verify content,
+   ownership, tags, and the source link. Register it under the schema's human-note catalog section.
+
+Record the choice as created, deferred, or skipped. Creating a scaffold does not mean the user has
+written, understood, or endorsed the concept. Do not wait for completed prose unless the user asks;
+ask before starting another source.
+
+Completion: the user chose whether to create a draft, every approved draft is verified and correctly
+registered, and no personal interpretation was invented.
 
 ## References
 
