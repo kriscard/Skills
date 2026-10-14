@@ -54,10 +54,14 @@ Use the schema's date-prefixed filename convention. Sanitize only filesystem-uns
 preserve the original title in provenance, and use a short stable identifier to resolve same-day
 filename collisions. Never overwrite a different meeting with the same title.
 
-Preserve the returned body and heading order. Add schema-required provenance in a single frontmatter
-block; safely merge existing source frontmatter without losing its fields or replacing conflicting
-values silently. Show any conflict for resolution. Do not apply an Obsidian meeting template, add
-another summary, or restate the title inside the body if Granola did not include it.
+Preserve the returned body content and section order, but normalize its Markdown heading hierarchy
+for Obsidian. The body must contain no H1: shift Granola's highest heading level to H2 and shift each
+nested level with it (`#` → `##`, `##` → `###`, and so on, capped at H6). Apply this only to parsed
+headings outside fenced code. Keep the title in the filename and provenance rather than adding an H1.
+Add schema-required provenance in a single frontmatter block; safely merge existing source
+frontmatter without losing its fields or replacing conflicting values silently. Show any conflict for
+resolution. Do not apply an Obsidian meeting template, add another summary, or restate the title
+inside the body if Granola did not include it.
 
 Skip unchanged imports. For upstream changes, show the difference and offer a separately named
 snapshot, retaining the original. Preview each destination, provenance, and body for approval. If the
@@ -75,7 +79,8 @@ creation-time processing has finished before writing source content as ordinary 
 be guaranteed, stop the affected import and report the blocker rather than changing execution settings.
 
 Reread every created file. Verify the meeting date, source identity, original title, a single valid
-frontmatter block, and preserved body content. Report per-item imported, unchanged, versioned,
+frontmatter block, preserved body content and section order, no H1 in the body, and H2 as its highest
+heading level when headings are present. Report per-item imported, unchanged, versioned,
 unavailable, or failed status, with verified paths and dates for `close-day` to use. Leave partial
 failures explicit; never count an unverified file as imported.
 
