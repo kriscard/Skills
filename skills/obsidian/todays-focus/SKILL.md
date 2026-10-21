@@ -86,8 +86,22 @@ Before writing, identify:
 
 Use current evidence to distinguish urgency from importance. A focus area may protect rest, narrow
 scope, make a decision, or deepen one project rather than complete a ticket. Do not impose a work/life
-collision or a slipping-habit narrative when the evidence does not support one. Flag stale Top of Mind
-context rather than silently treating it as current.
+collision or a slipping-habit narrative when the evidence does not support one.
+
+### Top of Mind refresh
+
+Chris maintains Top of Mind manually. Treat it as read-only in this workflow; suggest a review rather
+than drafting or applying edits. A brief suggestion is useful when:
+
+- Chris explicitly describes a changed priority, a resolved concern, or something new occupying attention.
+- The current section has grown beyond two or three distinct concerns and no longer signals a clear focus.
+- Its stated review/update date is at least three weeks old; age alone does not mean the content is wrong.
+
+Use the note's stated date, not file modification time. Put one short, reason-specific suggestion in
+Checking in, such as: "Top of Mind was last reviewed four weeks ago. Worth checking whether these are
+still your two or three main concerns." Keep this optional, not a blocking question or daily ritual.
+If recent context already contains the same reminder, omit it unless something material has changed.
+Task activity alone does not establish that Chris's priorities have changed.
 
 Completion: three distinct, defensible focus areas fit the scope and day, or the missing evidence is
 clear enough to ask a targeted question instead of inventing priorities.
