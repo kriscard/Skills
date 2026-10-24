@@ -118,3 +118,5 @@ An unavailable runner skill is not a blocker when repository evidence and offici
 ## Boundaries
 
 A tests-only request changes tests and test support code only. Production changes require explicit implementation, bug-fix, or TDD scope. Snapshot or fixture updates require reviewing the semantic change they encode. An unexplained failing test is a diagnosis task first; route to `debug` when the intended behavior is not already established.
+
+Requests to create or maintain a reusable repository-local verification skill belong to `create-verification-skill`. Ordinary tests, regression coverage, and one-off execution remain here; missing coverage alone does not require a new harness or skill.
