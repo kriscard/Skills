@@ -1,12 +1,53 @@
-> **Read this when:** designing component APIs, reducing boolean-prop growth,
-> choosing children, slots, render callbacks, explicit variants, compound components,
-> or provider-backed composition.
+> **Read this when:** assigning page, section, container, composer, or leaf roles;
+> designing component APIs; reducing pass-through wrappers or boolean-prop growth; or
+> choosing props, Context, slots, render callbacks, and provider-backed composition.
 
 # React Composition
 
-Start top-down and simple. Composition is the default way to divide UI, but advanced
-composition is earned by real variation. Props are a component's public API: expose
-stable choices and hide volatile implementation.
+Start top-down and simple. Composition divides responsibilities; it does not require a
+container/presentational split or a file for every role. Props are a component's public
+API: expose stable choices and hide volatile implementation.
+
+For small BAD/GOOD examples covering data-owning sections, optional multi-query
+coordination, narrow Context, injected boundary clients, and a component that should
+remain simple, read [`composition-examples.md`](composition-examples.md).
+
+## Assign roles by responsibility
+
+Use these names as reasoning roles, not mandatory filenames:
+
+- **Page:** arranges product sections. It may load or branch for responsibilities the
+  page itself owns.
+- **Section:** owns an independently meaningful region, including its data, decisions,
+  pending/error/recovery behavior, and feedback.
+- **Container:** optionally coordinates several queries, a shared draft, a transactional
+  save, or a synchronized snapshot whose common owner matters.
+- **Composer:** arranges already-owned props and may call plain business functions to
+  choose what to show.
+- **Leaf:** displays props or children and emits user intent.
+
+Independent sections should be able to load, fail, and recover independently. When work
+is transactional or one result depends on another, give the flow one common owner rather
+than manufacturing independence. Remove wrappers that only forward props or JSX; keep a
+layer when it owns coordination, decisions, feedback, semantics, or a stable interface.
+
+## Separate React from plain decisions
+
+Hooks own React state, lifecycle, subscriptions, or integration with an installed data
+library such as SWR or Query. A feature-focused UI-state hook used by a provider is a
+valid owner.
+
+A calculation that depends only on current facts remains a plain function. Pass it the
+minimum facts it needs, including values such as the current date or translated
+messages. Do not add a hook, `useMemo`, or provider merely to call it. Use
+[`state-and-data-flow.md`](state-and-data-flow.md) for state categories,
+[`async-and-suspense.md`](async-and-suspense.md) for waiting ownership, and
+[`re-renders.md`](re-renders.md) for measured performance decisions.
+
+Data hooks and sections may call boundary integration, but response validation and
+mapping belong to the frontend trust boundary. Keep eligibility or pricing policy and
+screen formatting outside transport mapping. Route file placement and runtime schemas
+to the `frontend` skill.
 
 ## Extraction pressure
 
@@ -18,8 +59,8 @@ Extract a component when at least one is true:
 - its behavior needs an independent test or semantic boundary;
 - the parent has become difficult to understand because changes have unrelated causes.
 
-Keep a single-use orchestrator explicit when extraction would only move JSX or create a
-configuration API for hypothetical reuse.
+Keep a small single-use component intact when extraction would only move JSX, add a
+pass-through layer, or create a configuration API for hypothetical reuse.
 
 ## Prefer explicit composition
 
@@ -41,20 +82,24 @@ fixed set of semantic slots. Use a render callback when the parent must expose d
 state or behavior to caller-owned rendering. Avoid render callbacks that only return
 static children.
 
-## Compound components
+## Narrow Context and providers
 
-Compound components are justified when at least one demonstrated pressure exists:
+Use Context for non-server UI coordination across a real subtree boundary: selection,
+expanded state, a shared draft, actions, or imperative metadata. Prefer local state, the
+nearest common parent, and children first. Context is not a second server cache and does
+not need to carry pure functions that callers can import directly.
 
-- multiple callers compose the same primitives differently;
-- one component family needs flexible composition around shared behavior or state; or
-- descendants coordinate across a tree where explicit props no longer express ownership
-  clearly.
+Sibling features coordinate through explicit interfaces or a common owner. A nested
+feature may consume a parent context when the hierarchy is intentional and the required
+provider is explicit. Actions and callbacks are valid context values. A provider may
+read server data when it legitimately coordinates that data with subtree UI; avoid
+copying the same remote record into redundant state.
 
-The provider is the coordination boundary. Subcomponents consume only the slice they
-need. Account for discoverability, invalid use outside the provider, Context rerenders,
-and accessibility behavior.
+Compound components are justified when multiple callers compose the same primitives
+differently or descendants need shared behavior across composition boundaries. Guard
+consumption outside the provider and let subcomponents consume only what they need.
 
-For coordinated families, expose a stable contract:
+For coordinated families, a stable contract may separate concerns:
 
 ```typescript
 interface ComponentContext<State, Actions, Meta> {
@@ -64,19 +109,8 @@ interface ComponentContext<State, Actions, Meta> {
 }
 ```
 
-The provider is the only layer that knows whether state comes from local hooks, a
-reducer, an external store, or another adapter. This pattern follows demonstrated
-coordination pressure; it is not a default wrapper for every feature.
-
-## State and implementation independence
-
-Keep state at the nearest owner. Lift it when siblings or caller-owned controls need the
-same transition. Decouple the UI from state implementation only when alternate providers,
-tests, or reuse require that seam.
-
-Children may communicate upward through intention-revealing callbacks. Expose actions
-such as `onSubmit` or `onSelectionChange`, not raw setters that leak internal state
-shape.
+The provider can hide whether UI state comes from a local hook, reducer, or installed
+store. This is a response to demonstrated coordination pressure, not a default wrapper.
 
 ## Stable dependency test
 
@@ -84,13 +118,14 @@ A good component API depends on concepts likely to remain stable while hiding de
 likely to change. Before approving an abstraction, ask:
 
 - Can internal logic change without changing callers?
-- Can a new real variant compose existing primitives without adding another mode flag?
+- Can a new real variant compose existing primitives without another mode flag?
 - Does each public prop represent a user or product concept?
 - Is misuse constrained by types, provider guards, and semantics?
 - Is the abstraction easier to understand than the concrete callers it replaces?
 
 ## Completion criterion
 
-Composition work is complete when the API is driven by observed callers, unsupported
-states are constrained, state has one owner, the semantic and accessibility contract is
+Composition work is complete when each role owns real behavior, independent sections
+can recover independently, coordinated flows have one common owner, plain decisions stay
+plain, state has one owner, unsupported states are constrained, semantic behavior is
 preserved, and the simplest caller remains simple.

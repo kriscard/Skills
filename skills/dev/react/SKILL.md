@@ -42,10 +42,11 @@ context through the target interaction before changing abstractions.
 
 ### 3. Choose the simplest composition
 
-Start top-down with plain components and explicit props. Extract when a responsibility,
-real reuse, independent variation, or testing seam appears. Compound components,
-providers, slots, and render callbacks must be earned by multiple compositions or
-cross-tree coordination.
+Start top-down with plain components and explicit props. Assign page, section,
+coordination, composition, and display responsibilities only where they exist; these are
+roles, not required component layers. Extract when a responsibility, real reuse,
+independent variation, or testing seam appears. Compound components, providers, slots,
+and render callbacks must be earned by multiple compositions or cross-tree coordination.
 
 **Complete when:** the component API exposes stable choices while volatile implementation
 stays behind the boundary.
@@ -95,7 +96,8 @@ framework or browser behavior is explicit.
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — High | Boolean prop growth, component API design, compound components, slots, variants, render props | `references/composition.md` |
+| 1 — High | Component roles, section ownership, orchestration, boolean prop growth, compound components, slots, variants, render props | `references/composition.md` |
+| 2 — Conditional | Comparing BAD/GOOD examples for data-owning sections, containers, narrow Context, injected loaders, or intentionally simple components | `references/composition-examples.md` |
 | 1 — High | State placement, Context, providers, reducers, server cache, URL/form/application state | `references/state-and-data-flow.md` |
 | 1 — High | `useEffect`, synchronization, derived state, stale closures, subscriptions, race conditions | `references/useeffect-antipatterns.md` |
 | 1 — High | Suspense, transitions, optimistic updates, pending UI, async dependencies, error boundaries | `references/async-and-suspense.md` |
