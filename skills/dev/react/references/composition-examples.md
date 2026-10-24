@@ -4,9 +4,10 @@
 
 # React Composition Examples
 
-These snippets use one neutral reservation capability. They are intentionally partial:
-use the project's installed data and schema libraries, import conventions, and error
-model. `parse` and `InferOutput` below stand for the equivalent installed schema APIs.
+These snippets use one neutral reservation capability. They are intentionally partial
+and use Zod 4 only to make the schema API concrete and copyable. Adapt the example to the
+project's installed validator, data library, import conventions, and error model; the
+example does not require adding Zod.
 
 ## BAD: policy buried in a data hook
 
@@ -35,13 +36,15 @@ and one screen's wording, and makes a pure decision depend on React.
 ## GOOD: boundary, rule, section, composer, leaf
 
 ```tsx
-const OfferingResponseSchema = object({
-  id: string(),
-  remaining: number(),
-  closesAt: isoDateTime(),
+import { z } from "zod";
+
+const OfferingResponseSchema = z.object({
+  id: z.string(),
+  remaining: z.number(),
+  closesAt: z.iso.datetime(),
 });
 
-type OfferingResponse = InferOutput<typeof OfferingResponseSchema>;
+type OfferingResponse = z.infer<typeof OfferingResponseSchema>;
 
 type Offering = {
   id: string;
@@ -61,7 +64,7 @@ export async function loadOffering(
   const input = await client.get(
     `/tenants/${tenantId}/offerings/${offeringId}`,
   );
-  const response: OfferingResponse = parse(OfferingResponseSchema, input);
+  const response: OfferingResponse = OfferingResponseSchema.parse(input);
 
   return {
     id: response.id,
@@ -140,9 +143,9 @@ The cache identity includes the resource, tenant, and identifier. Follow the ins
 data library when it supports per-observer projections; those projections do not imply
 that one observer overwrites another's cached value.
 
-## Optional container for one coordinated snapshot
+## Optional container for a coordinated review
 
-Use a container when several results must be evaluated or saved together. Independent
+Use a container when several results must be presented or acted on together. Independent
 sections should keep their own owners instead.
 
 ```tsx
@@ -186,8 +189,11 @@ function ReservationReview({ summary }: { summary: ReservationSummary }) {
 }
 ```
 
-The container exists because the review represents one coordinated snapshot. It does not
-justify moving every reservation section under the same owner.
+The container coordinates readiness and recovery for one review. Two independent queries
+do not by themselves provide an authoritative server snapshot, matching versions, or an
+atomic save; those guarantees require backend and data-layer contracts. A shared save
+still needs one owner for its draft and submit flow. This review owner does not justify
+moving every reservation section under the same container.
 
 ## Narrow Context for a shared draft
 
@@ -250,7 +256,7 @@ it("rejects a malformed offering response", async () => {
 
   await expect(
     loadOffering(client, "tenant-1", "offering-1"),
-  ).rejects.toBeDefined();
+  ).rejects.toBeInstanceOf(z.ZodError);
 });
 
 it("closes reservations at the deadline", () => {

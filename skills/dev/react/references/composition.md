@@ -20,8 +20,8 @@ Use these names as reasoning roles, not mandatory filenames:
   page itself owns.
 - **Section:** owns an independently meaningful region, including its data, decisions,
   pending/error/recovery behavior, and feedback.
-- **Container:** optionally coordinates several queries, a shared draft, a transactional
-  save, or a synchronized snapshot whose common owner matters.
+- **Container:** optionally coordinates several queries, a shared draft, one submit
+  flow, or a synchronized snapshot when the backend contract actually provides one.
 - **Composer:** arranges already-owned props and may call plain business functions to
   choose what to show.
 - **Leaf:** displays props or children and emits user intent.

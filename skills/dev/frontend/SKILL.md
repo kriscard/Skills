@@ -95,7 +95,7 @@ unverified behavior or residual risk is explicit.
 | 2 — Medium | Tokens, variants, styling contracts, responsive layout, theming, installed UI primitives | `references/ui-systems.md` |
 | 2 — Medium | Loading/error/empty states, touch and keyboard input, reduced motion, browser APIs, compatibility | `references/browser-resilience.md` |
 | 2 — Medium | Feature responsibilities, ownership, import direction, data integration, domain policy, shared-code promotion, scaling structure | `references/feature-architecture.md` |
-| 3 — Conditional | Comparing concrete feature-local, product-grouped, or package-plus-feature layouts | `references/architecture-examples.md` |
+| 3 — Conditional | Comparing concrete feature-local, product-grouped, or product/domain-module layouts | `references/architecture-examples.md` |
 
 ## Completion Gate
 

@@ -1,5 +1,5 @@
 > **Read this when:** comparing concrete frontend layouts for the same capability or
-> explaining when feature-local, product-grouped, or package-plus-feature ownership fits.
+> explaining when feature-local, product-grouped, or product/domain-module ownership fits.
 
 # Frontend Architecture Examples
 
@@ -57,32 +57,35 @@ interaction rather than adding them to response mapping.
 another. Keep transport and cache helpers in `offerings.ts` until their number or
 independent responsibility makes a split useful.
 
-## Alternative C: Package plus feature
+## Alternative C: Product/domain module with nested features
 
 ```text
-packages/
-└── reservation-policy/
-    ├── index.ts                       # public domain interface
-    ├── can-reserve.ts                 # framework-free business policy
-    └── can-reserve.test.ts
-apps/web/src/
-└── features/reservation/
-    ├── reservation-section.tsx        # owns web data and feedback
-    ├── reservation-view.tsx
-    └── load-offering.ts               # web boundary integration
+src/
+└── modules/
+    └── reservations/
+        ├── offering.schema.ts          # shared boundary contract and model
+        ├── load-offering.ts            # shared validation and data integration
+        ├── can-reserve.ts              # framework-free product rule
+        └── features/
+            ├── Reservation/
+            │   ├── ReservationSection.tsx
+            │   └── ReservationView.tsx
+            └── OfferingBrowser/
+                └── OfferingList.tsx
 ```
 
-**Fits when:** reservation policy has independent consumers, release ownership, or a
-meaningful dependency boundary—for example, more than one application must apply the
-same decision.
+**Fits when:** one product domain owns a cohesive schema, data integration, and business
+rules used by multiple interactions, while each nested feature still owns its UI state,
+feedback, and presentation.
 
-**Owners:** the package owns the domain interface and has no React or transport
-knowledge. The web feature owns its data library integration and presentation. The
-package is a domain module; it need not be published externally or turned into a
-workspace package unless the repository already uses that mechanism.
+**Owners:** `modules/reservations` owns the stable reservation concepts and boundary.
+`Reservation` owns the reserve interaction; `OfferingBrowser` owns browsing and its
+screen-specific formatting. The module is an ownership boundary inside the existing
+application, not a requirement for a workspace, build target, or published package.
 
-**Import direction:** web feature → package public interface. The package never imports
-application UI, transport, storage, translation services, or framework code.
+**Import direction:** application composition → nested feature entry points → shared
+module contracts and rules. Nested features do not import each other's internals, and
+the shared policy and integration do not depend on feature UI.
 
 ## Choosing among them
 
@@ -90,7 +93,7 @@ Choose the smallest layout matching actual consumers:
 
 - one owner and one consumer: feature-local;
 - shared stable server model but product-specific policy: shared data layer;
-- independently consumed business policy: package plus feature.
+- one product domain with several feature interactions: product/domain module.
 
 Do not migrate a whole feature merely to resemble another alternative. A single plain
 policy function can move when its ownership changes while nearby UI remains intact.
