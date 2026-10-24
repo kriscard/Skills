@@ -17,7 +17,12 @@ Inspect the smallest complete ownership chain:
 4. Run local command help when it is the authoritative source for available flags or subcommands.
 5. Search for local skills, verification docs, browser/API/CLI helpers, smoke scripts, process
    managers, seeded environments, and artifact conventions.
-6. Trace the real user entry points from routes, public endpoints, commands, menus, docs, or current
+6. Discover supported deadline and cancellation mechanisms in the project, host runner, HTTP
+   client, browser driver, process API, and test tools. Verify their actual syntax from installed
+   versions or command help; do not assume GNU `timeout` or arbitrary flags exist.
+7. Determine supported port selection, including whether the application demonstrably accepts an
+   explicit ephemeral-port value such as `PORT=0` and how it reports the chosen port.
+8. Trace the real user entry points from routes, public endpoints, commands, menus, docs, or current
    tests.
 
 Prefer repository evidence and installed declarations over generic latest-version examples. Record
@@ -43,7 +48,10 @@ Before durable changes, present an exact bounded plan. Include:
 - command working directories and literal commands;
 - the generated skill's owner and trigger;
 - required setup, start, identity/readiness doctor, journeys, observations, evidence, and cleanup;
-- process, port, profile, namespace, account, fixture, and credential assumptions;
+- explicit finite budgets for every applicable start, wait, probe, command, journey, whole run, and
+  cleanup, including verified enforcement and cancellation behavior;
+- process, port, profile, namespace, account, fixture, and credential assumptions, including the
+  explicit isolated-port strategy and ephemeral run receipt;
 - package/config changes and why existing support is insufficient;
 - behavior proved, behavior intentionally unsupported, and known blockers;
 - any action that needs separate approval because it starts services, authenticates, mutates data,
@@ -54,6 +62,29 @@ access, or external side effect requires another explicit gate.
 
 Preserve unrelated user code. If a required artifact falls outside approved scope, stop and report
 the boundary rather than smuggling it into another file.
+
+## Require enforceable bounds
+
+Every operational proposal and generated artifact must assign explicit finite budgets to each
+applicable start, readiness wait, health/identity probe, browser/API/CLI command, journey, whole-run
+sequence, and cleanup. Choose concrete values from repository behavior, installed tool defaults,
+measured fixture needs, CI limits, or user-approved test needs. A budget is an operational bound,
+not a universal performance claim.
+
+Name how each bound is enforced. Acceptable owners include a verified project test runner, a host
+process API with a deadline and cancellation contract, a supported HTTP/browser/CLI client timeout,
+or a necessary helper separately disclosed and approved in the write set. A shell comment that a
+command "should finish" is not enforcement. Do not invent GNU `timeout`, unsupported command flags,
+a mandatory framework, or an undeclared helper.
+
+Define what happens at the bound: classify the step as failed or blocked, cancel through the same
+verified owner, preserve bounded diagnostic evidence, and run cleanup within its own finite
+deadline. Whole-run deadlines prevent a sequence of individually bounded steps from running
+without an overall limit. Cleanup deadlines prevent teardown from hanging after success or failure.
+
+If the repository and host expose no supported way to enforce a required bound, the proposal may
+show the actual command with an explicit bounded-runner prerequisite, but the generated skill must
+mark runtime execution **blocked**. Generation does not authorize or perform execution.
 
 ## Establish target identity before driving
 
@@ -70,8 +101,14 @@ operational run, establish all applicable facts:
 
 A doctor is read-only and answers whether the target is worth driving. It should combine available
 identity signals such as a version endpoint, build marker, process metadata, startup receipt, CLI
-version, expected page identity, authenticated capability, and fixture probe. Port matching alone
-is insufficient.
+version, expected page identity, authenticated capability, and fixture probe. Its waits and probes
+use explicit finite budgets and supported cancellation. Port matching alone is insufficient.
+
+Select the port deliberately. When repository evidence proves that the application supports an
+explicit ephemeral-port setting, set it in the start environment (for example, `PORT=0`) so an
+ambient variable or default cannot redirect the run. Otherwise use a separately approved isolated
+port supported by the application, then verify identity and ownership before driving. Record the
+actual selected port only in an ephemeral run receipt; never hardcode it into durable guidance.
 
 Never kill by process name. Track exact process handles, container IDs, sessions, temporary
 profiles, ports, and data created by the run. Cleanup only those owned resources. Attaching to a
@@ -81,9 +118,9 @@ ownership.
 ## Keep execution disposable and bounded
 
 Use unique run identifiers for data names, namespaces, temporary directories, browser profiles,
-queues, and ports where the project permits them. Use bounded timeouts and waits for observable
-state: a readiness marker, element state, response condition, process exit, event, or persisted
-record. Arbitrary sleeps are not readiness evidence.
+queues, and ports where the project permits them. Wait for observable state: a readiness marker,
+element state, response condition, process exit, event, or persisted record, under the explicit
+budget and enforcement mechanism defined above. Arbitrary sleeps are not readiness evidence.
 
 Use existing approved credential mechanisms. Never copy credentials into generated instructions,
 artifacts, fixtures, screenshots, or logs. Do not preserve private transcripts, environment dumps,
