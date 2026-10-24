@@ -1,6 +1,7 @@
-> **Read this when:** concrete React examples are needed for data-owning sections,
-> optional multi-query coordination, narrow Context, injected boundary clients, plain
-> policy tests, or deciding to leave a small component alone.
+> **Read this when:** concrete examples are needed for extracting policy from React,
+> deterministic time inputs, data-owning sections, optional multi-query coordination,
+> narrow Context, injected boundary clients, plain policy tests, or deciding to leave a
+> small component alone.
 
 # React Composition Examples
 
@@ -32,6 +33,26 @@ function useReservation(tenantId: string, offeringId: string) {
 
 This hook promotes unchecked data, hides the clock, mixes transport, business policy,
 and one screen's wording, and makes a pure decision depend on React.
+
+### Time is a required policy fact
+
+```ts
+// BAD: omitting now makes supposedly pure policy read the ambient clock.
+function isExpired(expiresAt: number, now = Date.now()) {
+  return expiresAt <= now;
+}
+
+// GOOD: runtime integration reads the clock and passes the fact into policy.
+function isExpired(expiresAt: number, now: number) {
+  return expiresAt <= now;
+}
+
+const expired = isExpired(expiresAt, Date.now());
+```
+
+The issue is the hidden ambient read inside a business decision, not default parameters
+in general. Requiring `now` makes the rule deterministic without injecting a clock
+service or introducing a DI framework.
 
 ## GOOD: boundary, rule, section, composer, leaf
 

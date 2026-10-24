@@ -1,7 +1,8 @@
 > **Read this when:** extracting a pure business rule from a hook for direct testing;
-> deciding whether logic belongs in React or a plain function; creating a test seam;
-> assigning page, section, container, composer, or leaf roles; or designing component
-> APIs with props, Context, slots, render callbacks, or provider-backed composition.
+> making time, randomness, or environment-dependent policy deterministic; deciding
+> whether logic belongs in React or a plain function; creating a test seam; assigning
+> component roles; or designing APIs with props, Context, slots, render callbacks, or
+> provider-backed composition.
 
 # React Composition
 
@@ -11,8 +12,9 @@ API: expose stable choices and hide volatile implementation.
 
 When a worked comparison would help, read
 [`composition-examples.md`](composition-examples.md) for BAD/GOOD policy extraction from
-a data hook, data-owning sections, optional multi-query coordination, narrow Context,
-injected boundary clients, and a component that should remain simple.
+a data hook, deterministic time inputs, data-owning sections, optional multi-query
+coordination, narrow Context, injected boundary clients, and a component that should
+remain simple.
 
 ## Assign roles by responsibility
 
@@ -39,9 +41,18 @@ Hooks own React state, lifecycle, subscriptions, or integration with an installe
 library such as SWR or Query. A feature-focused UI-state hook used by a provider is a
 valid owner.
 
-A calculation that depends only on current facts remains a plain function. Pass it the
-minimum facts it needs, including values such as the current date or translated
-messages. Do not add a hook, `useMemo`, or provider merely to call it. Use
+A calculation that depends only on current facts remains a plain function. Pass every
+time, randomness, locale, tenant, or environment fact it uses as a required input. A
+default such as `now = Date.now()` still hides an ambient read inside policy; let the
+runtime caller read the clock and pass the resulting fact. This is a purity rule for
+business decisions, not a general ban on default parameters.
+
+Effectful orchestration is different. A loader or action may accept a narrow client,
+clock, or other collaborator when production and tests need replaceable effects. Keep
+that seam at the orchestration boundary rather than turning plain policy into service
+injection or introducing a DI framework.
+
+Do not add a hook, `useMemo`, or provider merely to call a plain function. Use
 [`state-and-data-flow.md`](state-and-data-flow.md) for state categories,
 [`async-and-suspense.md`](async-and-suspense.md) for waiting ownership, and
 [`re-renders.md`](re-renders.md) for measured performance decisions.
