@@ -1,6 +1,7 @@
-> **Read this when:** assigning page, section, container, composer, or leaf roles;
-> designing component APIs; reducing pass-through wrappers or boolean-prop growth; or
-> choosing props, Context, slots, render callbacks, and provider-backed composition.
+> **Read this when:** extracting a pure business rule from a hook for direct testing;
+> deciding whether logic belongs in React or a plain function; creating a test seam;
+> assigning page, section, container, composer, or leaf roles; or designing component
+> APIs with props, Context, slots, render callbacks, or provider-backed composition.
 
 # React Composition
 
@@ -8,9 +9,10 @@ Start top-down and simple. Composition divides responsibilities; it does not req
 container/presentational split or a file for every role. Props are a component's public
 API: expose stable choices and hide volatile implementation.
 
-For small BAD/GOOD examples covering data-owning sections, optional multi-query
-coordination, narrow Context, injected boundary clients, and a component that should
-remain simple, read [`composition-examples.md`](composition-examples.md).
+When a worked comparison would help, read
+[`composition-examples.md`](composition-examples.md) for BAD/GOOD policy extraction from
+a data hook, data-owning sections, optional multi-query coordination, narrow Context,
+injected boundary clients, and a component that should remain simple.
 
 ## Assign roles by responsibility
 

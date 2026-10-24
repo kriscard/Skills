@@ -96,8 +96,8 @@ framework or browser behavior is explicit.
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — High | Component roles, section ownership, orchestration, boolean prop growth, compound components, slots, variants, render props | `references/composition.md` |
-| 2 — Conditional | Comparing BAD/GOOD examples for data-owning sections, containers, narrow Context, injected loaders, or intentionally simple components | `references/composition-examples.md` |
+| 1 — High | Extracting pure business rules from hooks, choosing React versus plain functions, creating test seams, component roles, orchestration, boolean prop growth, compound components, slots, variants, or render props | `references/composition.md` |
+| 2 — Conditional | Worked BAD/GOOD examples for policy extraction from data hooks, data-owning sections, containers, narrow Context, injected loaders, or intentionally simple components | `references/composition-examples.md` |
 | 1 — High | State placement, Context, providers, reducers, server cache, URL/form/application state | `references/state-and-data-flow.md` |
 | 1 — High | `useEffect`, synchronization, derived state, stale closures, subscriptions, race conditions | `references/useeffect-antipatterns.md` |
 | 1 — High | Suspense, transitions, optimistic updates, pending UI, async dependencies, error boundaries | `references/async-and-suspense.md` |
