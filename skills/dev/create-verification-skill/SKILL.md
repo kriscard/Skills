@@ -42,12 +42,10 @@ Name the precise job the generated skill will repeat. Select only the applicable
 - CLI, TUI, or process behavior.
 
 Define named journey contracts with preconditions, public actions, observable completion, and any
-externally visible persisted effect. For every applicable start, readiness wait, probe, command,
-journey, whole run, and cleanup, require an explicit finite budget plus failure, cancellation, and
-owned-resource cleanup behavior. A parser or unit-only claim stays at its programmatic boundary;
-do not manufacture a browser journey for it.
-
-Read `references/generated-skill-contract.md` before designing the artifact.
+externally visible persisted effect. Read `references/generated-skill-contract.md` and apply its
+complete execution-budget, cancellation, cleanup, port-selection, and blocked-status contract
+before designing the artifact. A parser or unit-only claim stays at its programmatic boundary; do
+not manufacture a browser journey for it.
 
 **Complete when:** every proposed journey states what real behavior it proves, at which boundary,
 and what remains unsupported.
@@ -59,9 +57,9 @@ Before any durable write, package/config change, stateful journey, or unsafe act
 - the exact write set and owner of every artifact;
 - substantive generated sections and exact repository commands;
 - setup, start, doctor, actions, observations, evidence, and cleanup;
-- every applicable finite time budget, the exact supported runner/client invocation or configuration
-  that enforces it, cancellation behavior, cleanup deadline, and the blocked status used when no
-  supported bounded runner exists;
+- how the proposal satisfies the complete operational contract in
+  `references/generated-skill-contract.md`, including every discovered enforcement mechanism and
+  blocker;
 - explicit isolated-port selection and how target identity and ownership will be verified;
 - behavior claims each journey can and cannot prove;
 - any new dependency, fixture, credential mechanism, process, port, data, or external side effect;
@@ -81,11 +79,9 @@ commands supported by the host and repository; never invent an interface or requ
 library everywhere.
 
 Resolve helper paths from the generated skill directory. State the correct repository or monorepo
-working directory for every command. Bind each operational step to a verified project/host runner,
-supported client timeout, or separately approved necessary helper that enforces its budget. If none
-exists, generate an explicit execution blocker instead of operationally ready unbounded commands.
-Do not invent `timeout` availability, unsupported flags, or a new framework. Keep the artifact
-instructional: no new daemon, workflow database, control plane, or mandatory index.
+working directory for every command. Apply `references/generated-skill-contract.md` as the source
+of truth for every operational requirement and blocker. Keep the artifact instructional: no new
+daemon, workflow database, control plane, or mandatory index.
 
 Use `references/examples.md` only when a concrete browser, API, CLI, or blocked-case pattern would
 help shape the project-specific result.
@@ -97,10 +93,9 @@ finite budget enforced by a verified capability or is marked blocked.
 ### 5. Check the artifact
 
 Run the repository's focused formatting, skill syntax, reference, or registration checks. Inspect
-the diff for unrelated changes and secrets. Confirm that no start, readiness check, probe, command,
-journey, whole run, or cleanup is presented as operationally ready without its finite budget and
-verified enforcement path. These checks prove that the artifact was generated and registered
-correctly; they do not prove a user journey.
+the diff for unrelated changes and secrets. Check the artifact against the complete operational
+contract in `references/generated-skill-contract.md`. These checks prove that the artifact was
+generated and registered correctly; they do not prove a user journey.
 
 Classify the result as:
 
@@ -115,15 +110,11 @@ not overstate operational proof.
 ### 6. Exercise only authorized safe journeys
 
 When the user separately approved execution, establish target identity and readiness before
-driving. Apply the generated finite budgets, cancel through the verified runner when a budget is
-exceeded, and run bounded cleanup for only owned processes and disposable data. Exercise the
-generated workflow on the real authorized surface and capture action plus resulting state plus
-required persisted effect.
-
-Select ports explicitly. When repository evidence proves ephemeral-port support, set the documented
-value such as `PORT=0` explicitly rather than inheriting an ambient value. Otherwise use a
-separately approved isolated supported port and verify identity and ownership. Store the actual
-chosen port only in the ephemeral run receipt.
+driving. Execute the generated skill under the complete operational contract in
+`references/generated-skill-contract.md`. Exercise the workflow on the real authorized surface and
+capture action plus resulting state plus required persisted effect. Use the generated contract's
+port-selection and owned-process receipt rules; store actual ephemeral runtime values only in the
+run receipt.
 
 If authentication, a browser, infrastructure, target identity, or another required capability is
 unavailable, report **blocked**. Do not install replacements, weaken acceptance, or label the
@@ -142,21 +133,12 @@ uncertainty.
 **Complete when:** another agent can distinguish what was proposed, generated, exercised, and
 blocked without inference.
 
-## Completion gate
+## Operational contract source
 
-A generated skill is not operationally ready unless every applicable start, readiness wait, probe,
-command, journey, whole-run sequence, and cleanup has:
-
-- a concrete finite budget chosen from repository evidence or approved test needs;
-- a verified enforcement mechanism supplied by the project, host runner, supported client, or an
-  explicitly approved necessary helper;
-- defined timeout/failure reporting, safe cancellation, and cleanup of exact run-owned resources;
-- an explicit port strategy that cannot silently inherit an unrelated target.
-
-When any required bound cannot be enforced, preserve the commands only as a proposal with the
-bounded-runner prerequisite and report runtime execution as **blocked**. Generation is not
-execution. Never invent GNU `timeout`, arbitrary shell/tool flags, or a compulsory supervisor to
-clear this gate.
+`references/generated-skill-contract.md` is the single source of truth for the complete generated
+artifact and execution contract. Apply it before proposing, generating, checking, exercising, or
+reporting operational instructions. When the target repository or host cannot satisfy one of its
+requirements, preserve the missing prerequisite and report execution as **blocked**.
 
 ## Reference routing
 

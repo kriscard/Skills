@@ -48,8 +48,9 @@ Before durable changes, present an exact bounded plan. Include:
 - command working directories and literal commands;
 - the generated skill's owner and trigger;
 - required setup, start, identity/readiness doctor, journeys, observations, evidence, and cleanup;
-- explicit finite budgets for every applicable start, wait, probe, command, journey, whole run, and
-  cleanup, including verified enforcement and cancellation behavior;
+- how the proposal satisfies the complete operational contract in
+  [`generated-skill-contract.md`](generated-skill-contract.md), including discovered enforcement
+  mechanisms and blockers;
 - process, port, profile, namespace, account, fixture, and credential assumptions, including the
   explicit isolated-port strategy and ephemeral run receipt;
 - package/config changes and why existing support is insufficient;
@@ -63,28 +64,13 @@ access, or external side effect requires another explicit gate.
 Preserve unrelated user code. If a required artifact falls outside approved scope, stop and report
 the boundary rather than smuggling it into another file.
 
-## Require enforceable bounds
+## Discover bounded execution support
 
-Every operational proposal and generated artifact must assign explicit finite budgets to each
-applicable start, readiness wait, health/identity probe, browser/API/CLI command, journey, whole-run
-sequence, and cleanup. Choose concrete values from repository behavior, installed tool defaults,
-measured fixture needs, CI limits, or user-approved test needs. A budget is an operational bound,
-not a universal performance claim.
-
-Name how each bound is enforced. Acceptable owners include a verified project test runner, a host
-process API with a deadline and cancellation contract, a supported HTTP/browser/CLI client timeout,
-or a necessary helper separately disclosed and approved in the write set. A shell comment that a
-command "should finish" is not enforcement. Do not invent GNU `timeout`, unsupported command flags,
-a mandatory framework, or an undeclared helper.
-
-Define what happens at the bound: classify the step as failed or blocked, cancel through the same
-verified owner, preserve bounded diagnostic evidence, and run cleanup within its own finite
-deadline. Whole-run deadlines prevent a sequence of individually bounded steps from running
-without an overall limit. Cleanup deadlines prevent teardown from hanging after success or failure.
-
-If the repository and host expose no supported way to enforce a required bound, the proposal may
-show the actual command with an explicit bounded-runner prerequisite, but the generated skill must
-mark runtime execution **blocked**. Generation does not authorize or perform execution.
+Use [`generated-skill-contract.md`](generated-skill-contract.md) as the source of truth for every
+required operational bound, enforcement mechanism, cancellation path, cleanup rule, and blocked
+status. Discovery identifies the concrete values and exact supported owners available in this
+repository and host. Record missing capabilities as blockers rather than inventing command flags,
+helpers, frameworks, or runner behavior.
 
 ## Establish target identity before driving
 
