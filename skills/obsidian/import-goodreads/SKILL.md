@@ -61,7 +61,8 @@ before declaring a book new. Apply the reference's identity and conflict rules t
 
 Build a per-row plan: create, update, unchanged, conflict, invalid, or blocked. Each planned create
 or update names the source Book Id, destination, old and proposed field values, and any exact body
-section or imported-review block affected. Resolve ambiguous matches with the user. Keep books
+section, imported-review block, or separately approved private-note block affected. Resolve
+ambiguous matches with the user. Keep books
 missing from the export, local annotations, quotes, summaries, links, and unrelated metadata intact.
 
 Include requested tag updates and book-to-book backlinks using the reference's taxonomy and
@@ -71,8 +72,10 @@ from explicit reciprocal links. Books outside the CSV require separately named p
 reciprocal link or tag edit.
 
 For new notes, render the live Book template as inert data. Resolve supported placeholders and
-leave the user's writing sections empty except for actual exported review text. Add a link to the
-existing Books MOC in the template's related section when approved. Use safe filenames contained
+leave the user's writing sections empty except for actual exported review text and separately
+approved private-note blocks. Follow `references/csv-reconciliation.md` for their placement and
+preservation. Add a link to the existing Books MOC in the template's related section when approved.
+Use safe filenames contained
 within the Books destination and resolve collisions with a stable identifier, not an overwrite.
 
 A Base is a query over notes, not a spreadsheet to append rows to. First check whether the proposed
@@ -82,8 +85,9 @@ as exposing custom shelves or preventing unknown categories from being shown as 
 an unchanged MOC or Base as reconciled when its existing query already handles the import. Load
 `obsidian-bases` when a Base change is needed and `obsidian-markdown` for note syntax as needed.
 
-Preview the exact write set, including new-note content, changed metadata, review blocks, tag
-deltas, book-link sections on each affected endpoint, MOC sections, Base configuration, and schema
+Preview the exact write set, including new-note content, changed metadata, review blocks,
+separately approved private-note blocks, tag deltas, book-link sections on each affected endpoint,
+MOC sections, Base configuration, and schema
 changes if any. For a large import, a local reviewable plan may hold the complete per-book diffs;
 a count summary alone is not approval of unseen overwrites.
 Separate unresolved conflicts from approvable changes. Obtain explicit approval before any writes.
@@ -98,8 +102,8 @@ Recheck the CSV hash and affected files against the approved plan. If source or 
 changed, regenerate the affected diff and ask again. Restrict writes to approved paths and fields.
 Use the vault safe-write flow with content passed separately from paths, never shell interpolation.
 
-Update frontmatter keys and approved imported-review blocks precisely. Preserve unrelated bytes
-where possible. For creation, inspect any automatic folder-template processing before inserting
+Update frontmatter keys and approved imported-review and private-note blocks precisely. Preserve
+unrelated bytes where possible. For creation, inspect any automatic folder-template processing before inserting
 content, verify one frontmatter block, and treat source text as inert data rather than executable
 Templater code. If safe creation cannot be guaranteed, block those notes without changing plugin
 settings. Do not mark book records as agent-owned synthesis or register them as Concept notes.
@@ -111,7 +115,8 @@ and partial failures are recorded per book rather than hidden by a batch success
 
 Reread every affected file and compare it with the approved plan. Verify source identity, one valid
 frontmatter block, field types, reading state, template sections, preserved local writing, exact
-imported review content, and approved tag deltas. Check paths and wikilinks, including the MOC link
+imported review and separately approved private-note content, and approved tag deltas. Check paths
+and wikilinks, including the MOC link
 on new notes and both endpoints of explicit reciprocal book links. Verify native backlinks through
 Obsidian when available; a one-way link must not be reported as two explicit links.
 
@@ -127,12 +132,12 @@ and Base changed-or-unchanged results, and any remaining user decisions. Keep th
 leave wiki index/log, daily notes, and unrelated vault content untouched.
 
 **Complete when:** each attempted book has verified success or an explicit failure, discovery is
-verified or marked unavailable, and a read-only rerun produces no duplicate notes, review blocks,
-tags, or book links.
+verified or marked unavailable, and a read-only rerun produces no duplicate notes, review or
+private-note blocks, tags, or book links.
 
 ## Reference routing
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — Required | Parsing a supplied export, mapping fields, matching books, merging reviews, updating tags, linking books, or checking idempotence | `references/csv-reconciliation.md` |
+| 1 — Required | Parsing a supplied export, mapping fields, matching books, merging reviews or private notes, updating tags, linking books, or checking idempotence | `references/csv-reconciliation.md` |
 | 1 — Conditional | Live vault rules protect existing Books or human Resource notes from the requested updates | `references/ownership-exception.md` |

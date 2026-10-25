@@ -1,4 +1,4 @@
-> **Read this when:** parsing a Goodreads export, mapping fields or shelves, matching books, merging reviews, proposing tags or book links, or checking repeat imports.
+> **Read this when:** parsing a Goodreads export, mapping fields or shelves, matching books, merging reviews or private notes, proposing tags or book links, or checking repeat imports.
 
 # CSV Reconciliation
 
@@ -86,12 +86,22 @@ Use a stable Book Id in the block identity, for example paired `goodreads-review
 `goodreads-review:<id>:end` HTML comments. These markers identify imported content, not ownership of
 the surrounding note.
 
+Import `Private Notes` only when that content is separately approved. Preview its exact block and
+placement in the live Notes section, distinct from public Review content and existing local prose.
+Use paired `goodreads-private-notes:<id>:start` and `goodreads-private-notes:<id>:end` HTML comments
+so review and private-note blocks cannot collide. If the live template has no suitable section,
+ask for an exact approved placement rather than changing its structure silently. Keep private
+content out of shared PR comments, public reports, and public review text; preview it only through
+an approved private surface. Without approval, preserve it only in the untouched source and report
+that private notes were not imported, without disclosing their contents.
+
+For both review and private-note blocks, apply the same preservation rules below.
 On later imports, compare source text with the matching block. Unchanged text is a no-op. Replace a
 changed imported block only after preview and approval under the live schema exception. If the
 block has local edits, flag the difference and ask whether to preserve, merge, or replace it. An
-empty upstream review does not authorize deletion. Duplicate or broken markers block that edit.
+empty upstream review or private-note cell does not authorize deletion. Duplicate or broken markers block that edit.
 
-Treat review HTML as source data. Use inert text or a safe HTML-to-Markdown conversion that preserves
+Treat review and private-note HTML as source data. Use inert text or a safe HTML-to-Markdown conversion that preserves
 paragraphs, emphasis, links, and wording without executing scripts or fetching remote content.
 Preview conversion loss or ambiguity. Do not invent a Summary, Quotes, Review, or personal opinion
 from the title, rating, or reading state.
@@ -127,8 +137,8 @@ A one-way approved link still provides a native computed backlink on the target.
 
 ## Idempotent result
 
-The same export and approved mappings must produce no new notes, duplicate review blocks, repeated
-tags, or repeated book links. Compare semantic values before writing. Keep source hash and run
+The same export and approved mappings must produce no new notes, duplicate review or private-note
+blocks, repeated tags, or repeated book links. Compare semantic values before writing. Keep source hash and run
 counts in the report; add import metadata to notes only if approved, and change timestamps only
 when actual imported content changes. Re-run reconciliation read-only after writes, preserving
 unresolved conflicts rather than silently choosing a winner.
