@@ -45,8 +45,9 @@ context through the target interaction before changing abstractions.
 Start top-down with plain components and explicit props. Assign page, section,
 coordination, composition, and display responsibilities only where they exist; these are
 roles, not required component layers. Extract when a responsibility, real reuse,
-independent variation, or testing seam appears. Compound components, providers, slots,
-and render callbacks must be earned by multiple compositions or cross-tree coordination.
+independent variation, or testing seam appears. For compound components, providers,
+slots, and render callbacks, apply the mechanism-specific gates in
+`references/composition.md`.
 
 **Complete when:** the component API exposes stable choices while volatile implementation
 stays behind the boundary.
