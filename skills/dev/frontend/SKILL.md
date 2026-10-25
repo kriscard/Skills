@@ -1,12 +1,14 @@
 ---
 name: frontend
 description: >-
-  Frontend engineering for browser-facing applications: TypeScript trust
-  boundaries, semantic accessibility, UI systems, responsive browser behavior,
-  security, resilient user states, and feature ownership. Use when building or
-  auditing frontend contracts, styling infrastructure, browser integrations, or
-  file organization. Use react for React composition, state, effects, Suspense,
-  and rendering; use nextjs-app-architecture for Next.js-specific mechanics.
+  Frontend engineering for browser-facing applications: component and browser
+  contracts, semantic accessibility, UI systems, responsive behavior, security,
+  resilient user states, and feature ownership. Use when building or auditing
+  frontend contracts, styling infrastructure, browser integrations, or file
+  organization. Use typescript for language-wide modeling, narrowing, generics,
+  assertions, and runtime type evidence; use react for React composition, state,
+  effects, Suspense, and rendering; use nextjs-app-architecture for Next.js-specific
+  mechanics.
 ---
 
 # Frontend Engineering
@@ -41,18 +43,19 @@ surface are explicit.
 
 ### 3. Apply the universal checks
 
-1. **Trust once:** untrusted data is validated when it enters a trusted domain;
-   internal code consumes the validated type.
-2. **Type honest:** public types describe runtime reality; assertions do not promote
-   unknown data into trusted state.
+1. **Browser trust:** browser-controlled URL, storage, message, and form values gain
+   runtime evidence before trusted use; client feedback does not replace an
+   authoritative write boundary.
+2. **Frontend contract:** component props, native wrappers, DOM events, refs, and
+   browser API types match the behavior consumers can actually use.
 3. **Semantic surface:** controls use native semantics, labels, keyboard behavior,
    and visible focus. ARIA supplements native HTML.
 4. **Complete states:** loading, empty, error, pending, disabled, success, and recovery
    behavior exist where the workflow can reach them.
 5. **System coherence:** components use the project's tokens, variants, responsive
    rules, and installed primitives rather than parallel styling conventions.
-6. **Local ownership:** feature code stays with its owner; shared code is promoted only
-   after demonstrated reuse.
+6. **Responsible ownership:** place code with the responsibility and consumers it
+   serves; promote shared code only after demonstrated reuse.
 7. **Browser proof:** the target flow works at relevant widths and input modes without
    console errors, accidental overflow, inaccessible controls, or unsafe storage.
 
@@ -65,9 +68,11 @@ Use the routing table below. Load multiple references only when the task crosses
 branches. Version-sensitive mechanics come from the project's installed documentation
 or current primary documentation after the version is known.
 
-React component behavior, state ownership, Effects, Suspense, and rendering belong to
-the `react` skill. Next.js route, cache, Server Action, and App Router architecture
-belong to `nextjs-app-architecture`.
+Language-wide TypeScript modeling, narrowing, generics, assertions, compiler contracts,
+and generic runtime-boundary mechanics belong to the `typescript` skill. React
+component behavior, state ownership, Effects, Suspense, and rendering belong to the
+`react` skill. Next.js route, cache, Server Action, and App Router architecture belong
+to `nextjs-app-architecture`.
 
 ### 5. Implement or report
 
@@ -89,19 +94,20 @@ unverified behavior or residual risk is explicit.
 | Priority | Load when | Reference |
 |---|---|---|
 | 1 — Critical | XSS, unsafe HTML or URLs, auth storage, CSP, CORS, third-party scripts, browser trust concerns | `references/security.md` |
-| 1 — High | TypeScript component contracts, unions, generics, assertions, wrapper props, compiler configuration | `references/typescript.md` |
-| 1 — High | External API data, forms, URL/search input, storage, schemas, parsing at trust boundaries | `references/runtime-validation.md` |
+| 1 — High | Component props, native or component wrappers, DOM events, refs, children, or frontend-specific typed surfaces | `references/typescript.md` |
+| 1 — High | Browser forms, URL/search input, storage, `postMessage`, client feedback, or browser-side boundary placement | `references/runtime-validation.md` |
 | 2 — High | Semantic HTML, labels, keyboard/focus behavior, announcements, basic accessibility verification | `references/accessibility.md` |
 | 2 — Medium | Tokens, variants, styling contracts, responsive layout, theming, installed UI primitives | `references/ui-systems.md` |
 | 2 — Medium | Loading/error/empty states, touch and keyboard input, reduced motion, browser APIs, compatibility | `references/browser-resilience.md` |
-| 2 — Medium | Feature folders, ownership, imports, colocating code, promoting shared code, scaling structure | `references/feature-architecture.md` |
+| 2 — Medium | Feature responsibilities, ownership, import direction, data integration, domain policy, shared-code promotion, scaling structure | `references/feature-architecture.md` |
+| 3 — Conditional | Comparing concrete feature-local, product-grouped, or product/domain-module layouts | `references/architecture-examples.md` |
 
 ## Completion Gate
 
 Before finishing:
 
 - the implementation follows the detected stack rather than an assumed one;
-- trust boundaries and public types agree with runtime behavior;
+- browser trust boundaries and frontend public contracts agree with runtime behavior;
 - the primary workflow has complete and operable user states;
 - ownership and placement follow repository evidence;
 - static checks and available browser verification have run;
