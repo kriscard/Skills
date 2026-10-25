@@ -1,75 +1,66 @@
-> **Read this when:** designing or auditing frontend TypeScript contracts, component
-> props, state models, generics, wrapper types, assertions, or compiler settings.
+> **Read this when:** designing or auditing frontend component props, native or
+> component wrappers, DOM event types, refs, children, or other browser-facing typed
+> surfaces.
 
 # Frontend TypeScript
 
-Use TypeScript to make invalid states hard to express and public contracts hard to
-misread. Inspect the installed TypeScript version and project configuration before
-applying version-sensitive syntax or compiler advice.
-
-## Public contracts
-
-- Name exported contracts and keep them smaller than their implementations.
-- Model mutually exclusive states with discriminated unions rather than optional
-  fields that allow impossible combinations.
-- Use exhaustive handling when every variant must be considered.
-- Derive wrapper props from the wrapped element or component so native behavior does
-  not drift from the wrapper API.
-- Expose a ref only when consumers need direct DOM access or an imperative contract.
-- Preserve repository conventions for `type` versus `interface`. Prefer unions and
-  mapped composition with `type`; prefer `interface` when declaration merging or an
-  explicitly extensible library surface is intended.
-
-```typescript
-type AsyncState<T> =
-  | { status: 'idle' }
-  | { status: 'pending' }
-  | { status: 'success'; data: T }
-  | { status: 'error'; error: Error };
-```
-
-## Trust and narrowing
-
-- Start unknown external values as `unknown`.
-- Narrow with control flow, predicates, or boundary schemas.
-- Treat `as` as a claim requiring evidence, not a conversion.
-- Prefer `satisfies` when a value should be checked without widening its inferred
-  shape.
-- Use `@ts-expect-error` only for an intentional, explained incompatibility; it should
-  fail once the incompatibility disappears.
-
-Load `runtime-validation.md` when the value crosses a runtime trust boundary.
+Use the `typescript` skill for language-wide modeling, narrowing, generics, assertions,
+compiler contracts, and generic runtime-boundary mechanics. This reference owns the
+frontend-specific contract between components, platform elements, and browser APIs.
 
 ## Component APIs
 
-- Keep required and optional behavior visible in the prop model.
-- Replace interacting boolean modes with explicit variants or a discriminated union.
-- Derive native wrapper props with `ComponentPropsWithoutRef`, `ComponentPropsWithRef`,
-  or `ComponentProps` according to whether the public API exposes a ref.
-- Keep event types specific to the element and behavior being wrapped.
-- Type `children` according to what the component actually accepts; do not add it to
-  components that cannot render arbitrary children.
+Keep required and optional behavior visible in the prop model. When modes change which
+props are legal, use the language-wide modeling guidance rather than a cluster of
+interacting booleans and optional fields.
 
-## Generics
+Type `children` according to what the component actually renders. Do not add arbitrary
+children to a component with a fixed composition. Keep callback and event types specific
+to the element and behavior being exposed.
 
-A generic should preserve a relationship the caller cares about. Remove generics that
-only rename `unknown`, require assertions in the implementation, or expose internal
-machinery. Prefer inference from arguments and discriminants over explicit generic
-arguments at every call site.
+## Native and component wrappers
 
-## Compiler configuration
+Derive wrapper props from the wrapped element or component so native capabilities do
+not drift from the public API. Use the React and framework helper that matches the
+installed version and whether the wrapper exposes a ref.
 
-Read the repository's `tsconfig` and framework-generated defaults first. Prefer strict
-checking and enable additional checks when the codebase can satisfy them without broad
-suppression. Evaluate options such as exact optional properties and unchecked indexed
-access against existing contracts before enabling them globally.
+A wrapper should deliberately resolve collisions between its own props and inherited
+props. Preserve native accessibility and interaction props unless the component's
+contract intentionally replaces them.
+
+```typescript
+import type { ComponentPropsWithoutRef } from 'react';
+
+type ButtonProps = ComponentPropsWithoutRef<'button'> & {
+  tone?: 'primary' | 'quiet';
+};
+
+export function Button({ tone = 'primary', type = 'button', ...props }: ButtonProps) {
+  return <button data-tone={tone} type={type} {...props} />;
+}
+```
+
+Expose a ref only when consumers need direct DOM access or a deliberate imperative
+contract. Match the installed React version and repository convention rather than
+copying a ref pattern from a different version.
+
+## Browser-facing values
+
+DOM lookup, events, and browser APIs can produce absent or platform-dependent values.
+Model those outcomes instead of asserting them away. Keep an assertion only when the
+browser or framework invariant is established locally and declarations cannot express
+it.
+
+Load `runtime-validation.md` for forms, URL/search input, storage, and `postMessage`.
+Use the `typescript` runtime-boundary reference for the generic parsing and evidence
+rules behind those browser-specific cases.
 
 ## Verification
 
-A TypeScript change is complete when:
+Frontend TypeScript work is complete when:
 
-- public states cannot represent known-invalid combinations;
-- unknown values are narrowed before use;
-- wrappers preserve the intended native or component contract;
-- assertions and suppressions are justified at their exact location;
-- the project's typecheck passes without broadening types to silence errors.
+- consumers can express every supported component mode and no known-invalid one;
+- wrappers preserve the intended native/component props and semantics;
+- event, child, and ref contracts match actual behavior;
+- nullable and platform-dependent browser results remain visible until handled;
+- the project's established typecheck and relevant component/browser checks pass.
