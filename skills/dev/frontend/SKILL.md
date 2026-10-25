@@ -51,8 +51,8 @@ surface are explicit.
    behavior exist where the workflow can reach them.
 5. **System coherence:** components use the project's tokens, variants, responsive
    rules, and installed primitives rather than parallel styling conventions.
-6. **Local ownership:** feature code stays with its owner; shared code is promoted only
-   after demonstrated reuse.
+6. **Responsible ownership:** place code with the responsibility and consumers it
+   serves; promote shared code only after demonstrated reuse.
 7. **Browser proof:** the target flow works at relevant widths and input modes without
    console errors, accidental overflow, inaccessible controls, or unsafe storage.
 
@@ -94,7 +94,8 @@ unverified behavior or residual risk is explicit.
 | 2 — High | Semantic HTML, labels, keyboard/focus behavior, announcements, basic accessibility verification | `references/accessibility.md` |
 | 2 — Medium | Tokens, variants, styling contracts, responsive layout, theming, installed UI primitives | `references/ui-systems.md` |
 | 2 — Medium | Loading/error/empty states, touch and keyboard input, reduced motion, browser APIs, compatibility | `references/browser-resilience.md` |
-| 2 — Medium | Feature folders, ownership, imports, colocating code, promoting shared code, scaling structure | `references/feature-architecture.md` |
+| 2 — Medium | Feature responsibilities, ownership, import direction, data integration, domain policy, shared-code promotion, scaling structure | `references/feature-architecture.md` |
+| 3 — Conditional | Comparing concrete feature-local, product-grouped, or product/domain-module layouts | `references/architecture-examples.md` |
 
 ## Completion Gate
 
