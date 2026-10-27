@@ -45,33 +45,50 @@ from that source with a synchronization owner rather than maintaining two indepe
 **Failure check:** assert direction and representative nodes, then validate a real value with Zod and
 with the downstream consumer. Do not stop at “conversion did not throw.”
 
-## Pattern: test the artifact as a product
+## Pattern: test the artifact with its consumer
+
+**Use when:** JSON Schema is delivered to another validator, generator, structured-output service, or
+documentation pipeline. Inspecting nodes catches direction/metadata mistakes; compiling and exercising
+the artifact with the selected consumer proves that accepted and rejected values behave as claimed.
 
 ```ts
 import assert from "node:assert/strict";
+import { Ajv2020 } from "ajv/dist/2020.js";
 
 const OrderWire = z
   .strictObject({
-    id: z.uuid(),
+    id: z.string().min(1),
     quantity: z.number().int().positive(),
   })
   .meta({ title: "Order payload" });
 
-const artifact = z.toJSONSchema(OrderWire, { io: "input" });
+const artifact = z.toJSONSchema(OrderWire, {
+  io: "input",
+  target: "draft-2020-12",
+});
 
-assert.equal(artifact.type, "object");
 assert.deepEqual(artifact.required, ["id", "quantity"]);
 assert.equal(artifact.additionalProperties, false);
-const quantityArtifact = artifact.properties?.quantity;
-assert.ok(quantityArtifact && typeof quantityArtifact === "object");
-if (quantityArtifact && typeof quantityArtifact === "object" && "type" in quantityArtifact) {
-  assert.equal(quantityArtifact.type, "integer");
-}
+
+const validateArtifact = new Ajv2020({ allErrors: true }).compile(artifact);
+assert.equal(validateArtifact({ id: "o1", quantity: 2 }), true);
+assert.equal(validateArtifact({ id: "o1", quantity: 0 }), false);
+assert.equal(validateArtifact({ id: "o1", quantity: 2, extra: true }), false);
+assert.ok(validateArtifact.errors);
 ```
 
-Also assert selected metadata and `$ref`/`$defs` behavior when those are part of the published
-contract. Snapshot only stable external structure, not incidental key ordering. Keep a runtime parse
-fixture beside the artifact test so documentation cannot drift from behavior unnoticed.
+**Observable result:** the external validator accepts the same representative input and rejects the
+same positive-integer and strict-object violations. Ajv is an example consumer, not a required Zod
+dependency; use the project's actual JSON Schema/OpenAPI/structured-output consumer in its fixture.
+
+**Alternative:** when a route/OpenAPI generator owns the final document, run that generator and inspect
+or validate the emitted request/response component rather than testing only the intermediate Zod JSON
+Schema. When an external specification is authoritative, test generated Zod schemas against accepted
+and malformed fixtures instead.
+
+**Failure check:** assert selected metadata and `$ref`/`$defs` behavior when published, then exercise at
+least one accepted and one invalid value through both Zod and the artifact consumer. Snapshot only
+stable external structure, not incidental key ordering.
 
 ## Handle unrepresentable schemas explicitly
 
@@ -102,3 +119,5 @@ artifact.
 - [JSON Schema direction, dialects, and unrepresentable types](https://zod.dev/json-schema)
 - [Codecs](https://zod.dev/codecs)
 - [Library and adapter compatibility](https://zod.dev/library-authors)
+- [Ajv JSON Schema validator](https://ajv.js.org/)
+- [Zod to OpenAPI](https://github.com/asteasolutions/zod-to-openapi)

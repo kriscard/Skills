@@ -21,36 +21,111 @@ Mini, not `zod/v4/core`; Core is the substrate for library authors implementing 
 **Failure check:** typecheck a schema created by the chosen entrypoint through every adapter boundary.
 Duplicate installations or an adapter compiled against another schema type often surface there first.
 
-## Capability-check APIs added within Zod 4
+## Classify current capabilities accurately
 
-Stable core practices—`parse`, `safeParse`, `z.input`, `z.output`, object policy, unions, refinements,
-and structured issues—should be written against the installed API. For later additions, check the
-exact declaration before offering syntax:
-
-- codecs and native `z.toJSONSchema()` arrived after the initial Zod 4 surface;
-- standalone `@zod/mini`, compilation, and boolean-only validation are newer capabilities;
-- `z.fromJSONSchema()` is explicitly experimental in current documentation;
-- adapter support can lag the Zod package even when the schema itself typechecks.
+Native `z.toJSONSchema()` is part of the Zod 4.0 surface. Treat it as a Zod 4 capability while still
+checking the selected entrypoint and downstream dialect. Capability-check APIs added later, including
+codecs, reverse JSON Schema conversion, standalone `@zod/mini`, compilation, and boolean-only
+validation. `z.fromJSONSchema()` is explicitly experimental in current documentation, and adapter
+support can lag the Zod package even when a schema typechecks.
 
 A capability check is concrete: search the resolved `.d.ts`, compile a minimal import, and execute one
 success and one failure case. Do not infer availability from a blog date or from `^4` in a manifest.
 Pin exact versions only in test receipts or a caveat tied to that version; keep general guidance about
 the stable behavior being chosen.
 
-## Treat an adapter as a second runtime contract
+## Pattern: consume the Standard Schema contract
 
-Use an adapter when it owns useful integration behavior, then verify:
+**Use when:** a library-facing adapter should accept Zod and other Standard Schema implementations
+without discarding transformed output, async validation, or structured issues. The spec's `validate`
+may return a result synchronously or through a Promise, so an async integration boundary can safely
+normalize both with `await`.
 
-1. accepted Zod entrypoints and peer ranges;
-2. sync versus async parsing;
-3. whether transforms produce the consumer's output or validation only reports validity;
-4. how issue paths become field/API errors;
-5. whether unknown-key and error customization options survive the adapter.
+```ts
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
-Standard Schema reduces library-specific coupling but does not promise identical integration
-semantics. For example, a form library may validate a Zod schema through Standard Schema yet keep raw
-form values until submission. Confirm the installed consumer's output and error contract rather than
-assuming a successful validation hands back `z.output`.
+export type AdapterResult<S extends StandardSchemaV1> =
+  | { success: true; data: StandardSchemaV1.InferOutput<S> }
+  | { success: false; issues: ReadonlyArray<StandardSchemaV1.Issue> };
+
+export async function validateStandard<S extends StandardSchemaV1>(
+  schema: S,
+  input: unknown,
+): Promise<AdapterResult<S>> {
+  const result = await schema["~standard"].validate(input);
+  if (result.issues) return { success: false, issues: result.issues };
+  return { success: true, data: result.value };
+}
+```
+
+With a transforming Zod schema, `data` is its output rather than the raw input:
+
+```ts
+import { z } from "zod";
+
+const Quantity = z.strictObject({
+  quantity: z.string().regex(/^[1-9]\d*$/).transform(Number),
+});
+
+type QuantityInput = StandardSchemaV1.InferInput<typeof Quantity>; // { quantity: string }
+type QuantityOutput = StandardSchemaV1.InferOutput<typeof Quantity>; // { quantity: number }
+
+const raw: QuantityInput = { quantity: "12" };
+const result = await validateStandard(Quantity, raw);
+if (result.success) {
+  const output: QuantityOutput = result.data;
+  const quantity: number = output.quantity;
+}
+```
+
+**Observable result:** the underlying Standard Schema call can return synchronously, while this async
+adapter normalizes both forms; async refinements/transforms are awaited, successful transforms retain
+their output type, and failures preserve the Standard Schema message/path objects. The portable issue
+contract does not promise Zod-specific
+issue codes. A consumer such as a form library may intentionally use only issues and keep raw values;
+verify that installed consumer rather than assuming it stores the returned output.
+
+**Alternative:** a Zod-specific adapter may call `safeParseAsync` and expose full `ZodIssue` metadata
+when vendor-neutral interoperability is not a requirement. If a caller must preserve a synchronous
+return instead of normalizing to Promise, return `schema["~standard"].validate(input)` unchanged and
+handle its result-or-Promise union explicitly.
+
+**Failure check:** execute one transformed success, one field failure with its path, and one async
+schema. Assert whether the actual integration consumes `value` or issues only.
+
+## Pattern: prove generated and adapter-owned boundaries
+
+Generated Zod schemas, database-derived schemas, middleware validators, RPC inputs, and generated
+clients share one Zod-facing seam: verify the schema produced for the exact operation, then exercise
+accepted and rejected runtime values before trusting generated TypeScript.
+
+```ts
+import assert from "node:assert/strict";
+import { z } from "zod";
+
+export function assertSchemaBoundary<S extends z.ZodType>(
+  schema: S,
+  accepted: unknown,
+  rejected: unknown,
+): z.output<S> {
+  const valid = schema.safeParse(accepted);
+  if (!valid.success) throw valid.error;
+
+  const invalid = schema.safeParse(rejected);
+  assert.equal(invalid.success, false);
+  return valid.data;
+}
+```
+
+Use an insert/update schema for writes and a select/response schema for reads; they are not
+interchangeable merely because one tool generated both. For a generated client, assign the transport
+result to `unknown` at the trust boundary and parse with the generated response schema before domain
+or Query-cache use. For middleware/RPC adapters, assert async behavior and the projected issue/status
+contract in addition to schema acceptance.
+
+**Failure check:** use a production-shaped accepted fixture and a deliberately malformed fixture that
+exercises missing, null, format, or extra-key drift. If both pass, the generated boundary is not
+enforcing the claimed contract.
 
 For React Hook Form resolvers that expose the current three-generic contract, transformed schemas can
 use:
@@ -62,13 +137,9 @@ useForm<z.input<typeof FormSchema>, unknown, z.output<typeof FormSchema>>({
 ```
 
 Check the installed overloads and `raw` option. Zod owns the two representations; React Hook Form owns
-default values, field registration, reset/dirty state, and submission lifecycle.
-
-For generated schemas or clients, first identify the authoritative contract and synchronization
-owner. A generator that emits TypeScript types or Query hooks does not necessarily perform runtime
-validation. Test a malformed fixture at the generated boundary before removing a hand-written parse.
-Native `z.toJSONSchema()` is the first option for publishing a Zod-owned JSON Schema; route/OpenAPI
-frameworks remain separate contracts with their own dialect and metadata rules.
+default values, field registration, reset/dirty state, and submission lifecycle. Native
+`z.toJSONSchema()` is the first option for publishing a Zod-owned JSON Schema; route/OpenAPI tools
+remain separate contracts with route, parameter, response, dialect, and metadata responsibilities.
 
 ## Official sources
 
@@ -76,5 +147,8 @@ frameworks remain separate contracts with their own dialect and metadata rules.
 - [Zod Mini](https://zod.dev/packages/mini)
 - [For library authors](https://zod.dev/library-authors)
 - [Standard Schema](https://standardschema.dev/)
+- [TanStack Form Standard Schema behavior](https://tanstack.com/form/latest/docs/framework/react/guides/validation)
 - [React Hook Form resolvers](https://github.com/react-hook-form/resolvers)
+- [Hono Zod validator](https://github.com/honojs/middleware/tree/main/packages/zod-validator)
+- [Drizzle Zod generated read/write schemas](https://orm.drizzle.team/docs/zod)
 - [Zod ecosystem](https://zod.dev/ecosystem)

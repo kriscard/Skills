@@ -1,19 +1,19 @@
 ---
 name: zod
 description: >-
-  Zod 4 schema implementation, review, and debugging. Use for runtime parsing,
-  coercion, transforms, codecs, object composition, refinements, structured
-  errors, metadata, JSON Schema, Zod Mini, or measured validation performance.
-  Inspect the installed Zod 4 entrypoint and capabilities before using
-  minor-sensitive APIs. Compose with typescript for domain modeling, frontend
-  for browser feedback, react-hook-form for form lifecycle, and query owners for
-  cache and retry behavior.
+  Zod 4 schema implementation, review, and debugging. Use when requested work
+  changes or diagnoses a Zod schema, parse/transform/error/artifact, Mini usage,
+  or a Zod adapter contract. Inspect the installed entrypoint before using
+  minor-sensitive APIs. Keep form reset/dirty lifecycle, authorization, and
+  unrelated adjacent parse failures with their owning concerns; existing Zod
+  usage alone does not start schema work.
 ---
 
 # Zod 4
 
-Make untrusted values earn a trusted type once. A schema owns the runtime boundary and its parsed
-value; neighboring libraries own transport, caching, UI state, and business workflows.
+Make untrusted values earn a trusted type once. Start this workflow only when the requested outcome
+changes, diagnoses, or verifies a Zod contract. Keep unrelated form lifecycle, authorization, UI, and
+transport failures with their owners even when Zod is nearby.
 
 ## Workflow
 
