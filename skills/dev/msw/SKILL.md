@@ -54,6 +54,7 @@ neighboring owner's configuration is being smuggled into the MSW change.
 | 1 — Required | Adding or changing Node/browser setup, lifecycle hooks, worker script handling, unhandled-request policy, or concurrent-test isolation | `references/setup-and-lifecycle.md` |
 | 1 — Required | Adding or changing HTTP handlers, matching, precedence, request parsing, `HttpResponse`, errors, streaming, passthrough, or bypass behavior | `references/http-handlers-and-responses.md` |
 | 1 — Required | Adding or changing GraphQL operation matching, variables, errors, links, or batched queries | `references/graphql.md` |
+| 1 — Required | Typing HTTP params/body/responses, GraphQL variables/results, or reusable handler/resolver factories | `references/typescript.md` |
 | 1 — Required | Requests are not intercepted, the wrong handler wins, an unhandled warning appears, or lifecycle evidence is needed | `references/debugging.md` |
 | 1 — Required | Upgrading MSW, mixed-major syntax exists, or Node/TypeScript/module requirements may change | `references/migration.md` |
 
