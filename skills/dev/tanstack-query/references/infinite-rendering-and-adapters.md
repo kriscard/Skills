@@ -50,11 +50,37 @@ types before translating examples:
 - React uses hooks and proxy-based tracked properties.
 - Vue exposes Vue-reactive APIs; preserve refs/reactive inputs according to installed conventions.
 - Solid wraps its own reactive primitives; do not impose React memoization advice.
-- Svelte v5 adapter functions use Svelte reactivity conventions; current v5 docs require wrapping
-  `create*` options in a function to preserve reactivity.
+- Svelte Query 6 targets Svelte 5 runes and can resolve Query Core 5; this is not core v6.
+  Wrap `create*` options in a reactive function, import from `@tanstack/svelte-query`, and consume
+  the returned reactive object directly. The older Svelte Query 5 store API is a different adapter
+  contract; use its installed declarations/migration guide, not current runes examples.
 - Angular uses `@tanstack/angular-query-experimental`; minor and patch releases may break API, so
   exact installed declarations outrank generic examples.
 - `@tanstack/query-core` has no framework provider or component rendering contract.
+
+For Svelte Query 6 / Svelte 5 runes, a component-local pattern is:
+
+```svelte
+<script lang="ts">
+  import { createQuery } from '@tanstack/svelte-query'
+
+  let { projectId }: { projectId: string } = $props()
+  const query = createQuery(() => ({
+    queryKey: ['projects', projectId],
+    queryFn: async ({ signal }) => {
+      const response = await fetch(`/api/projects/${projectId}`, { signal })
+      if (!response.ok) throw new Error('Project request failed')
+      return response.json()
+    },
+  }))
+</script>
+
+<p>{query.status}</p>
+```
+
+A real adapter provider/client must surround this component. Read inputs inside the options
+function so key changes remain reactive; do not translate this to React hooks or `$query` stores.
+Use the existing API decoder for typed response data in application code.
 
 When framework docs disagree with copied React examples, use the adapter docs and installed types.
 

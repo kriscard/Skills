@@ -5,8 +5,9 @@ description: >-
   @tanstack query package and adapter. Use for query keys/options, cache freshness
   and garbage collection, invalidation, cancellation, mutations and optimistic
   rollback, mutation scopes, infinite queries, tracked properties, adapter-specific
-  APIs, or v4-to-v5 migration. Detect the installed package and version before
-  giving syntax. Compose with react and test when those branches apply. Do not use
+  APIs, SSR/hydration, framework cache integration, or v4-to-v5 migration. Detect
+  adapter and resolved core versions before giving syntax. Compose with react only
+  for React-owned work and test when tests/evidence are requested or affected. Do not use
   for general client state, generic fetch code, or MSW tests without TanStack Query
   behavior.
 ---
@@ -26,13 +27,16 @@ code. Record:
 - the exact package and version, such as `@tanstack/react-query`, `@tanstack/vue-query`,
   `@tanstack/solid-query`, `@tanstack/svelte-query`, `@tanstack/angular-query-experimental`, or
   `@tanstack/query-core`;
-- the framework/runtime version and SSR, hydration, persistence, or offline integrations in use;
+- the separately resolved `@tanstack/query-core` version, framework/runtime version, and SSR,
+  hydration, persistence, or offline integrations in use;
 - whether the task targets current code, a v4-to-v5 migration, or a newer installed major;
 - nearby key, option, client-default, error, and test conventions.
 
-Use the installed types as the compatibility boundary. This skill's baseline is v5: for v4 load the
-migration reference; for a newer major, verify current official docs and declarations rather than
-projecting v5 syntax forward. Angular's adapter is experimental, so pin advice to its exact patch.
+Use installed types as the compatibility boundary. The core baseline is v5, not a promise that
+all v5 minors expose current APIs. Adapter and core majors need not match: Svelte Query 6 uses
+core 5. For older core minors or migration load the version matrix; for a newer adapter major,
+verify its own docs and declarations separately. Angular's adapter is experimental, so pin advice
+to its exact patch.
 
 **Complete when:** package, adapter, exact version, runtime, and applicable compatibility branch are
 known.
@@ -41,7 +45,8 @@ known.
 
 Use it for remotely owned asynchronous state that can become stale. Keep ephemeral UI state,
 editable client drafts, reducer workflows, and form state with their existing owners. Do not
-introduce TanStack Query merely because code performs `fetch` or a test uses MSW.
+introduce TanStack Query merely because code performs `fetch` or a test uses MSW, or when an
+existing framework data facility already satisfies the required behavior.
 
 **Complete when:** every changed value is classified as server cache, local UI state, form state,
 URL state, or another owner.
@@ -66,22 +71,24 @@ refetch behavior are intentional.
 | 1 — High | Query keys/options, `staleTime`, `gcTime`, invalidation, filters, disabled queries, cancellation, query functions | `references/queries-and-cache.md` |
 | 1 — High | Mutations, mutation responses, invalidation timing, optimistic UI/cache writes, rollback, concurrent writes, mutation scopes | `references/mutations-and-optimism.md` |
 | 1 — High | Infinite queries, pagination cursors, `maxPages`, tracked properties, `select`, structural sharing, non-React adapters | `references/infinite-rendering-and-adapters.md` |
+| 1 — High | SSR, hydration, pending dehydration, Next.js cache layers, RSC/client ownership, Router or Start integration | `references/ssr-hydration-and-frameworks.md` |
 | 2 — High | v4-to-v5 migration, broken or surprising behavior, cache review, performance review, version uncertainty | `references/migration-debug-and-review.md` |
-| 2 — Medium | Tests requested or affected, QueryClient isolation, retries/timers, HTTP interception, MSW | `references/testing.md` |
+| 2 — Medium | Tests or executable evidence requested or affected for TanStack Query behavior | `references/testing.md` |
 
 **Complete when:** every detected branch has loaded its reference and adapter syntax matches the
 installed declarations.
 
 ### 5. Compose without duplicating owners
 
-- Load `react` for component ownership, Effects, Suspense boundaries, transitions, and rendering
-  behavior. TanStack Query owns server-cache semantics, not general React architecture.
-- Load `test` when tests or executable evidence are requested or observable behavior changes. Use
+- Load `react` only for React-owned component ownership, Effects, Suspense boundaries, transitions,
+  and rendering behavior; non-React adapters do not trigger this companion. TanStack Query owns server-cache semantics, not general React architecture.
+- Load `test` when tests or executable evidence are requested or affected. Use
   the repository's installed runner guidance as routed by that skill.
 - When MSW is installed, use it as the HTTP boundary for relevant tests; do not turn a general MSW
   request into a TanStack Query task.
-- Keep transport and response validation in the existing API boundary. Query functions fetch and
-  return/throw; user-visible side effects belong to event, mutation, or rendering owners.
+- Keep transport and existing runtime response validation at the API boundary; do not mandate Zod
+  or another schema library. Query functions return/throw; user-visible side effects belong to
+  event, mutation, or rendering owners. Feature-folder placement belongs to `frontend`.
 
 **Complete when:** each concern has one owner and no companion skill's guidance is restated as a
 parallel policy.

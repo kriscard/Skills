@@ -27,6 +27,34 @@ Live documentation can include forward-looking changes. Installed v5 declaration
 v5 release notes decide whether an API exists; do not migrate beyond the installed major as a
 side-effect.
 
+## Core minor-version gate
+
+Track adapter and resolved core versions separately. These are introduction floors, not a license
+to ignore installed declarations or adapter exports:
+
+| Core floor | Capability |
+| --- | --- |
+| 5.25.0 | `skipToken` |
+| 5.31.0 | Mutation `scope.id` |
+| 5.40.0 | Dehydrate pending queries, including their promises, when explicitly selected |
+| 5.79.0 | `staleTime: "static"` |
+| 5.102.0 | `queryClient.query()` / `infiniteQuery()`; older fetch/prefetch/ensure methods deprecated |
+
+Verify the resolved package's declarations and the matching release/tag before using a capability
+in an older project. `/query/v5/` docs redirect to latest and are not frozen minor-version evidence.
+Current docs may describe Svelte adapter 6 while core remains 5. Existing older-v5 imperative APIs
+remain appropriate on installations that do not export the new methods; an upgrade is separate
+scope, not a prerequisite imposed by this skill.
+
+## ESLint configuration is versioned policy
+
+Inspect the installed plugin config. Current `recommended` / `flat/recommended` includes
+`exhaustive-deps`, `no-rest-destructuring` (warning), `stable-query-client`, `no-unstable-deps`,
+`infinite-query-property-order`, `no-void-query-fn`, and `mutation-property-order`.
+`recommendedStrict` / `flat/recommended-strict` adds `prefer-query-options`. Older plugin versions
+may differ. Honor the project's selected preset, but do not promote the strict rule into a
+universal requirement for options factories, custom hooks, or feature architecture.
+
 ## Diagnosis loop
 
 Reproduce with the smallest public symptom, inspect Query Devtools/cache state when available, and
@@ -67,9 +95,16 @@ Report concrete impact, not stylistic preference:
 - tests sharing clients, relying on retries/timers, or mocking away the behavior under review.
 
 Do not flag the absence of a key factory, universal `onSettled` invalidation, mutation serialization,
-manual notification lists, or selector memoization; none is a general requirement.
+manual notification lists, selector memoization, custom-hook wrappers, optimistic cache writes, or
+a schema library; none is a general requirement. Local options and UI-only optimism can be the
+smallest correct design.
 
 ## Sources
+
+- [Core release history](https://github.com/TanStack/query/releases) — match the package tag/minor
+- [Published core declarations/source](https://www.npmjs.com/package/@tanstack/query-core?activeTab=code)
+- [ESLint plugin configs](https://tanstack.com/query/latest/docs/eslint/eslint-plugin-query)
+- [Svelte v5-to-v6 migration](https://tanstack.com/query/latest/docs/framework/svelte/migrate-from-v5-to-v6)
 
 - [Migrating to v5](https://tanstack.com/query/v5/docs/framework/react/guides/migrating-to-v5)
 - [Important defaults](https://tanstack.com/query/v5/docs/framework/react/guides/important-defaults)

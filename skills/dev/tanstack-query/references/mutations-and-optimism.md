@@ -49,13 +49,31 @@ Mutations run in parallel by default. Keep that behavior for independent writes.
 name the invariant that concurrent execution violates—for example, ordered edits to one document
 revision or commands that the server must process sequentially.
 
-In v5, mutations with the same `scope.id` run serially. Scope the narrowest conflicting resource,
+In core 5.31+, mutations with the same `scope.id` run serially. Scope the narrowest conflicting resource,
 not the entire mutation type or application. Serialization does not replace server idempotency,
 optimistic concurrency control, revisions, or conflict responses.
 
 For concurrent optimistic cache writes, test overlap and out-of-order completion. A single snapshot
 can erase another pending mutation; derive updates from current cache state and make rollback remove
 or restore only the failed operation's contribution when overlap is possible.
+
+There is also an invalidation race: mutation A settles while related optimistic mutation B remains
+pending; A's refetch can overwrite B's preview. When that overlap exists, guard the chosen
+reconciliation callback with a narrowly scoped pending count:
+
+```ts
+const mutationKey = ["items", itemId, "edit"]
+// In the reconciliation callback selected from the write/error contract:
+if (queryClient.isMutating({ mutationKey, exact: true }) === 1) {
+  return queryClient.invalidateQueries({ queryKey: ["items", itemId], exact: true })
+}
+```
+
+The current mutation is still counted during its callbacks, hence `=== 1`. All writes that can
+conflict must share the matching key; widen only to the actual conflict family when a list is
+shared. An unfiltered global count suppresses unrelated reconciliation. This conditional guard
+neither mandates `onSettled` nor solves overlapping rollback by itself. Test the actual overlap;
+keep ordinary callbacks and independent parallel writes simple.
 
 ## Sources
 

@@ -32,8 +32,11 @@ Choose policy from the data's change rate and UX:
 - `staleTime` is the period during which an observer treats cached data as fresh. The v5 default is
   `0`, so mount, focus, or reconnect can refetch stale active data.
 - `staleTime: Infinity` keeps data fresh until manual invalidation.
-- `staleTime: "static"` is stricter in v5 and resists manual invalidation-driven refetch; reserve it
-  for data that cannot change during the application lifetime.
+- `staleTime: "static"` (core 5.79+) blocks invalidation-driven refetch and observer policies set to
+  `"always"` (`refetchOnMount`, `refetchOnWindowFocus`, `refetchOnReconnect`). `Infinity` still
+  permits invalidation and those `"always"` policies. Static does not block explicit observer
+  `refetch()` or polling; client-wide `refetchQueries` skips static queries. Reserve static for
+  data whose automatic refresh should be suppressed, not as a global network lock.
 - `gcTime` begins only after the last observer leaves. It controls inactive cache retention, not
   freshness; the browser default is five minutes and SSR defaults can differ.
 - Polling is independent of `staleTime`.
@@ -57,7 +60,31 @@ Use the least broad operation that restores truth:
 Disabled queries (`enabled: false` or adapter equivalent) opt out of automatic refetching and ignore
 normal invalidation/refetch triggers. Use dependency-driven keys and conditional enablement for
 lazy/dependent reads instead of building a permanently imperative query API. In TypeScript,
-`skipToken` can provide typesafe disabling, but its query cannot be manually `refetch`ed.
+`skipToken` (core 5.25+) can provide typesafe disabling, but its query cannot be manually
+`refetch`ed: there is no query function to execute. Use `enabled: false` with a real function when
+manual refetch is required.
+
+## Imperative reads and prefetching
+
+On core 5.102+, prefer `queryClient.query(options)` / `infiniteQuery(options)` for new imperative
+reads supported by the adapter. They return data, respect freshness, and reject on failure. Handle
+rejections even for fire-and-forget warming:
+
+```ts
+void queryClient.query(projectOptions(projectId, filters)).catch(reportPrefetchError)
+```
+
+`void` alone does not consume a rejection. Explicitly swallow only if ignored warming failures are
+intentional (`.catch(() => {})`); awaited reads should propagate or handle errors with their owner.
+Earlier v5 uses `fetchQuery`, `prefetchQuery`, `ensureQueryData` and their infinite equivalents;
+prefetch methods swallow errors, unlike fetch methods. The current methods deprecate those older
+APIs, but do not rewrite an older install to unavailable methods. Preserve differing ensure/fetch
+semantics rather than mechanically renaming calls. See the version matrix before choosing syntax.
+
+Use `queryOptions` for real sharing between hooks, loaders, and imperative reads; local inline
+options are fine with one caller unless the project's lint configuration requires otherwise.
+Prefetch predictable navigation where the router owns that lifecycle; leave framework integration
+to the SSR/framework reference rather than triggering reads from arbitrary component Effects.
 
 ## Cancellation
 
@@ -79,7 +106,9 @@ its prior state. Manual cancellation uses filters such as
 
 Cancellation is part of optimistic-write correctness: await cancellation for the affected reads
 before snapshotting and writing optimistic data, or a late response can overwrite the optimistic
-state. Verify special constraints before promising cancellation for suspense hooks.
+state. React's `useSuspenseQuery`, `useSuspenseQueries`, and `useSuspenseInfiniteQuery` do not
+support cancellation. Do not promise abort-on-unmount or the same cancellation guarantees for
+those hooks; choose a non-Suspense query if that contract is required.
 
 ## Sources
 

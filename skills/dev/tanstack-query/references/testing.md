@@ -1,4 +1,4 @@
-> **Read this when:** tests are requested or affected, or the change involves QueryClient isolation, retries/timers, cancellation, optimistic updates, infinite queries, HTTP interception, or MSW.
+> **Read this when:** tests or executable evidence are requested or affected for TanStack Query behavior.
 
 # Testing TanStack Query behavior
 
@@ -22,9 +22,11 @@ the installed runner and repository conventions.
 ## HTTP and MSW boundary
 
 When MSW is already installed, prefer handlers at the HTTP boundary so the real query function,
-AbortSignal, retries, cache, and UI state remain exercised. Reset handlers and request state between
-tests. Assert the user-visible result and, where material, the request identity—not implementation
-calls inside TanStack Query.
+AbortSignal, retries, cache, and UI state remain exercised. Assert consumer-visible outcomes, not
+Query internals or a mandatory list of HTTP calls. Request assertions are justified only when the
+request itself is the contract (for example, a required parameter or abort behavior), not merely
+because MSW intercepted it. Follow MSW's own setup/reset guidance and the existing harness rather
+than duplicating its mechanics here.
 
 A generic API or MSW test does not need this skill unless TanStack Query behavior is part of the
 contract. Conversely, a cache test need not mandate MSW when a smaller established transport seam
@@ -39,7 +41,8 @@ Cover only branches changed by the task:
 - an enabled query responds to invalidation, while a deliberately disabled query does not;
 - cancellation reaches the request signal and stale work cannot overwrite newer/optimistic data;
 - successful mutations update or invalidate the intended entries and failed optimistic writes roll
-  back without losing unrelated concurrent changes;
+  back without losing unrelated concurrent changes; overlapping settlements do not refetch over a
+  still-pending related optimistic write;
 - scoped mutations serialize only the matching scope; independent scopes remain concurrent;
 - infinite queries pass the expected page parameter, stop on `null`/`undefined`, preserve
   `pages`/`pageParams`, and prevent or intentionally handle overlapping fetches;
