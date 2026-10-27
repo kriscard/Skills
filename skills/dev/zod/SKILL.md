@@ -1,11 +1,12 @@
 ---
 name: zod
 description: >-
-  Version-aware Zod implementation, migration, review, and debugging. Use when a
-  codebase already uses Zod or the task explicitly asks for Zod schemas, parsing,
-  coercion, transforms, refinements, error formatting, object composition, Zod
-  Mini, codecs, discriminated unions, enum records, measured compile/validate work,
-  or a Zod v3-to-v4 migration. Detect the effective v3/v4 import contract
+  Version-aware Zod implementation, migration, review, and debugging. Use for
+  requested work on Zod schemas, parsing, coercion, transforms, refinements, error
+  formatting, object composition, Zod Mini, codecs, discriminated unions, enum
+  records, measured compile/validate work, or a Zod v3-to-v4 migration. Existing
+  Zod usage or a nearby parse failure alone does not make unrelated UI or
+  authorization work a schema task. Detect the effective v3/v4 import contract
   before giving syntax. Compose with typescript for language-wide modeling and
   trust boundaries, frontend for browser validation and feedback, and
   react-hook-form for form ownership and lifecycle. Do not invoke for a generic
@@ -21,6 +22,10 @@ lifecycle.
 ## Workflow
 
 ### 1. Detect the effective Zod contract
+
+First identify the Zod contract the requested work changes, diagnoses, or verifies. If only a
+neighboring concern is in scope, keep that work with its owner; report a separate schema issue
+without starting an unrequested diagnosis.
 
 Inspect manifests, lockfiles, package-manager output, Zod imports, TypeScript configuration, and
 `node_modules/zod/package.json` when available. Record both the resolved package version and the
