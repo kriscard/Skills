@@ -77,7 +77,7 @@ conventions are known.
 | 1 — High | Runner config, projects, dependencies, fixtures, setup/teardown, authentication, or storage state | `references/runner-and-state.md` |
 | 1 — High | Locators, assertions, actions, navigation readiness, timeouts, flaky waits, or helper/page-object design | `references/interaction-and-readiness.md` |
 | 1 — High | Request observation, route interception, response mocking, HAR, service workers, contexts, or shared-state failures | `references/network-and-isolation.md` |
-| 1 — High | Trace Viewer, screenshots, video, UI Mode, Inspector, CI artifacts, workers, parallelism, or sharding | `references/diagnostics-and-scale.md` |
+| 1 — High | Trace Viewer, screenshots, video, UI Mode, Inspector, CI artifacts, retries, flaky-test policy, workers, parallelism, or sharding | `references/diagnostics-and-scale.md` |
 | 1 — High | Upgrade, deprecated or removed API, browser/package mismatch, unexplained runner failure, or version-sensitive review | `references/migrations-and-failures.md` |
 
 **Complete when:** every Playwright-specific decision is covered by a loaded branch and

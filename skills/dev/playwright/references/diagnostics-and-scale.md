@@ -1,4 +1,4 @@
-> **Read this when:** Debugging Playwright locally or in CI, configuring traces/screenshots/video, or changing workers, parallelism, sharding, and report merging.
+> **Read this when:** Debugging Playwright locally or in CI, configuring traces/screenshots/video, reviewing retries or flaky-test policy, or changing workers, parallelism, sharding, and report merging.
 
 # Diagnostics and scale
 
