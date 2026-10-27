@@ -3,9 +3,9 @@ name: tanstack-query
 description: >-
   Implement, debug, migrate, or review TanStack Query code using the installed
   @tanstack query package and adapter. Use for query keys/options, cache freshness
-  and garbage collection, invalidation, cancellation, mutations and optimistic
-  rollback, mutation scopes, infinite queries, tracked properties, adapter-specific
-  APIs, SSR/hydration, framework cache integration, or v4-to-v5 migration. Detect
+  and garbage collection, invalidation, cancellation, retries, network modes, mutations
+  and optimistic rollback, mutation scopes, offline persistence, infinite queries, tracked
+  properties, adapter-specific APIs, SSR/hydration, framework cache integration, or v4-to-v5 migration. Detect
   adapter and resolved core versions before giving syntax. Compose with react only
   for React-owned work and test when tests/evidence are requested or affected. Do not use
   for general client state, generic fetch code, or MSW tests without TanStack Query
@@ -68,8 +68,8 @@ refetch behavior are intentional.
 
 | Priority | Load when | Reference |
 | --- | --- | --- |
-| 1 — High | Query keys/options, `staleTime`, `gcTime`, invalidation, filters, disabled queries, cancellation, query functions | `references/queries-and-cache.md` |
-| 1 — High | Mutations, mutation responses, invalidation timing, optimistic UI/cache writes, rollback, concurrent writes, mutation scopes | `references/mutations-and-optimism.md` |
+| 1 — High | Query keys/options, `staleTime`, `gcTime`, retries, network modes, invalidation, filters, disabled queries, cancellation, query errors or React Suspense queries | `references/queries-and-cache.md` |
+| 1 — High | Mutations, mutation responses, callback/promise behavior, invalidation timing, optimistic UI/cache writes, rollback, concurrent writes, mutation scopes, paused/offline persistence | `references/mutations-and-optimism.md` |
 | 1 — High | Infinite queries, pagination cursors, `maxPages`, tracked properties, `select`, structural sharing, non-React adapters | `references/infinite-rendering-and-adapters.md` |
 | 1 — High | SSR, hydration, pending dehydration, Next.js cache layers, RSC/client ownership, Router or Start integration | `references/ssr-hydration-and-frameworks.md` |
 | 2 — High | v4-to-v5 migration, broken or surprising behavior, cache review, performance review, version uncertainty | `references/migration-debug-and-review.md` |

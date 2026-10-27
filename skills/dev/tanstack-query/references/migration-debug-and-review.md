@@ -46,6 +46,18 @@ Current docs may describe Svelte adapter 6 while core remains 5. Existing older-
 remain appropriate on installations that do not export the new methods; an upgrade is separate
 scope, not a prerequisite imposed by this skill.
 
+## TypeScript and package patches are compatibility inputs
+
+Inspect the adapter's current TypeScript support window and exact patch, not only its major. Query
+type improvements can ship in patch releases, so pinning an exact package patch and running the
+project typecheck during upgrades is safer than assuming type-level semver stability.
+
+Prefer inference from typed query/mutation functions and installed helpers. Project-wide
+`Register` augmentation for an `unknown` default error, structured keys, or typed metadata is an
+optional policy when the project genuinely needs it; do not require global key schemas or call-site
+generics. Gate each registered field on the installed declarations because early v5 minors do not
+all expose the current surface.
+
 ## ESLint configuration is versioned policy
 
 Inspect the installed plugin config. Current `recommended` / `flat/recommended` includes
@@ -103,6 +115,7 @@ smallest correct design.
 
 - [Core release history](https://github.com/TanStack/query/releases) — match the package tag/minor
 - [Published core declarations/source](https://www.npmjs.com/package/@tanstack/query-core?activeTab=code)
+- [TypeScript guidance](https://tanstack.com/query/latest/docs/framework/react/typescript)
 - [ESLint plugin configs](https://tanstack.com/query/latest/docs/eslint/eslint-plugin-query)
 - [Svelte v5-to-v6 migration](https://tanstack.com/query/latest/docs/framework/svelte/migrate-from-v5-to-v6)
 

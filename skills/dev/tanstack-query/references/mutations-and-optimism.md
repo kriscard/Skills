@@ -24,6 +24,22 @@ only when both outcomes genuinely require reconciliation, such as an optimistic 
 error path must refetch after rollback or a server contract with uncertain commit state. It is an
 option, not a universal rule.
 
+## Invocation and callback ownership
+
+A promise returned from `onMutate`, `onSuccess`, `onError`, or `onSettled` is awaited before the next
+lifecycle callback; returning required invalidation keeps the mutation pending through that work.
+Mutation retries default to `0`, so add retries only when the write contract is safe to repeat.
+
+In React, hook-level mutation callbacks run for every invocation. Per-call callbacks passed to
+`mutate` belong to that observer: with consecutive calls, only the latest call's handlers run, and
+they do not run after the component unmounts. Keep required cache reconciliation in hook-level or
+cache-level ownership; use per-call handlers for still-mounted UI effects such as navigation.
+
+Use `mutate` for fire-and-observe flows where mutation state/callbacks own errors. Use `mutateAsync`
+when the caller must compose or await that exact invocation, and catch its rejected promise.
+Independent batches may need `Promise.allSettled` when every outcome matters; this does not imply
+serializing them.
+
 ## Choose the smallest optimistic surface
 
 Prefer UI-only optimism through pending mutation variables when one view owns the preview. It avoids
@@ -75,6 +91,21 @@ shared. An unfiltered global count suppresses unrelated reconciliation. This con
 neither mandates `onSettled` nor solves overlapping rollback by itself. Test the actual overlap;
 keep ordinary callbacks and independent parallel writes simple.
 
+## Paused and persisted mutations
+
+Use persistence only when offline/restart continuity is a real requirement. With the default
+`networkMode: "online"`, an offline mutation can remain pending and paused, then continue after
+reconnect. Persisted mutation state does not contain its function. Before hydration, register a
+matching default `mutationFn` with `setMutationDefaults`; otherwise `resumePausedMutations()` after a
+reload fails with `No mutationFn found`.
+
+Restore through the installed adapter's persistence integration so queries do not race restoration
+and subscriptions are cleaned up. Align persisted-cache `maxAge` with query `gcTime`, version or bust
+incompatible stored data, and resume paused mutations only after restore succeeds. Persistence
+packages and provider APIs are adapter-specific: verify their versions separately from Query Core.
+Never persist user-sensitive cache data without the application's identity and storage-security
+policy.
+
 ## Sources
 
 - [Mutations](https://tanstack.com/query/v5/docs/framework/react/guides/mutations)
@@ -82,3 +113,5 @@ keep ordinary callbacks and independent parallel writes simple.
 - [Updates from mutation responses](https://tanstack.com/query/v5/docs/framework/react/guides/updates-from-mutation-responses)
 - [Optimistic updates](https://tanstack.com/query/v5/docs/framework/react/guides/optimistic-updates)
 - [`useMutation` reference](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation)
+- [Persisting offline mutations](https://tanstack.com/query/latest/docs/framework/react/guides/mutations#persist-mutations)
+- [`persistQueryClient`](https://tanstack.com/query/latest/docs/framework/react/plugins/persistQueryClient)

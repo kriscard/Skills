@@ -10,13 +10,21 @@ is required. In the browser, retain a stable client rather than recreating it du
 initial Suspense retries; use the adapter's supported provider/client pattern.
 
 Use identical keys and compatible query functions on the server and client. Include tenant/user
-scope and every result-changing input, and keep infinite and normal data shapes separate. Dehydrate
-only data safe to send to that user; serialization, error redaction, and non-JSON values require the
-framework's supported transfer mechanism. Clear identity-bound browser data on account changes.
+scope and every result-changing input, and keep infinite and normal data shapes separate. By default,
+`dehydrate` includes successful queries and paused mutations, not failed queries. Decide whether a
+critical failed read should fail the server response, degrade to a client retry, or be intentionally
+included with a version-supported predicate.
+
+Dehydrate only data safe to send to that user. Use the framework's XSS-safe transfer path; raw
+`JSON.stringify` embedded in custom HTML is not safe escaping. For non-JSON data, pair the installed
+`dehydrate.serializeData` and `hydrate.deserializeData` options or the framework equivalent. Keep
+error redaction framework-correct and clear identity-bound browser data on account changes.
 
 Choose a deliberate client `staleTime` to avoid immediate unwanted refetch after hydration. SSR
-cache retention is not freshness. Verify initial HTML, hydrated data, subsequent client refetch,
-and request isolation rather than treating a successful typecheck as hydration proof.
+cache retention is not freshness. Server `gcTime` defaults to `Infinity`; if an application overrides
+it, clear request caches when ownership ends and avoid `gcTime: 0`, which can remove data before
+hydration finishes. Verify initial HTML, hydrated data, subsequent client refetch, and request
+isolation rather than treating a successful typecheck as hydration proof.
 
 ## Awaited and pending dehydration
 
@@ -45,6 +53,8 @@ This config is a server request-local fragment, not a singleton recipe. Do not a
 or assume plain JSON serialization can carry promises. Start supported non-awaited reads before
 dehydration and handle rejected fire-and-forget promises explicitly. Keep framework error handling
 and error redaction version-correct; do not copy a framework-specific redaction override elsewhere.
+When a persistence adapter shares this client, configure storage dehydration to keep its default
+successful-query predicate so pending streamed promises are not written to storage.
 
 ## Next.js and React Server Components
 
@@ -70,13 +80,23 @@ that the new method is absent nor a reason to rewrite an older install to `query
 ## TanStack Router and Start
 
 Use the installed Router/Start Query integration as the owner of route preloading, request-local
-server clients, streaming, hydration, and router context wiring. Share query identity/options
-between loaders and consumers where there is real reuse. Prefetch predictable navigation in that
-router lifecycle rather than inventing duplicate component-Effect fetching or a second cache.
+server clients, streaming, hydration, and router context wiring. The router and adapter provider
+must use the same `QueryClient`; do not independently hydrate a second cache. Share query
+identity/options between loaders and consumers where there is real reuse. If search values change
+the result, keep validation, `loaderDeps`, query-key inputs, loader options, and component options in
+agreement. Prefer the installed integration's documented sharing mechanism over an article's
+undocumented route API.
 
-Verify integration package versions and loader error/await semantics; do not mechanically copy
-React Query imperative method names from a mismatched framework example. Keep feature organization
-with `frontend` and application/framework owners rather than imposing Query-specific folders.
+When Query owns loader-fetched data, the consuming component still needs a Query observer such as
+`useQuery` or `useSuspenseQuery`; `useLoaderData` alone does not make the query active for normal
+refetch and retention behavior. Prefetch predictable navigation in the router lifecycle rather than
+inventing duplicate component-Effect fetching or a second cache.
+
+Query invalidation and `router.invalidate()` target different owners. Use both only when a write
+changes both Query-owned resource data and Router-owned loader/context data. Verify integration
+package versions and loader error/await semantics; do not mechanically copy React Query imperative
+method names from a mismatched framework example. Keep feature organization with `frontend` and
+application/framework owners rather than imposing Query-specific folders.
 
 ## Sources
 

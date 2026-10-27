@@ -39,10 +39,17 @@ Cover only branches changed by the task:
 - equal keys deduplicate/share data; changed key inputs produce distinct requests/cache entries;
 - fresh data avoids an unwanted refetch while invalidation marks the intended family stale;
 - an enabled query responds to invalidation, while a deliberately disabled query does not;
+- an offline `online` query/mutation pauses without calling transport, exposes paused fetch state,
+  and continues on reconnect; `always` / `offlineFirst` behavior is tested only when configured;
 - cancellation reaches the request signal and stale work cannot overwrite newer/optimistic data;
 - successful mutations update or invalidate the intended entries and failed optimistic writes roll
   back without losing unrelated concurrent changes; overlapping settlements do not refetch over a
   still-pending related optimistic write;
+- hook-level mutation callbacks cover every invocation, while adapter per-call callbacks and
+  `mutateAsync` composition are tested for consecutive/out-of-order calls when UI behavior depends
+  on them;
+- persisted paused mutations restore with a matching default mutation function and do not race
+  initial query restoration when persistence is part of the task;
 - scoped mutations serialize only the matching scope; independent scopes remain concurrent;
 - infinite queries pass the expected page parameter, stop on `null`/`undefined`, preserve
   `pages`/`pageParams`, and prevent or intentionally handle overlapping fetches;

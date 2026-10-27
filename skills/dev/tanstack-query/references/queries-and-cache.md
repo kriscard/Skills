@@ -44,6 +44,30 @@ Choose policy from the data's change rate and UX:
 Tune these from evidence. Increasing `gcTime` does not stop active refetches, and increasing
 `staleTime` does not guarantee memory retention after inactivity.
 
+## Retries, connectivity, and errors
+
+Observed browser queries retry three times by default with exponential backoff; observed server
+queries default to no retries. Imperative client methods can have different retry defaults, so check
+the selected method. During observer retries, the latest failure is exposed as `failureReason`;
+`error` becomes final only when retries are exhausted. Choose retry counts or predicates from the
+transport error and operation contract. Do not copy `retry: false` from a deterministic test harness
+into production policy.
+
+The default `networkMode: "online"` pauses a query or mutation that cannot start offline. A query can
+therefore be `status: "pending"` while `fetchStatus: "paused"`; do not render that as an in-flight
+request or terminal error. `"always"` ignores connectivity and suits work that does not require a
+network. `"offlineFirst"` runs once so an HTTP/service-worker cache can answer, then pauses retries
+after a miss. Select these modes only for an actual transport/offline contract, and test reconnect
+continuation when that branch matters.
+
+For ordinary React queries, `throwOnError` can route selected failures to the nearest error boundary.
+React Suspense queries throw only when there is no cached data to render by default; a failed
+background refetch can keep rendering stale data. If every settled background failure must reach the
+boundary, explicitly throw the returned error after fetching stops. Retry UI must reset Query with
+`QueryErrorResetBoundary` or `useQueryErrorResetBoundary`, not only reset the React boundary.
+Suspense queries cannot use conditional `enabled` or `placeholderData`; keep this guidance
+React-owned and load `react` for boundary/transition composition.
+
 ## Invalidation and cache writes
 
 Use the least broad operation that restores truth:
@@ -89,6 +113,10 @@ Use `queryOptions` for real sharing between hooks, loaders, and imperative reads
 options are fine with one caller unless the project's lint configuration requires otherwise.
 Prefetch predictable navigation where the router owns that lifecycle; leave framework integration
 to the SSR/framework reference rather than triggering reads from arbitrary component Effects.
+Ordinary independent React queries run in parallel, but multiple `useSuspenseQuery` calls in one
+component suspend serially. Where that waterfall matters, start them in the route lifecycle or use
+the installed adapter's parallel Suspense API such as React's `useSuspenseQueries`; do not flatten
+every waterfall without measured impact.
 
 ## Cancellation
 
@@ -120,6 +148,9 @@ those hooks; choose a non-Suspense query if that contract is required.
 - [Query options](https://tanstack.com/query/v5/docs/framework/react/guides/query-options)
 - [Query functions](https://tanstack.com/query/v5/docs/framework/react/guides/query-functions)
 - [Important defaults](https://tanstack.com/query/v5/docs/framework/react/guides/important-defaults)
+- [Query retries](https://tanstack.com/query/latest/docs/framework/react/guides/query-retries)
+- [Network mode](https://tanstack.com/query/latest/docs/framework/react/guides/network-mode)
+- [React Suspense](https://tanstack.com/query/latest/docs/framework/react/guides/suspense)
 - [Query invalidation](https://tanstack.com/query/v5/docs/framework/react/guides/query-invalidation)
 - [Query filters](https://tanstack.com/query/v5/docs/framework/react/guides/filters)
 - [Disabling queries](https://tanstack.com/query/v5/docs/framework/react/guides/disabling-queries)

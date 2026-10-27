@@ -44,8 +44,9 @@ costs, verify whether a custom structural-sharing function better preserves usef
 ## Adapter gate
 
 Core concepts—keys, query state, invalidation, cancellation, mutation state, and cache shape—travel
-across adapters. Syntax and reactivity do not. Inspect the installed adapter's official page and
-types before translating examples:
+across adapters. Syntax and reactivity do not. Inspect the installed adapter's official page, types,
+and framework peer dependencies before translating examples. An adapter major can require a later
+framework minor even when the framework major appears compatible:
 
 - React uses hooks and proxy-based tracked properties.
 - Vue exposes Vue-reactive APIs; preserve refs/reactive inputs according to installed conventions.
