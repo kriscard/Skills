@@ -3,7 +3,8 @@ name: msw
 description: >-
   Version-aware Mock Service Worker (MSW) guidance. Use when the task is to
   configure MSW in Node or a browser, write or fix MSW HTTP or GraphQL handlers
-  and responses, control worker/server lifecycle and unhandled requests,
+  and responses, validate request contracts through MSW behavior, control
+  worker/server lifecycle and unhandled requests,
   diagnose MSW interception or matching, apply passthrough or bypass behavior,
   isolate concurrent MSW handlers, or migrate between MSW major versions.
 ---
@@ -36,7 +37,8 @@ Do not infer syntax from "MSW" alone. Classify the installed major before editin
 Identify the real outgoing request, method, resolved URL, body, headers, and GraphQL operation. Name
 which layer owns each concern:
 
-- MSW owns interception, matching, mocked network outcomes, and interception diagnostics;
+- MSW owns interception, matching, mocked network outcomes, request-contract simulation, and
+  interception diagnostics;
 - `test` owns behavioral scope and the observation boundary;
 - the runner owns hooks, environments, timers, and concurrency syntax;
 - the consuming data library owns retries, deduplication, cache lifetime, and cache isolation;
@@ -62,10 +64,13 @@ major.
 
 Keep reusable happy-path handlers as the baseline. Add scenario-specific runtime overrides at the
 closest test or development boundary. Match the protocol contract precisely and return the outcome
-the consumer must observe.
+the consumer must observe. When request validity matters, parse the real request and return the
+same class of response the service would produce for invalid input; do not turn the resolver into a
+spy assertion.
 
-Use real application requests as evidence. Add abstraction only after handlers share meaningful
-response policy, not merely similar syntax.
+Use real application requests as evidence. Keep mock data and state only as faithful as the tested
+contract requires; do not recreate application business logic in handlers. Add abstraction only
+after handlers share meaningful response policy, not merely similar syntax.
 
 **Complete when:** the intended request matches one known handler and produces one observable
 network outcome.
@@ -92,7 +97,8 @@ affected runtime.
   request origin and matching contract; absolute URLs are not a universal requirement.
 - Reset runtime handlers after isolated tests. Reset client caches only when the owning data library
   requires it for the behavior being tested.
-- Prefer observable application outcomes over assertions that merely record that a request occurred.
+- Prefer observable application outcomes over assertions that merely record that a request occurred;
+  use lifecycle events only when a one-way request has no consumer-visible effect.
 
 ## Handoff
 

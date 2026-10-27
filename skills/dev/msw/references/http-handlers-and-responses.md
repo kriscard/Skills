@@ -15,8 +15,30 @@ explicitly using `request.json()`, `request.text()`, `request.formData()`, or an
 `Request` method. Clone a request before reading its body when another consumer still needs it.
 
 Use `cookies` for parsed request cookies and inspect headers for authentication contracts. For file
-uploads, parse `request.formData()` and assert the fields or `File` metadata relevant to the
+uploads, parse `request.formData()` and validate the fields or `File` metadata relevant to the
 scenario. Availability still depends on the detected runtime's web-platform APIs.
+
+## Validate requests through network behavior
+
+Do not assert inside a resolver that a request occurred or that its URL, headers, or body equal a
+fixture. Describe the service contract instead: parse the input, return a protocol-appropriate 4xx
+response when required input is invalid, and let the test observe how the consumer handles that
+response.
+
+```ts
+http.post("/login", async ({ request }) => {
+  const data = await request.formData()
+  if (!data.get("email")) {
+    return new HttpResponse("Missing email", { status: 400 })
+  }
+  return HttpResponse.json({ authenticated: true })
+})
+```
+
+Use lifecycle events for direct request evidence only when the request is itself the observable
+contract and has no application-visible result, such as one-way analytics. Keep validation
+proportional to the behavior under test; handlers should not duplicate the application's business
+rules or become a second backend.
 
 ## Respect precedence
 
@@ -26,9 +48,15 @@ fallbacks. A resolver that returns no instruction falls through to later matchin
 mocked response or passthrough handles the request and stops the search.
 
 Keep stable happy paths in the initial handler list. Add errors, empty states, authorization cases,
-and sequential outcomes as local runtime overrides. Group handlers by service or domain when it
-improves discovery, but preserve order across overlapping predicates. Extract a shared resolver only
-when multiple handlers truly share response policy.
+and sequential outcomes as local runtime overrides. `.use()` prepends runtime handlers, so a local
+override shadows an initial handler until reset. Group handlers by service or domain when it improves
+discovery, but preserve order across overlapping predicates. Extract repeated parsing or response
+policy only when multiple handlers truly share it.
+
+For browser demos, a small allowlisted scenario map may select overrides from a query parameter or
+other runtime input. Put scenario handlers before defaults, reject unknown scenario names by falling
+back to the baseline, and keep this switch in mock-only development code rather than production
+application behavior.
 
 ## Construct responses for the installed major
 
@@ -71,6 +99,11 @@ A streaming response can use a `ReadableStream` body when both the installed MSW
 support it. Test the consumer-visible stream behavior; do not add streaming merely to imitate
 production internals.
 
+Keep response fidelity at the wire contract: status, headers, body shape, and ordering or state
+transitions the consumer relies on. Prefer deterministic fixtures and small in-memory state. Model a
+stateful backend only when the behavior under test spans requests; reset that state through its own
+fixture lifecycle because `resetHandlers()` resets handler registration, not arbitrary mutable data.
+
 ## Passthrough and bypass
 
 These operations are different:
@@ -98,7 +131,12 @@ retries and cache state; use MSW to return the network sequence that drives thos
 - [Handle HTTP requests](https://mswjs.io/docs/http/handling-requests/)
 - [HTTP API](https://mswjs.io/api/http)
 - [HttpResponse API](https://mswjs.io/api/http-response)
+- [Avoid request assertions](https://mswjs.io/guides/best-practices/avoid-request-assertions)
+- [Custom request predicates](https://mswjs.io/guides/best-practices/custom-request-predicate)
+- [Dynamic mock scenarios](https://mswjs.io/guides/best-practices/dynamic-mock-scenarios)
+- [Structuring handlers](https://mswjs.io/guides/best-practices/structuring-handlers)
 - [Network behavior overrides](https://mswjs.io/guides/best-practices/network-behavior-overrides)
+- [Using MSW with TypeScript](https://mswjs.io/guides/best-practices/typescript)
 - [passthrough](https://mswjs.io/api/passthrough)
 - [bypass](https://mswjs.io/api/bypass)
 - [Streaming responses](https://mswjs.io/docs/http/mocking-responses/streaming/)
