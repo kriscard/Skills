@@ -7,8 +7,10 @@ Follow the request through these checks in order.
 ## 1. Prove interception is active
 
 In a browser, await worker startup and confirm the service worker is registered, active, served from
-the expected path, and scoped over the request URL. Check for another service worker or stale public
-asset only after registration evidence points there; do not prescribe blanket browser-cache clearing.
+the expected path, and controls the application page (`navigator.serviceWorker.controller`). Compare
+registration scope with the client document URL, not the API destination: controlled pages can issue
+intercepted fetches to other paths or origins. Check for another service worker or stale public asset
+only after registration evidence points there; do not prescribe blanket browser-cache clearing.
 
 In Node, confirm the test setup file runs in the same process before the request and that the server
 has not already closed. Confirm the request uses a protocol/API supported by the installed MSW
@@ -25,7 +27,7 @@ Common mismatches include:
 
 - wrong method;
 - origin or base-path differences;
-- a worker whose scope excludes the request;
+- an application document outside the worker's scope, or not yet controlled;
 - query parameters embedded in a path predicate;
 - a broader handler placed before a specific handler;
 - anonymous or differently named GraphQL operations;

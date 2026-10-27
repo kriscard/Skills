@@ -16,8 +16,10 @@ make generation an explicit automated setup step. Regenerate it when the install
 an integrity mismatch. In v3 with Vite, the official `msw/vite` integration can serve the worker
 instead; follow the project's existing integration rather than introducing both paths.
 
-Check worker scope against the requested URLs. A worker served from a nested path cannot intercept
-requests outside its allowed scope unless the server grants a broader service-worker scope.
+Check worker scope against the application document URL and confirm that the page is controlled.
+Scope selects client pages, not API request destinations: a controlled page can issue intercepted
+fetches to other paths or origins. Broaden registration scope only when an intended client page is
+outside it; a nested worker may require a `Service-Worker-Allowed` response header for that change.
 
 ## Node
 
