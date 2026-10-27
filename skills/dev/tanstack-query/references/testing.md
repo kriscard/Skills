@@ -54,7 +54,8 @@ Cover only branches changed by the task:
 - infinite queries pass the expected page parameter, stop on `null`/`undefined`, preserve
   `pages`/`pageParams`, and prevent or intentionally handle overlapping fetches;
 - components rerender for properties they consume without relying on private observer details;
-- migration tests preserve user-visible loading, error, hydration, and pagination behavior.
+- SSR/router tests prove request isolation, shared client identity, loader/consumer key agreement,
+  active observation, hydration, and separate invalidation owners when those seams changed.
 
 For time-sensitive freshness, retry, polling, or garbage-collection tests, use the runner's fake
 clock carefully and flush async work according to local conventions. Prefer direct invalidation or

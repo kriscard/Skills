@@ -1,97 +1,113 @@
-> **Read this when:** implementing or reviewing infinite queries, cursor/page behavior, `maxPages`, tracked properties, selectors, structural sharing, or a non-React adapter.
+> **Read this when:** implementing or reviewing infinite queries, cursor behavior, `maxPages`, tracked properties, selectors, structural sharing, or a non-React adapter.
 
 # Infinite queries, rendering, and adapters
 
 ## Infinite-query identity and shape
 
-An infinite query stores `{ pages, pageParams }`, so it must not share a key with a normal query.
-In v5 provide `initialPageParam` and derive subsequent parameters with `getNextPageParam`; add
-`getPreviousPageParam` for backwards navigation. Returning `null` or `undefined` means no page is
-available.
+An infinite query stores `{ pages, pageParams }`, so it needs a different key from a normal query.
+Provide `initialPageParam`, derive subsequent values with `getNextPageParam`, and add
+`getPreviousPageParam` for backward navigation. `null` or `undefined` means no page remains.
 
-Keep every manual cache update, `initialData`, `placeholderData`, and `select` result in the same
-`pages` plus `pageParams` shape. Update both arrays together when removing, reversing, or trimming
-pages.
+Keep manual cache writes, initial/placeholder data, and `select` results in the same two-array shape.
+Update `pages` and `pageParams` together when removing, reversing, or trimming pages.
 
-One infinite cache entry coordinates all pages. Avoid starting `fetchNextPage` while another fetch
-is active unless overlapping behavior is explicitly intended and verified. Distinguish initial
-pending, background refetch, next-page fetch, and previous-page fetch in the UI.
+One infinite cache entry coordinates all pages. Distinguish initial pending, background refetch,
+next-page fetch, and previous-page fetch in the UI. Prevent a load-more action while a fetch is
+already active unless overlap is intentional and tested; the adapter's `cancelRefetch` option changes
+which overlapping result wins.
 
-Stale infinite queries refetch pages sequentially from the first page to avoid reusing stale
-cursors. Use `maxPages` when retained page count and sequential refetch cost are proven concerns. In
-v5, bidirectional eviction requires both next- and previous-page parameter functions so evicted
-pages can be fetched again in either direction.
+Stale infinite queries refetch pages sequentially from the first page so later cursors are derived
+from refreshed data. Add `maxPages` when retained size or sequential refetch cost is an observed
+problem. Bidirectional eviction needs both page-parameter functions so an evicted side can be loaded
+again.
 
-## React subscriptions and selectors
+**Failure checks:** normal and infinite keys cannot collide; every fetched `pageParam` is asserted;
+`hasNextPage` stops at the contract sentinel; manual updates preserve both arrays; overlap cannot
+silently duplicate or drop pages.
 
-React Query structurally shares JSON-compatible data and tracks accessed result properties. The
-hook's top-level result object is not referentially stable, while preserved `data` references can
-be. Therefore:
+## React observation and derived projections
 
-- read only the result properties the component needs;
-- avoid object rest destructuring of query results because it accesses all remaining properties and
-  defeats tracked-property optimization;
-- rely on tracked properties before maintaining `notifyOnChangeProps` lists by hand;
-- use `select` for a cache-derived projection; it changes observer output, not cached source data;
-- keep validation/failure in `queryFn` or the transport boundary—throwing from `select` does not turn
-  the query into an error state correctly;
-- stabilize a selector when it is shared, dependency-sensitive, or demonstrably expensive. An
-  inline selector rerunning is not by itself a defect worth mandatory memoization.
+React Query structurally shares JSON-compatible data and tracks result properties a component reads.
+The top-level hook result is not referentially stable, while unchanged `data` references can be.
 
-Do not disable structural sharing without evidence. For non-JSON values or measured large-response
-costs, verify whether a custom structural-sharing function better preserves useful references.
+- Read the result properties the component needs.
+- Destructure named properties rather than using object rest, which accesses all remaining tracked
+  properties.
+- Let tracked properties work before maintaining `notifyOnChangeProps` lists.
+- Use `select` to derive observer output without changing cached source data.
+- Keep decoding and failures before the cache; a selector is not a validation/error boundary.
 
-## Adapter gate
+```ts
+const productOptions = (id: string) =>
+  queryOptions({
+    queryKey: ["products", id] as const,
+    queryFn: ({ signal }) => getProduct(id, signal),
+  })
 
-Core concepts—keys, query state, invalidation, cancellation, mutation state, and cache shape—travel
-across adapters. Syntax and reactivity do not. Inspect the installed adapter's official page, types,
-and framework peer dependencies before translating examples. An adapter major can require a later
-framework minor even when the framework major appears compatible:
+const title = useQuery({
+  ...productOptions(productId),
+  select: (product) => product.title,
+})
+```
 
-- React uses hooks and proxy-based tracked properties.
-- Vue exposes Vue-reactive APIs; preserve refs/reactive inputs according to installed conventions.
-- Solid wraps its own reactive primitives; do not impose React memoization advice.
-- Svelte Query 6 targets Svelte 5 runes and can resolve Query Core 5; this is not core v6.
-  Wrap `create*` options in a reactive function, import from `@tanstack/svelte-query`, and consume
-  the returned reactive object directly. The older Svelte Query 5 store API is a different adapter
-  contract; use its installed declarations/migration guide, not current runes examples.
-- Angular uses `@tanstack/angular-query-experimental`; minor and patch releases may break API, so
-  exact installed declarations outrank generic examples.
-- `@tanstack/query-core` has no framework provider or component rendering contract.
+A component subscribed to `title` can skip an update when only another product field changes.
+Structural sharing also stabilizes object projections when their selected fields remain equal. This
+is useful for large or frequently changing resources, not a reason to add selectors to every query.
 
-For Svelte Query 6 / Svelte 5 runes, a component-local pattern is:
+A selector runs when source data or selector identity changes and its result is cached per
+`QueryObserver`. Extract a dependency-free expensive selector or wrap a dependency-sensitive one in
+the framework's appropriate stabilization mechanism. Cross-observer memoization is an exceptional
+optimization: measure repeated work before adding another cache. For non-JSON values or very large
+responses, measure before disabling structural sharing; a custom structural-sharing function may
+preserve the useful references better.
+
+## Adapter capability gate
+
+Core semantics—identity, state, invalidation, cancellation, mutation state, and cache shape—travel
+across adapters. Syntax and reactivity do not. Inspect the installed adapter exports, declarations,
+official adapter page, resolved core, and framework peer range before translating an example.
+
+- **React:** hooks, provider/client context, tracked result properties, Suspense and error-boundary
+  integration.
+- **Vue:** Vue-reactive APIs; retain refs/reactive inputs according to installed declarations.
+- **Solid:** Solid reactive primitives; React memoization guidance does not transfer.
+- **Svelte Query 6:** Svelte 5 runes, `create*` options supplied as a reactive function, imports from
+  `@tanstack/svelte-query`, and direct consumption of the returned reactive object. The adapter can
+  still resolve Query Core 5; adapter and core majors describe different packages.
+- **Angular:** `@tanstack/angular-query-experimental`; inspect the exact release because the adapter
+  explicitly permits a changing surface.
+- **Query Core:** no framework provider, hook, component, or rendering contract.
+
+A current Svelte pattern is:
 
 ```svelte
 <script lang="ts">
   import { createQuery } from '@tanstack/svelte-query'
 
   let { projectId }: { projectId: string } = $props()
-  const query = createQuery(() => ({
+  const project = createQuery(() => ({
     queryKey: ['projects', projectId],
-    queryFn: async ({ signal }) => {
-      const response = await fetch(`/api/projects/${projectId}`, { signal })
-      if (!response.ok) throw new Error('Project request failed')
-      return response.json()
-    },
+    queryFn: ({ signal }) => getProject(projectId, signal),
   }))
 </script>
 
-<p>{query.status}</p>
+<p>{project.status}</p>
 ```
 
-A real adapter provider/client must surround this component. Read inputs inside the options
-function so key changes remain reactive; do not translate this to React hooks or `$query` stores.
-Use the existing API decoder for typed response data in application code.
+The adapter's provider/client must surround the component. Read reactive inputs inside the options
+function so a changed ID selects a changed key. Use the application's transport decoder in
+`getProject`; the adapter does not own runtime validation.
 
-When framework docs disagree with copied React examples, use the adapter docs and installed types.
+**Failure checks:** imports come from the installed adapter, provider/client ownership is correct,
+reactive inputs are read where that framework tracks them, peer versions satisfy the adapter, and no
+React-only hook or memoization pattern leaked into another framework.
 
 ## Sources
 
-- [Infinite queries](https://tanstack.com/query/v5/docs/framework/react/guides/infinite-queries)
-- [`useInfiniteQuery` reference](https://tanstack.com/query/v5/docs/framework/react/reference/useInfiniteQuery)
-- [Render optimizations](https://tanstack.com/query/v5/docs/framework/react/guides/render-optimizations)
-- [No rest destructuring ESLint rule](https://tanstack.com/query/v5/docs/eslint/no-rest-destructuring)
-- [Vue adapter overview](https://tanstack.com/query/v5/docs/framework/vue/overview)
-- [Solid adapter overview](https://tanstack.com/query/v5/docs/framework/solid/overview)
-- [Svelte adapter overview](https://tanstack.com/query/v5/docs/framework/svelte/overview)
-- [Angular adapter overview](https://tanstack.com/query/v5/docs/framework/angular/overview)
+- [Infinite queries](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries)
+- [Render optimizations](https://tanstack.com/query/latest/docs/framework/react/guides/render-optimizations)
+- [React Query Selectors, Supercharged](https://tkdodo.eu/blog/react-query-selectors-supercharged)
+- [Vue adapter](https://tanstack.com/query/latest/docs/framework/vue/overview)
+- [Solid adapter](https://tanstack.com/query/latest/docs/framework/solid/overview)
+- [Svelte adapter](https://tanstack.com/query/latest/docs/framework/svelte/overview)
+- [Angular adapter](https://tanstack.com/query/latest/docs/framework/angular/overview)

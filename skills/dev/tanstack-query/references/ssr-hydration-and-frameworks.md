@@ -1,108 +1,133 @@
-> **Read this when:** implementing or reviewing SSR, hydration, pending-query dehydration, Next.js cache layers, RSC/client ownership, or TanStack Router/Start integration.
+> **Read this when:** implementing or reviewing SSR, hydration, pending-query dehydration, RSC/cache layers, or TanStack Router/Start integration.
 
 # SSR, hydration, and framework ownership
 
-## Client lifetime and cache identity
+## Request and browser client lifetime
 
-Create an isolated server `QueryClient` per request/render ownership boundary. Never share a
-module-global server client across users. Within one request, share deliberately where deduplication
-is required. In the browser, retain a stable client rather than recreating it during renders or
-initial Suspense retries; use the adapter's supported provider/client pattern.
+Create an isolated server `QueryClient` per request/render ownership boundary. Share that request
+client only where deduplication is intended. In the browser, retain one stable client through the
+adapter's supported provider pattern; recreating it during render or an initial Suspense retry loses
+the cache.
 
-Use identical keys and compatible query functions on the server and client. Include tenant/user
-scope and every result-changing input, and keep infinite and normal data shapes separate. By default,
-`dehydrate` includes successful queries and paused mutations, not failed queries. Decide whether a
-critical failed read should fail the server response, degrade to a client retry, or be intentionally
-included with a version-supported predicate.
+Server and client must use the same keys and compatible query functions. Include tenant/user scope
+and every result-changing input. By default, dehydration includes successful queries and paused
+mutations, not failed queries. Decide whether a critical failure should fail the server response,
+degrade to client retry, or be included by a supported predicate.
 
-Dehydrate only data safe to send to that user. Use the framework's XSS-safe transfer path; raw
-`JSON.stringify` embedded in custom HTML is not safe escaping. For non-JSON data, pair the installed
-`dehydrate.serializeData` and `hydrate.deserializeData` options or the framework equivalent. Keep
-error redaction framework-correct and clear identity-bound browser data on account changes.
+Dehydrate only data safe for that identity and use the framework's XSS-safe transfer mechanism.
+Raw `JSON.stringify` embedded in custom HTML is not safe escaping. Pair `serializeData` and
+`deserializeData` for non-JSON values. Clear identity-bound browser data when the account changes.
 
-Choose a deliberate client `staleTime` to avoid immediate unwanted refetch after hydration. SSR
-cache retention is not freshness. Server `gcTime` defaults to `Infinity`; if an application overrides
-it, clear request caches when ownership ends and avoid `gcTime: 0`, which can remove data before
-hydration finishes. Verify initial HTML, hydrated data, subsequent client refetch, and request
-isolation rather than treating a successful typecheck as hydration proof.
+Choose client `staleTime` intentionally so hydration does not cause an unwanted immediate refetch.
+Server cache retention is separate: server `gcTime` commonly defaults to `Infinity`; if overridden,
+clear request caches when ownership ends and avoid removing entries before hydration finishes.
 
-## Awaited and pending dehydration
+**Failure checks:** two server requests cannot see each other's data; initial HTML and hydrated data
+agree; the first client observer uses the hydrated entry; account changes cannot expose old cache.
 
-The simplest path awaits required reads, dehydrates the server cache, and hydrates under the client
-provider (`HydrationBoundary` for React). On core 5.102+, awaited imperative reads can use
-`queryClient.query(options)`; earlier v5 uses its available fetch/prefetch APIs. A failed awaited
-read and a prefetch that swallows errors have different contracts.
+## Awaited and streamed reads
 
-Pending-query dehydration requires core 5.40+ and a framework that can transfer the promises. It is
-opt-in; preserve the default success predicate when adding pending queries:
+Await critical reads when routing or the server response needs their result/error. Start secondary
+reads without awaiting only when the framework can transfer or later consume them and the promise has
+an explicit rejection owner.
+
+Current Query clients expose `query(options)` for imperative reads. Check installed declarations
+rather than copying an article's older method spelling. A non-blocking warm-up still needs a handled
+promise:
 
 ```ts
-import { defaultShouldDehydrateQuery, QueryClient } from '@tanstack/react-query'
+void queryClient.query(secondaryOptions).catch(() => {
+  // Deliberate graceful degradation; the client observer may retry.
+})
+
+const critical = await queryClient.query(criticalOptions)
+```
+
+Pending-query dehydration is capability- and framework-dependent. Preserve the default successful
+predicate when opting pending entries in:
+
+```ts
+import { defaultShouldDehydrateQuery, QueryClient } from "@tanstack/react-query"
 
 const queryClient = new QueryClient({
   defaultOptions: {
     dehydrate: {
       shouldDehydrateQuery: (query) =>
-        defaultShouldDehydrateQuery(query) || query.state.status === 'pending',
+        defaultShouldDehydrateQuery(query) || query.state.status === "pending",
     },
   },
 })
 ```
 
-This config is a server request-local fragment, not a singleton recipe. Do not add it on older core
-or assume plain JSON serialization can carry promises. Start supported non-awaited reads before
-dehydration and handle rejected fire-and-forget promises explicitly. Keep framework error handling
-and error redaction version-correct; do not copy a framework-specific redaction override elsewhere.
-When a persistence adapter shares this client, configure storage dehydration to keep its default
-successful-query predicate so pending streamed promises are not written to storage.
+This belongs to a request-local server client. Plain JSON cannot transfer promises. When a
+persistence adapter shares the client, keep pending streamed promises out of storage while retaining
+normal successful-query persistence.
 
 ## Next.js and React Server Components
 
-Load `react` for React-owned composition and `nextjs-app-architecture` for actual App Router
-mechanics. First decide whether framework server reads already suffice; Query is useful when a
-client-owned server cache needs refetching, mutations, or reuse, not merely because SSR fetches data.
+Load the React and framework owners for actual boundary, streaming, and route mechanics. Start with
+the framework's server data facilities; add Query when the client needs an observable cache,
+background synchronization, mutations, or resource reuse.
 
-Treat Next's server data/route caches and Query's browser cache as independent layers. Query
-`staleTime` does not configure Next caching; Next tags/revalidation do not invalidate browser Query
-keys. A successful write may need both the framework's server invalidation and targeted Query
-reconciliation. Inspect the actual Next version, request policy, and cache configuration instead
-of assuming all server fetches are cached.
+Next server/route caches and the browser Query cache are independent. Query `staleTime` does not
+configure Next caching, and server tag/path revalidation does not invalidate browser query keys. A
+write can require both framework invalidation and Query reconciliation when it changes both layers.
 
-RSC can preload for client Query consumers, but avoid rendering a second RSC-owned value that must
-stay synchronized with a separately refetching client query (for example, a server total beside a
-live client list). Choose one display owner or explicitly coordinate refresh; hydration alone does
-not keep the server-rendered value current after client refetches.
-
-Framework docs own streaming and route integration. Resolved Query declarations and matching
-releases own Query method availability: a stale Next example using `prefetchQuery` is neither proof
-that the new method is absent nor a reason to rewrite an older install to `query()`.
+RSC may preload data for a client Query observer. Avoid rendering a second server-owned copy that is
+expected to stay synchronized with a client query after refetch. Pick one display owner or define the
+refresh handoff. Hydration only transfers an initial snapshot.
 
 ## TanStack Router and Start
 
-Use the installed Router/Start Query integration as the owner of route preloading, request-local
-server clients, streaming, hydration, and router context wiring. The router and adapter provider
-must use the same `QueryClient`; do not independently hydrate a second cache. Share query
-identity/options between loaders and consumers where there is real reuse. If search values change
-the result, keep validation, `loaderDeps`, query-key inputs, loader options, and component options in
-agreement. Prefer the installed integration's documented sharing mechanism over an article's
-undocumented route API.
+Let the installed Router/Start integration own loaders, request-local clients, streaming, hydration,
+and context wiring. Query owns resource identity, freshness, imperative reads, observer activity, and
+cache reconciliation.
 
-When Query owns loader-fetched data, the consuming component still needs a Query observer such as
-`useQuery` or `useSuspenseQuery`; `useLoaderData` alone does not make the query active for normal
-refetch and retention behavior. Prefetch predictable navigation in the router lifecycle rather than
-inventing duplicate component-Effect fetching or a second cache.
+A bounded integration shape is:
 
-Query invalidation and `router.invalidate()` target different owners. Use both only when a write
-changes both Query-owned resource data and Router-owned loader/context data. Verify integration
-package versions and loader error/await semantics; do not mechanically copy React Query imperative
-method names from a mismatched framework example. Keep feature organization with `frontend` and
-application/framework owners rather than imposing Query-specific folders.
+```ts
+const projectOptions = (projectId: string, asOf?: string) =>
+  queryOptions({
+    queryKey: ["projects", projectId, { asOf }] as const,
+    queryFn: ({ signal }) => getProject({ projectId, asOf, signal }),
+  })
+
+// Router-owned loader lifecycle; exact signature comes from installed Router.
+loader: ({ context, params, deps }) =>
+  context.queryClient.query(projectOptions(params.projectId, deps.asOf))
+
+// Component remains the active Query observer.
+const project = useSuspenseQuery(projectOptions(projectId, asOf))
+```
+
+The exact Router syntax belongs to its installed docs. The Query-facing assertions are stable:
+
+1. router context and adapter provider receive the same `QueryClient`;
+2. validated search values that affect the result agree across `loaderDeps`, options inputs, the
+   query key, loader, and component;
+3. loader and observer share one options definition when both consume the same resource;
+4. a component installs `useQuery`/`useSuspenseQuery` when Query owns active refetch and retention;
+   `useLoaderData` alone does not create a Query observer;
+5. blocking reads are awaited and route-failing errors propagate; secondary warming is non-blocking
+   with intentional rejection handling;
+6. Query invalidation and `router.invalidate()` are used only for the ownership layers that changed.
+
+A loader/consumer drift bug often looks like this: the loader fetches today's project, the component
+includes `asOf` in its key, navigation waits for unused data, then the component starts a second
+request and suspends again. Assert the exact key/options on both sides, not merely that “prefetching
+exists.” Remove stale loader warming when the consumer is removed.
+
+Router route data can be the right owner for route-specific values. Query is useful for resources
+shared across routes, independently observed, background-refetched, or mutated. Do not combine both
+caches automatically; make the owner decision per resource. Router cache settings and documented
+sharing mechanisms remain framework decisions.
 
 ## Sources
 
-- [SSR guide](https://tanstack.com/query/latest/docs/framework/react/guides/ssr)
-- [Advanced SSR and pending dehydration](https://tanstack.com/query/latest/docs/framework/react/guides/advanced-ssr)
+- [SSR](https://tanstack.com/query/latest/docs/framework/react/guides/ssr)
+- [Advanced SSR](https://tanstack.com/query/latest/docs/framework/react/guides/advanced-ssr)
 - [Hydration reference](https://tanstack.com/query/latest/docs/framework/react/reference/hydration)
-- [Next.js SPA and Query integration](https://nextjs.org/docs/app/guides/single-page-applications)
 - [Router Query integration](https://tanstack.com/router/latest/docs/integrations/query)
 - [Start Query integration](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query)
+- [TanStack Router and Query](https://tkdodo.eu/blog/tan-stack-router-and-query)
+- [Reliable Query Prefetching with TanStack Router](https://tkdodo.eu/blog/reliable-query-prefetching-with-tanstack-router)

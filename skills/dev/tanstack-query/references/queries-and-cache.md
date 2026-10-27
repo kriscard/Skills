@@ -1,157 +1,228 @@
-> **Read this when:** implementing or reviewing query keys/options, freshness, garbage collection, invalidation, disabled queries, query functions, or cancellation.
+> **Read this when:** implementing or reviewing query keys/options, reusable definitions, freshness, invalidation, dependent reads, transformations, Suspense queries, or cancellation.
 
 # Queries and cache lifecycle
 
-## Cache identity
+## Start from one resource definition
 
-Start with the server resource, not the component. A key is a top-level array, is serializable, and
-is unique to the cached data. Include every query-function input that changes the result:
+A key is a serializable top-level array. Include the resource identity and every input that changes
+the result. Object-property order hashes deterministically; array order remains significant.
 
 ```ts
-const projectOptions = (projectId: string, filters: ProjectFilters) =>
+import { queryOptions } from "@tanstack/react-query"
+
+type IssueFilters = { state: "open" | "closed"; assignee?: string }
+type Issue = { id: string; title: string; state: IssueFilters["state"] }
+
+async function getIssues(input: {
+  projectId: string
+  filters: IssueFilters
+  signal: AbortSignal
+}): Promise<Issue[]> {
+  const response = await fetch(
+    `/api/projects/${input.projectId}/issues?${new URLSearchParams({
+      state: input.filters.state,
+      ...(input.filters.assignee ? { assignee: input.filters.assignee } : {}),
+    })}`,
+    { signal: input.signal },
+  )
+  if (!response.ok) throw new Error(`Issues request failed: ${response.status}`)
+  return response.json() as Promise<Issue[]>
+}
+
+export const issuesOptions = (projectId: string, filters: IssueFilters) =>
   queryOptions({
-    queryKey: ["projects", projectId, "issues", filters],
+    queryKey: ["projects", projectId, "issues", filters] as const,
     queryFn: ({ signal }) => getIssues({ projectId, filters, signal }),
+    staleTime: 30_000,
   })
 ```
 
-Object-property order hashes deterministically; array order remains significant. Prefer direct
-local keys while there is one caller. Introduce an options helper or key factory when several
-callers must share identity, defaults, prefetching, invalidation, or type inference. Do not require
-one globally.
+This definition earns extraction when more than one caller must agree on identity, `queryFn`, or
+shared policy. A local inline query remains the clearest choice for one isolated caller. Add a key
+factory only when repeated hierarchy or filtering operations make it useful.
 
-A query function should perform a repeatable read, validate/normalize at the transport boundary as
-the project requires, return defined data, and throw failures. Keep notifications, navigation,
-analytics, and unrelated cache writes with their actual event/mutation owner because queries can
-retry and refetch in the background.
+### Reuse without constraining consumers
 
-## Freshness and retention
-
-Choose policy from the data's change rate and UX:
-
-- `staleTime` is the period during which an observer treats cached data as fresh. The v5 default is
-  `0`, so mount, focus, or reconnect can refetch stale active data.
-- `staleTime: Infinity` keeps data fresh until manual invalidation.
-- `staleTime: "static"` (core 5.79+) blocks invalidation-driven refetch and observer policies set to
-  `"always"` (`refetchOnMount`, `refetchOnWindowFocus`, `refetchOnReconnect`). `Infinity` still
-  permits invalidation and those `"always"` policies. Static does not block explicit observer
-  `refetch()` or polling; client-wide `refetchQueries` skips static queries. Reserve static for
-  data whose automatic refresh should be suppressed, not as a global network lock.
-- `gcTime` begins only after the last observer leaves. It controls inactive cache retention, not
-  freshness; the browser default is five minutes and SSR defaults can differ.
-- Polling is independent of `staleTime`.
-
-Tune these from evidence. Increasing `gcTime` does not stop active refetches, and increasing
-`staleTime` does not guarantee memory retention after inactivity.
-
-## Retries, connectivity, and errors
-
-Observed browser queries retry three times by default with exponential backoff; observed server
-queries default to no retries. Imperative client methods can have different retry defaults, so check
-the selected method. During observer retries, the latest failure is exposed as `failureReason`;
-`error` becomes final only when retries are exhausted. Choose retry counts or predicates from the
-transport error and operation contract. Do not copy `retry: false` from a deterministic test harness
-into production policy.
-
-The default `networkMode: "online"` pauses a query or mutation that cannot start offline. A query can
-therefore be `status: "pending"` while `fetchStatus: "paused"`; do not render that as an in-flight
-request or terminal error. `"always"` ignores connectivity and suits work that does not require a
-network. `"offlineFirst"` runs once so an HTTP/service-worker cache can answer, then pauses retries
-after a miss. Select these modes only for an actual transport/offline contract, and test reconnect
-continuation when that branch matters.
-
-For ordinary React queries, `throwOnError` can route selected failures to the nearest error boundary.
-React Suspense queries throw only when there is no cached data to render by default; a failed
-background refetch can keep rendering stale data. If every settled background failure must reach the
-boundary, explicitly throw the returned error after fetching stops. Retry UI must reset Query with
-`QueryErrorResetBoundary` or `useQueryErrorResetBoundary`, not only reset the React boundary.
-Suspense queries cannot use conditional `enabled` or `placeholderData`; keep this guidance
-React-owned and load `react` for boundary/transition composition.
-
-## Invalidation and cache writes
-
-Use the least broad operation that restores truth:
-
-- `setQueryData` / `setQueriesData` when a successful response is authoritative enough to update a
-  known cache shape immediately;
-- `invalidateQueries` when related cached views must be marked stale and active matches should
-  refetch;
-- exact keys for one resource, prefixes for a known family, and predicates only when key structure
-  cannot express the relation clearly;
-- `removeQueries` for data that must no longer exist locally, such as identity-bound data after
-  logout, rather than as a routine refresh mechanism.
-
-Disabled queries (`enabled: false` or adapter equivalent) opt out of automatic refetching and ignore
-normal invalidation/refetch triggers. Use dependency-driven keys and conditional enablement for
-lazy/dependent reads instead of building a permanently imperative query API. In TypeScript,
-`skipToken` (core 5.25+) can provide typesafe disabling, but its query cannot be manually
-`refetch`ed: there is no query function to execute. Use `enabled: false` with a real function when
-manual refetch is required.
-
-## Imperative reads and prefetching
-
-On core 5.102+, prefer `queryClient.query(options)` / `infiniteQuery(options)` for new imperative
-reads supported by the adapter. They return data, respect freshness, and reject on failure. Handle
-rejections even for fire-and-forget warming:
+The same options can serve route loading, observers, and imperative work while preserving the
+`Issue[]` type:
 
 ```ts
-void queryClient.query(projectOptions(projectId, filters)).catch(reportPrefetchError)
+const options = issuesOptions(projectId, filters)
+
+// Route/server owner decides whether this read blocks navigation or rendering.
+await queryClient.query(options)
+
+// Observer owns a consumer-specific projection and policy override.
+const openTitles = useQuery({
+  ...options,
+  staleTime: 5_000,
+  select: (issues) => issues.filter((issue) => issue.state === "open").map((issue) => issue.title),
+})
+
+// An event owner may warm the same identity without installing an observer.
+void queryClient.query(options).catch(reportPrefetchError)
 ```
 
-`void` alone does not consume a rejection. Explicitly swallow only if ignored warming failures are
-intentional (`.catch(() => {})`); awaited reads should propagate or handle errors with their owner.
-On earlier v5, check each installed method rather than inferring an API by symmetry. Common reads
-include `fetchQuery`, `prefetchQuery`, and `ensureQueryData`; infinite reads may use
-`fetchInfiniteQuery` or `prefetchInfiniteQuery`. `ensureInfiniteQueryData` is absent from some early
-v5 releases, including core 5.24.8. When absent, choose an available fetch/prefetch method according
-to its actual freshness and error semantics, not as a claimed ensure-equivalent. Prefetch methods
-swallow errors, unlike fetch methods. The current methods deprecate older APIs, but do not rewrite
-an older install to unavailable methods. Preserve differing ensure/fetch semantics rather than
-mechanically renaming calls. See the version matrix before choosing syntax.
+Place overrides after the spread. Keep `select`, `enabled`, placeholders, polling, and screen-specific
+freshness at the consumer unless every consumer shares them. Avoid accepting a broad unparameterized
+`UseQueryOptions` object in a wrapper: its defaults can widen `data` to `unknown` and make `select`
+inference brittle. A custom hook is earned when it composes behavior—such as local filter state,
+a stable feature result, or related effects—not merely to hide one `useQuery` call.
 
-Use `queryOptions` for real sharing between hooks, loaders, and imperative reads; local inline
-options are fine with one caller unless the project's lint configuration requires otherwise.
-Prefetch predictable navigation where the router owns that lifecycle; leave framework integration
-to the SSR/framework reference rather than triggering reads from arbitrary component Effects.
-Ordinary independent React queries run in parallel, but multiple `useSuspenseQuery` calls in one
-component suspend serially. Where that waterfall matters, start them in the route lifecycle or use
-the installed adapter's parallel Suspense API such as React's `useSuspenseQueries`; do not flatten
-every waterfall without measured impact.
+**Failure checks:** loader, hook, and imperative callers use the same options inputs; callsite
+`select` infers its return; invalidation uses `options.queryKey`; removing a consumer also removes
+unneeded warming.
+
+## Keep transport, domain, cache, and UI seams explicit
+
+A query function coordinates a repeatable read. The transport/API boundary performs HTTP concerns,
+authentication, runtime decoding when the application requires it, and error classification. Query
+stores the successful value returned from that boundary. Domain functions operate on typed values;
+observers and UI choose their projections.
+
+```ts
+async function getInvoice(id: string, signal: AbortSignal): Promise<Invoice> {
+  const response = await fetch(`/api/invoices/${id}`, { signal })
+  if (!response.ok) throw toTransportError(response)
+  const payload: unknown = await response.json()
+  return InvoiceDecoder.parse(payload) // Existing decoder; validation failure rejects the query.
+}
+
+const invoiceOptions = (id: string) =>
+  queryOptions({
+    queryKey: ["invoices", id] as const,
+    queryFn: ({ signal }) => getInvoice(id, signal),
+  })
+```
+
+Keep transport, authorization, validation, and domain failures distinguishable when callers render or
+retry them differently. Do not put navigation, toasts, analytics, or unrelated cache writes in
+`queryFn`; retries and background refetches can execute it more than once.
+
+Choose transformation placement deliberately:
+
+| Placement | Use when | Cached/observer consequence |
+| --- | --- | --- |
+| Server/API | The producer can return the application contract | No client duplication |
+| Transport or `queryFn` | Every consumer needs one canonical normalized/validated shape | Transformed shape is what cache and Devtools expose; runs per fetch |
+| `select` | One observer needs a projection or narrower subscription | Source cache remains canonical; result is cached per observer |
+| Render/domain function | Cheap ephemeral derivation or non-Query business logic | Runs with its normal owner; no cache semantic change |
+
+`select` runs when source data changes or the selector reference changes. Stabilize it only when the
+work is expensive or its dependency-sensitive identity matters. Throw validation failures before the
+cache; throwing inside `select` does not correctly turn the query into an error state.
+
+## Derive UI state; preserve legitimate drafts
+
+Query data is already a subscribed server snapshot. Prefer deriving dependent UI validity rather
+than effect-copying the snapshot into another store:
+
+```ts
+const users = usersQuery.data ?? []
+const effectiveSelectedId = users.some((user) => user.id === selectedId) ? selectedId : null
+```
+
+This keeps the user's original selection available if the resource temporarily excludes it and avoids
+a refetch overwriting client state through synchronization effects. An editable form is different:
+initialize a local draft from the chosen server snapshot, then let the draft owner preserve unsaved
+edits. Decide explicitly how a newer server snapshot is surfaced or merged; Query cache updates must
+not silently replace active edits.
+
+When a React subtree requires already-resolved query data, React Context can make that dependency
+explicit without creating another mutable copy: the provider observes the query, handles its pending
+and error states, then passes current `data` as dependency injection. Suspense can provide a similar
+boundary. React owns the provider/boundary mechanics; Query still owns the source snapshot. Check for
+a waterfall when that boundary delays unrelated child queries.
+
+## Seed from known cache data deliberately
+
+A new identity can use another cache entry as real `initialData` when the source is complete enough to
+satisfy the target contract—for example, seeding a detail from a cached list. Carry the source
+`dataUpdatedAt` into `initialDataUpdatedAt` so freshness reflects the source snapshot rather than the
+component mount. Use `placeholderData` when the value is only a temporary visual stand-in and should
+not be treated as successful cached truth. Verify that background fetch still replaces the seed and
+that partial list entities are not presented as complete details.
+
+## Freshness, retention, and refetch triggers
+
+Choose policy from the resource's change rate and UX:
+
+- `staleTime` controls how long observers treat data as fresh. The default is immediately stale, so
+  stale active data can refetch on mount, focus, or reconnect.
+- `Infinity` remains fresh until invalidated; `"static"` suppresses automatic refetch even after
+  invalidation. Use either only when that resource contract warrants it.
+- `gcTime` starts after the final observer leaves and controls inactive retention, not freshness.
+- Polling is independent of `staleTime`.
+
+A surprising repeated request is usually explained by identity, staleness, observer mount, focus,
+reconnect, invalidation, or retry. Identify the trigger before disabling it. Increasing `gcTime` does
+not prevent active refetches; increasing `staleTime` does not retain inactive data.
+
+Observed browser queries retry by default with backoff; server and imperative defaults can differ.
+During retries, inspect `failureReason`; `error` becomes final after retries are exhausted. Choose
+retry predicates from whether the operation can plausibly succeed later, not from a copied blanket
+setting.
+
+## Conditional and parallel reads
+
+Express data dependencies declaratively. Include the dependency in the key and use adapter-supported
+conditional execution:
+
+```ts
+useQuery({
+  ...projectOptions(projectId),
+  enabled: Boolean(projectId),
+})
+```
+
+When TypeScript narrowing benefits from `skipToken`, use it only if manual `refetch()` is not
+required; a skipped query has no function to call. Permanently disabled queries ignore normal
+invalidation/refetch triggers, so they are a poor substitute for a declarative dependency.
+
+Independent ordinary React queries run in parallel. Multiple `useSuspenseQuery` calls in one
+component suspend serially unless their requests were already started. Where that waterfall matters,
+start predictable reads in the route lifecycle or use `useSuspenseQueries` for an independent batch.
+Keep dependent queries serial and leave insignificant waterfalls alone.
+
+Suspense queries provide defined data but do not support conditional `enabled` or `placeholderData`.
+By default, a background refetch error is thrown only when there is no cached data, so stale data may
+remain visible. If settled background failure must reach the boundary, throw the returned error after
+fetching stops. Reset both owners: the React error boundary and Query through
+`QueryErrorResetBoundary` or `useQueryErrorResetBoundary`.
+
+## Invalidation and explicit cache operations
+
+Use the operation that restores truth:
+
+- `setQueryData` / `setQueriesData` for an authoritative value compatible with the cached shape;
+- `invalidateQueries` for resources made stale, using an exact key for one entry or a known prefix
+  for a family;
+- `removeQueries` when data must no longer exist locally, such as identity-bound data on logout;
+- `queryClient.query(options)` for current imperative reads; await it when failure belongs to the
+  caller, or attach an intentional rejection handler for non-blocking warming.
+
+Do not infer a method from a blog post or another adapter. Check the installed client declaration;
+current releases expose unified `query`/`infiniteQuery`, while a project pinned to a different
+capability surface must use its actual exports without forcing an upgrade.
 
 ## Cancellation
 
-Consume the `signal` supplied to the query function and pass it through every nested request that
-supports cancellation:
-
-```ts
-queryFn: async ({ signal }) => {
-  const response = await fetch(`/api/projects/${projectId}`, { signal })
-  if (!response.ok) throw new Error("Project request failed")
-  return response.json() as Promise<Project>
-}
-```
-
-Without consuming the signal, an unused request may still resolve into cache. When the signal is
-consumed and cancellation occurs, TanStack Query aborts the transport and reverts query state to
-its prior state. Manual cancellation uses filters such as
-`queryClient.cancelQueries({ queryKey })`.
-
-Cancellation is part of optimistic-write correctness: await cancellation for the affected reads
-before snapshotting and writing optimistic data, or a late response can overwrite the optimistic
-state. React's `useSuspenseQuery`, `useSuspenseQueries`, and `useSuspenseInfiniteQuery` do not
-support cancellation. Do not promise abort-on-unmount or the same cancellation guarantees for
-those hooks; choose a non-Suspense query if that contract is required.
+Pass the supplied signal through every cancellable nested request. Consuming it lets Query abort the
+transport and revert query state when cancellation occurs; ignoring it allows unused work to finish
+into cache. Await `cancelQueries` before optimistic cache writes so a late read cannot overwrite the
+preview. React Suspense query hooks do not provide the same cancellation contract, so use a
+non-Suspense observer when transport abort on observer loss is required.
 
 ## Sources
 
-- [Query keys](https://tanstack.com/query/v5/docs/framework/react/guides/query-keys)
-- [Query options](https://tanstack.com/query/v5/docs/framework/react/guides/query-options)
-- [Query functions](https://tanstack.com/query/v5/docs/framework/react/guides/query-functions)
-- [Important defaults](https://tanstack.com/query/v5/docs/framework/react/guides/important-defaults)
-- [Query retries](https://tanstack.com/query/latest/docs/framework/react/guides/query-retries)
-- [Network mode](https://tanstack.com/query/latest/docs/framework/react/guides/network-mode)
-- [React Suspense](https://tanstack.com/query/latest/docs/framework/react/guides/suspense)
-- [Query invalidation](https://tanstack.com/query/v5/docs/framework/react/guides/query-invalidation)
-- [Query filters](https://tanstack.com/query/v5/docs/framework/react/guides/filters)
-- [Disabling queries](https://tanstack.com/query/v5/docs/framework/react/guides/disabling-queries)
-- [Query cancellation](https://tanstack.com/query/v5/docs/framework/react/guides/query-cancellation)
+- [Query options](https://tanstack.com/query/latest/docs/framework/react/guides/query-options)
+- [Query keys](https://tanstack.com/query/latest/docs/framework/react/guides/query-keys)
+- [Important defaults](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults)
+- [Prefetching](https://tanstack.com/query/latest/docs/framework/react/guides/prefetching)
+- [Disabling queries](https://tanstack.com/query/latest/docs/framework/react/guides/disabling-queries)
+- [Request waterfalls](https://tanstack.com/query/latest/docs/framework/react/guides/request-waterfalls)
+- [Suspense](https://tanstack.com/query/latest/docs/framework/react/guides/suspense)
+- [Query cancellation](https://tanstack.com/query/latest/docs/framework/react/guides/query-cancellation)
+- [Creating Query Abstractions](https://tkdodo.eu/blog/creating-query-abstractions)
+- [React Query Data Transformations](https://tkdodo.eu/blog/react-query-data-transformations)
+- [Deriving Client State from Server State](https://tkdodo.eu/blog/deriving-client-state-from-server-state)
