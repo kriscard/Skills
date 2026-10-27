@@ -7,27 +7,14 @@
 A key is a serializable top-level array. Include the resource identity and every input that changes
 the result. Object-property order hashes deterministically; array order remains significant.
 
+Reuse the project's existing typed API boundary. Here `getIssues({ projectId, filters, signal })`
+handles transport failures and establishes the `Issue[]` contract before resolving; use the existing
+decoder when runtime validation belongs to that boundary. The module path is illustrative, not a
+required layout. A type assertion over `response.json()` does not establish this contract.
+
 ```ts
 import { queryOptions } from "@tanstack/react-query"
-
-type IssueFilters = { state: "open" | "closed"; assignee?: string }
-type Issue = { id: string; title: string; state: IssueFilters["state"] }
-
-async function getIssues(input: {
-  projectId: string
-  filters: IssueFilters
-  signal: AbortSignal
-}): Promise<Issue[]> {
-  const response = await fetch(
-    `/api/projects/${input.projectId}/issues?${new URLSearchParams({
-      state: input.filters.state,
-      ...(input.filters.assignee ? { assignee: input.filters.assignee } : {}),
-    })}`,
-    { signal: input.signal },
-  )
-  if (!response.ok) throw new Error(`Issues request failed: ${response.status}`)
-  return response.json() as Promise<Issue[]>
-}
+import { getIssues, type IssueFilters } from "./api"
 
 export const issuesOptions = (projectId: string, filters: IssueFilters) =>
   queryOptions({
@@ -110,7 +97,9 @@ Choose transformation placement deliberately:
 
 `select` runs when source data changes or the selector reference changes. Stabilize it only when the
 work is expensive or its dependency-sensitive identity matters. Throw validation failures before the
-cache; throwing inside `select` does not correctly turn the query into an error state.
+cache. A thrown `select` can put that observer into an error state while the underlying cached Query
+remains successful with its source data. Selector errors are observer-local, not shared cache
+validation.
 
 ## Derive UI state; preserve legitimate drafts
 

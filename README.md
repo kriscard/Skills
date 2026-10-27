@@ -1,6 +1,6 @@
 # Skills
 
-A collection of 48 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
+Agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
 
 ## Install
 
