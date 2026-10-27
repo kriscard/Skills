@@ -53,9 +53,18 @@ If a refinement is async, every caller must use async parsing. Keep database/net
 schema when batching, cancellation, authorization, transaction ownership, or failure recovery
 belongs to a service layer rather than validation.
 
-Use advanced refinement scheduling such as v4 `when` only when independent checks are otherwise
-incorrectly skipped, and isolate the prerequisite schema so the refinement cannot receive an unsafe
-value.
+In compatible v4 releases, checks normally continue after continuable issues, collecting multiple
+failures. A failing refinement with `abort: true` is non-continuable and prevents later dependent
+checks; a wrong base type also prevents refinements from receiving an unsafe value. Async behavior
+is transitive through nested schemas and requires async parsing end to end.
+
+Use v4 `when` only when an independent check is incorrectly skipped because an unrelated field
+failed. Its predicate controls scheduling, not validity: safe-parse a separate prerequisite schema
+containing every field that the refinement reads, for example
+`when(payload) { return Prerequisites.safeParse(payload.value).success; }`.
+Keep prerequisites free of the refinement itself to avoid recursion, and test invalid prerequisite
+values as well as unrelated-field failures. `when` can override normal scheduling safeguards;
+returning true unconditionally can expose unsafe values or uncaught exceptions.
 
 ## Official sources
 

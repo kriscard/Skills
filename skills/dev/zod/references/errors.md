@@ -22,6 +22,11 @@ Use the unified `error` parameter for schema-level or per-parse customization. R
 from an error function when lower-precedence handling should continue. Do not introduce legacy
 `errorMap`, `message`, `required_error`, or `invalid_type_error` options into new v4 code.
 
+For the verified 4.6.7 contract, error precedence is highest to lowest: failing **check**, containing
+**schema**, **per-parse**, **global customError**, then **localeError**. A schema error is the fallback
+for its checks when the failing check has no error of its own. Older v4 releases may differ: inspect
+declarations/source and test the conflicting layers rather than assuming all v4 builds match.
+
 Choose the top-level formatter from the consumer:
 
 - `z.treeifyError()` for nested traversal;
@@ -29,6 +34,7 @@ Choose the top-level formatter from the consumer:
 - `z.prettifyError()` for human-readable text such as CLI or logs;
 - `error.issues` for programmatic handling.
 
+`z.formatError()` also exists but is deprecated; prefer `z.treeifyError()` for new nested projections.
 The legacy instance methods `error.format()` and `error.flatten()` are deprecated. The top-level
 `z.flattenError()` is the current shallow formatter; distinguish it from the legacy instance method
 when reviewing code.

@@ -4,7 +4,8 @@ description: >-
   Version-aware Zod implementation, migration, review, and debugging. Use when a
   codebase already uses Zod or the task explicitly asks for Zod schemas, parsing,
   coercion, transforms, refinements, error formatting, object composition, Zod
-  Mini, or a Zod v3-to-v4 migration. Detect the effective v3/v4 import contract
+  Mini, codecs, discriminated unions, enum records, measured compile/validate work,
+  or a Zod v3-to-v4 migration. Detect the effective v3/v4 import contract
   before giving syntax. Compose with typescript for language-wide modeling and
   trust boundaries, frontend for browser validation and feedback, and
   react-hook-form for form ownership and lifecycle. Do not invoke for a generic
@@ -27,6 +28,7 @@ entrypoint used by affected code:
 
 - `zod/v3` is explicitly Zod 3;
 - `zod/v4`, `zod/v4-mini`, and `zod/mini` are explicitly Zod 4 APIs;
+- standalone `@zod/mini` re-exports its peer `zod/mini`; inspect both resolved versions;
 - a package-root `zod` import follows the resolved package's exported root;
 - Zod 3.25 can expose both v3 and v4 subpaths, so the package major alone may not identify the API.
 
@@ -56,10 +58,11 @@ Compose with the owning skill instead of expanding Zod's scope:
 | Priority | Load when | Reference |
 |---|---|---|
 | 1 — Critical | Detecting v3/v4, upgrading, reviewing mixed imports, or changing ecosystem/library compatibility | `references/version-and-migration.md` |
-| 1 — Critical | Input/output types, parsing, transforms, defaults, preprocessing, coercion, or async schemas | `references/types-and-parsing.md` |
+| 1 — Critical | Input/output types, parsing, pipes, transforms, codecs, default/prefault/catch/readonly wrappers, form-string conversion, coercion, or async schemas | `references/types-and-parsing.md` |
 | 1 — High | Object strictness, unknown keys, extension, merging, intersections, refinements, or cross-field rules | `references/objects-and-refinements.md` |
+| 1 — High | Tagged/discriminated or ordinary unions, enums, exhaustive records, or sparse enum maps | `references/unions-records-and-enums.md` |
 | 1 — High | Custom messages, `ZodError`, issue handling, error formatting, localization, or form/API error projection | `references/errors.md` |
-| 2 — Conditional | Bundle size, parse speed, Zod Mini, Zod Core, schema construction cost, caching, or performance claims | `references/mini-and-performance.md` |
+| 2 — Conditional | Bundle size, parse speed, compile/validate APIs, CSP/no-eval, Zod Mini, Zod Core, schema construction cost, caching, or performance claims | `references/mini-and-performance.md` |
 
 Use v3 documentation and installed declarations for v3 code. Do not translate a v4 API backward
 unless migration is the requested task.
@@ -82,7 +85,8 @@ contract.
 ### 5. Verify
 
 Run the narrowest executable parse cases for valid and invalid input, then the affected typecheck,
-tests, and repository checks. Include async cases when any refinement or transform is async. For a
+tests, and repository checks. Cover null/missing, extra keys, ambiguous raw values, transformed output,
+and issue paths/projections as applicable; include async cases when any nested effect is async. For a
 migration, compare representative parsed outputs and issue paths before and after the change.
 
 When Zod integrates with React Hook Form, verify the form's input model, transformed submission
