@@ -18,11 +18,17 @@ claim that smaller is faster.
 
 ## Use Mini as a deliberate v4 contract
 
-`zod/mini` is Zod 4's functional, tree-shakable API. The standalone `@zod/mini` package re-exports
-its peer `zod/mini` and is versioned in lockstep since 4.5; verify both installed versions and peer
-ranges. Parsing methods remain available, while most
-schema operations use top-level functions and `.check()`. Confirm adapter compatibility before
-passing Mini schemas to ecosystem libraries.
+`zod/mini` is Zod 4's functional, tree-shakable API. The same Mini contract is exported from
+`zod/v4/mini` and the compatibility path `zod/v4-mini`. The standalone `@zod/mini` package
+re-exports its peer `zod/mini` and is versioned in lockstep since 4.5; verify both installed versions
+and peer ranges. Parsing methods remain available, while most schema operations use top-level
+functions and `.check()`. Confirm adapter compatibility before passing Mini schemas to ecosystem
+libraries.
+
+Do not copy Classic method syntax blindly. For custom Mini predicates use
+`Schema.check(z.refine(predicate, params))`; for lower-level or multiple-issue control use
+`Schema.check(z.check((ctx) => { ... }))`. Mini schemas do not expose `.refine()` or
+`.superRefine()` methods.
 
 Zod Mini does not load the English locale by default, so issue messages may be `"Invalid input"`
 until a locale or custom errors are configured. Include that behavior in tests when messages reach
@@ -70,13 +76,16 @@ A v4 label alone is insufficient.
   Keep refinements/transforms pure; compilation is not safe evidence of exactly-once side effects.
 - Compiler code adds bundle bytes. Compare production bundle output; Mini plus compiler may lose the
   size benefit that motivated Mini. No universal bundle or throughput number applies to a project.
-- `Schema.validate(input)` returns a boolean guard on the **input** type, not parsed output. It
-  can short-circuit on the first issue and supplies neither transformed data nor detailed errors.
-  This is not a guarantee that later refinement callbacks never run: in the verified uncompiled
-  chained-refinement probe, both callbacks ran despite the first failing.
-  `Schema.validateAsync(input)` handles async schemas but cannot narrow a value through its promise.
-  Use parse/safeParse when consumers need normalized output or issues; do not validate and then parse
-  by default, which repeats work and effects. Validation may still run effects, so test their behavior.
+- In Classic, `Schema.validate(input)` and `z.validate(Schema, input)` are equivalent entry forms.
+  Mini exposes only the functional `z.validate(Schema, input)` form; Mini schema instances do not
+  have `.validate()` or `.validateAsync()`. The synchronous call returns a boolean guard on the
+  **input** type, not parsed output. It can short-circuit on the first issue and supplies neither
+  transformed data nor detailed errors. This is not a guarantee that later refinement callbacks
+  never run: in the verified uncompiled chained-refinement probe, both callbacks ran despite the
+  first failing. Use `Schema.validateAsync(input)` in Classic or `z.validateAsync(Schema, input)` in
+  Mini for async schemas; the promise cannot narrow a value. Use parse/safeParse when consumers need
+  normalized output or issues; do not validate and then parse by default, which repeats work and
+  effects. Validation may still run effects, so test their behavior.
 
 ## Official sources
 

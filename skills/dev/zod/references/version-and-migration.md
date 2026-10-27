@@ -10,9 +10,10 @@ Use the resolved package version plus the actual import path and installed decla
 | Import | Effective contract |
 |---|---|
 | `zod/v3` | Zod 3 |
-| `zod/v4` | Zod 4 full API |
+| `zod/v4` | Zod 4 Classic/full API |
+| `zod/v4/mini` | Zod 4 Mini version-pinned subpath |
 | `zod/v4-mini` | Zod 4 Mini compatibility subpath |
-| `zod/mini` | Zod 4 Mini |
+| `zod/mini` | Zod 4 Mini package-root subpath |
 | `@zod/mini` | Standalone Mini re-export of peer `zod/mini`; inspect both versions (published in lockstep since 4.5) |
 | `zod` | Package-root export; inspect the resolved package version |
 
@@ -52,8 +53,9 @@ adding a parallel schema; contract generation and feature placement remain with 
 - In v4, use `z.enum(enumLike)` instead of `z.nativeEnum()`. Enum-keyed `z.record()` becomes
   exhaustive; use `z.partialRecord()` for sparse maps. Discriminated unions gain composable and
   union/pipe-discriminator support; see [unions, records, and enums](unions-records-and-enums.md).
-- Gate newer APIs such as codecs, standalone Mini, compile, and validate on the effective import's
-  declarations. An older `zod/v4` export is not a promise of every current v4 feature.
+- Gate newer APIs such as codecs, standalone Mini, native JSON Schema conversion, compile, and
+  validate on the effective import's declarations. An older `zod/v4` export is not a promise of
+  every current v4 feature.
 - Remove dependencies on undocumented classes, utility types, `._def`, or other internals. Zod 4
   internals differ and are not an application extension surface.
 - Recheck type-predicate refinements: Zod 4 does not use them to narrow the inferred output type.

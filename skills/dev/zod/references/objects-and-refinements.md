@@ -38,9 +38,11 @@ refinements must survive.
 
 ## Prefer built-in checks, then refinements
 
-Use a built-in schema or check when it expresses the rule. Use `.refine()` for one custom issue and
-cross-field predicates; attach a deliberate `path` when a specific field should own the feedback.
-Refinement functions return success/failure and should not throw.
+Use a built-in schema or check when it expresses the rule. In Classic, use `.refine()` for one custom
+issue and cross-field predicates; attach a deliberate `path` when a specific field should own the
+feedback. Mini expresses the same custom predicate as `Schema.check(z.refine(...))`; see the Mini
+reference before translating any method chain. Refinement functions return success/failure and should
+not throw.
 
 When multiple issues or lower-level control are required, match the installed contract:
 

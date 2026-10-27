@@ -32,7 +32,8 @@ Inspect manifests, lockfiles, package-manager output, Zod imports, TypeScript co
 entrypoint used by affected code:
 
 - `zod/v3` is explicitly Zod 3;
-- `zod/v4`, `zod/v4-mini`, and `zod/mini` are explicitly Zod 4 APIs;
+- `zod/v4` is the explicit Zod 4 Classic API;
+- `zod/v4/mini`, `zod/v4-mini`, and `zod/mini` are explicit Zod 4 Mini APIs;
 - standalone `@zod/mini` re-exports its peer `zod/mini`; inspect both resolved versions;
 - a package-root `zod` import follows the resolved package's exported root;
 - Zod 3.25 can expose both v3 and v4 subpaths, so the package major alone may not identify the API.
@@ -67,6 +68,7 @@ Compose with the owning skill instead of expanding Zod's scope:
 | 1 — High | Object strictness, unknown keys, extension, merging, intersections, refinements, or cross-field rules | `references/objects-and-refinements.md` |
 | 1 — High | Tagged/discriminated or ordinary unions, enums, exhaustive records, or sparse enum maps | `references/unions-records-and-enums.md` |
 | 1 — High | Custom messages, `ZodError`, issue handling, error formatting, localization, or form/API error projection | `references/errors.md` |
+| 2 — Conditional | Metadata, registries, JSON Schema conversion, structured-output schemas, or schema-driven documentation/code generation | `references/metadata-and-json-schema.md` |
 | 2 — Conditional | Bundle size, parse speed, compile/validate APIs, CSP/no-eval, Zod Mini, Zod Core, schema construction cost, caching, or performance claims | `references/mini-and-performance.md` |
 
 Use v3 documentation and installed declarations for v3 code. Do not translate a v4 API backward
@@ -110,6 +112,7 @@ Before finishing:
 - async refinements or transforms use async parsing end to end;
 - object composition preserves explicit unknown-key and refinement behavior;
 - v4 code uses current error, object, and composition contracts instead of legacy equivalents;
+- JSON Schema generation selects input/output direction, target dialect, and unrepresentable-type policy intentionally;
 - Zod Mini or low-level performance APIs are chosen only from measured constraints;
 - generic TypeScript, frontend, React, and form-lifecycle concerns remain with their owners;
 - version-sensitive claims link to official Zod documentation.

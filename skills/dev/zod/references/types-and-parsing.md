@@ -35,6 +35,16 @@ remain owned by `react-hook-form`.
 Keep the original input `unknown` until parsing succeeds. Parse once at an ownership boundary and
 pass the typed result inward unless a new untrusted boundary is crossed.
 
+## Prefer current format schemas
+
+For common wire formats, prefer the installed v4 top-level schemas such as `z.email()`, `z.uuid()`,
+`z.url()`, `z.httpUrl()`, and `z.iso.datetime()` over reproducing their rules with a custom regex.
+The old method forms such as `z.string().email()` still parse in current v4 but are deprecated.
+Format names are not interchangeable product policies: for example, `z.url()` follows the runtime
+URL implementation while `z.httpUrl()` restricts protocol and hostname. Use `.regex()` or a custom
+refinement when the producer's actual grammar differs, and test accepted as well as rejected edge
+cases.
+
 ## Coercion is conversion, not intent
 
 Primitive coercion follows JavaScript conversion semantics. Test ambiguous values explicitly:
@@ -98,8 +108,10 @@ const wire = z.encode(Instant, date);
 `parse` accepts unknown; typed `decode` accepts the schema input and `encode` accepts its output.
 Use `decodeAsync`/`encodeAsync` for async callbacks and the installed `safeDecode`/`safeEncode` and
 `safeDecodeAsync`/`safeEncodeAsync` variants for recoverable validation failures. These do not catch
-arbitrary exceptions thrown by application callbacks. Prefer a transform or boundary mapper when
-reverse encoding is not needed.
+arbitrary exceptions thrown by application callbacks. When conversion can fail normally, accept the
+callback's second context argument, push a structured issue to `ctx.issues`, and return `z.NEVER`
+instead of throwing; then safe decode/encode can return a validation failure. Prefer a transform or
+boundary mapper when reverse encoding is not needed.
 
 ### Fallbacks and readonly wrappers
 
@@ -125,7 +137,7 @@ an absent key may appear in parsed output. Verify both differences during migrat
 
 ## Official sources
 
-- [Defining schemas: parsing, coercion, transforms, and input/output](https://zod.dev/api)
+- [Defining schemas: parsing, current string formats, coercion, transforms, and input/output](https://zod.dev/api)
 - [Codecs: directions, fallbacks, and async/safe APIs](https://zod.dev/codecs)
 - [Resolver input/output generics](https://github.com/react-hook-form/resolvers)
 - [Zod 4 migration guide: coercion and defaults](https://zod.dev/v4/changelog)

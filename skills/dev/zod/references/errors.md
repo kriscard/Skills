@@ -10,9 +10,11 @@ metadata until the presentation boundary; converting everything to one string to
 evidence needed by nested forms, APIs, logs, and tests.
 
 Do not expose raw validation details automatically across a public API. Map issues to the product's
-stable error contract at that boundary. Browser announcements, field association, focus, and
-recovery belong to `frontend`; form-wide versus field errors and submission lifecycle belong to
-`react-hook-form`.
+stable error contract at that boundary. Zod excludes the original input from issues by default to
+reduce accidental sensitive-data logging; enable `reportInput: true` only when that exposure is
+reviewed, and do not log raw payloads merely to diagnose a path/code failure. Browser announcements,
+field association, focus, and recovery belong to `frontend`; form-wide versus field errors and
+submission lifecycle belong to `react-hook-form`.
 
 ## Match the installed version
 
@@ -26,6 +28,12 @@ For the verified 4.6.7 contract, error precedence is highest to lowest: failing 
 **schema**, **per-parse**, **global customError**, then **localeError**. A schema error is the fallback
 for its checks when the failing check has no error of its own. Older v4 releases may differ: inspect
 declarations/source and test the conflicting layers rather than assuming all v4 builds match.
+
+In the verified 4.6.7 contract, a failed `safeParse` materializes and customizes its error on the
+first read of `result.error`, not when parsing returns. Changing global `z.config()` or locale state between those
+two moments changes the resulting messages, and an error-map side effect does not run if the error
+is never read. Do not use mutable global configuration as request-scoped localization; keep the
+configuration stable across parse and error consumption.
 
 Choose the top-level formatter from the consumer:
 
@@ -57,7 +65,8 @@ snapshots are appropriate only when exact wording is itself the contract.
 
 ## Official sources
 
-- [Customizing errors](https://zod.dev/error-customization)
+- [Customizing errors, input reporting, and localization](https://zod.dev/error-customization)
+- [Zod 4.6: lazy safe-parse error materialization](https://zod.dev/blog/zod-4-6#%EF%B8%8F-error-maps-run-on-the-first-read-of-error)
 - [Formatting errors](https://zod.dev/error-formatting)
 - [Zod 4 migration guide: error customization and formatting](https://zod.dev/v4/changelog)
 - [Official Zod v3 documentation source](https://github.com/colinhacks/zod/tree/main/packages/docs-v3)
