@@ -1,13 +1,11 @@
 ---
 name: msw
 description: >-
-  Version-aware Mock Service Worker (MSW) guidance for setup, request handlers,
-  mocked responses, GraphQL, passthrough and bypass behavior, unhandled requests,
-  lifecycle debugging, concurrent-test isolation, and v1/v2/v3 migrations. Use
-  whenever a project imports `msw`, `msw/node`, `msw/browser`, or generated
-  `mockServiceWorker.js`, or when the user asks to add, fix, debug, or migrate
-  MSW. Do not use for general test design without MSW evidence or for cache
-  behavior owned by the consuming data library.
+  Version-aware Mock Service Worker (MSW) guidance. Use when the task is to
+  configure MSW in Node or a browser, write or fix MSW HTTP or GraphQL handlers
+  and responses, control worker/server lifecycle and unhandled requests,
+  diagnose MSW interception or matching, apply passthrough or bypass behavior,
+  isolate concurrent MSW handlers, or migrate between MSW major versions.
 ---
 
 # Mock Service Worker
