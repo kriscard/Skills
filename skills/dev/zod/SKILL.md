@@ -1,12 +1,10 @@
 ---
 name: zod
 description: >-
-  Zod 4 schema implementation, review, and debugging. Use when requested work
-  changes or diagnoses a Zod schema, parse/transform/error/artifact, Mini usage,
-  or a Zod adapter contract. Inspect the installed entrypoint before using
-  minor-sensitive APIs. Keep form reset/dirty lifecycle, authorization, and
-  unrelated adjacent parse failures with their owning concerns; existing Zod
-  usage alone does not start schema work.
+  Implement, review, or debug Zod 4 schemas and their runtime contracts. Use only
+  when the requested outcome concerns Zod parsing, transforms, structured errors,
+  schema composition, codecs, JSON Schema artifacts, Mini, or Zod interoperability.
+  Check the installed entrypoint before using capability-sensitive APIs.
 ---
 
 # Zod 4
@@ -74,7 +72,8 @@ second parse or an unchecked assertion.
 
 Run exact-entrypoint cases for valid and invalid input, then the affected typecheck and tests. Cover
 missing/null values, extra keys, ambiguous raw strings, transformed output, and issue paths as
-applicable. Use async parsing end to end when any nested effect is async.
+applicable. Use async parsing end to end when any nested effect is async. When an implementation
+answer requests checks, include runnable success/failure assertions and label unexecuted checks.
 
 For artifacts, assert direction, dialect, required keys, object policy, metadata, and refs. For Mini
 or performance changes, compare production bundles or representative throughput while preserving the
