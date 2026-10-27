@@ -24,6 +24,16 @@ Rely on actionability checks for interaction and web-first assertions for outcom
 Assert what the user or integration observes: visible content, enabled controls, URL,
 download, popup, response, or durable state. Avoid immediate value reads followed by
 non-retrying assertions when a locator assertion can observe the eventual outcome.
+Await every asynchronous action and assertion; use the repository's typecheck/lint
+checks to catch floating promises as well as executing the spec.
+
+Use `expect.poll` for eventual non-DOM observations, such as a read-only API check.
+Use `expect(...).toPass` only for a safely repeatable block, with an explicit bounded
+timeout: it does not inherit the configured expect timeout by default. Retrying a
+checkout, submission, or other non-idempotent action can create duplicate effects.
+Prefer a hard assertion for prerequisites; soft assertions are useful for independent
+checks of an already-valid state, not for continuing a journey after its setup failed.
+Verify these assertion APIs against the resolved version.
 
 Force an action only when the test intentionally covers behavior that bypasses normal
 user actionability. A forced click is not a general repair for overlays, disabled state,

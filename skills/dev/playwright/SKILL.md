@@ -1,9 +1,9 @@
 ---
 name: playwright
 description: >-
-  Version-aware Playwright Test engineering for implementation, configuration,
-  review, debugging, and migration. Use when a repository uses @playwright/test
-  or Playwright and the work involves specs, runner configuration, projects,
+  Write, review, and debug end-to-end (E2E) tests with Playwright Test, including
+  new suites, configuration, and migration. Use when Playwright is requested or
+  discovered and the work involves browser test authoring, specs, runner configuration, projects,
   fixtures, authentication or storage state, locators, waiting, network routing,
   browser isolation, traces or media, parallelism, sharding, failures, or upgrades.
   Detect the installed version before version-sensitive guidance. Use test for
@@ -22,8 +22,10 @@ implements and diagnoses that coverage.
 
 ### 1. Confirm Playwright owns the task
 
-Use this skill for persistent Playwright tests, runner configuration, fixtures, browser
-state, Playwright debugging, or migration. Use `agent-browser` for one-off website
+Use this skill when writing or adding Playwright E2E tests, creating a new suite, or
+changing persistent tests, runner configuration, fixtures, browser state, debugging, or
+migration. Load `test` for behavioral scope and its browser/E2E guidance; this skill
+supplies the runner-specific authoring process. Use `agent-browser` for one-off website
 interaction, scraping, exploratory automation, or operational browser work that does
 not belong in a Playwright suite.
 
@@ -50,6 +52,10 @@ npm exec playwright -- --version
 yarn playwright --version
 ```
 
+For a new suite with no resolved dependency, verify the current stable release, select
+and record a compatible target, then use that version's contracts. A request for modern
+practices does not authorize upgrading an existing suite or copying prerelease APIs.
+
 If dependencies are not installed, derive the resolved version from the lockfile and
 record that the CLI could not confirm it. Check that directly related Playwright
 packages use compatible versions and that CI installs the browser binaries expected by
@@ -74,10 +80,11 @@ conventions are known.
 
 | Priority | Load when | Reference |
 |---|---|---|
+| 1 — High | Writing, adding, or reviewing an E2E test or user journey, or creating a new Playwright suite | `references/e2e-authoring.md` |
 | 1 — High | Runner config, projects, dependencies, fixtures, setup/teardown, authentication, or storage state | `references/runner-and-state.md` |
 | 1 — High | Locators, assertions, actions, navigation readiness, timeouts, flaky waits, or helper/page-object design | `references/interaction-and-readiness.md` |
 | 1 — High | Request observation, route interception, response mocking, HAR, service workers, contexts, or shared-state failures | `references/network-and-isolation.md` |
-| 1 — High | Trace Viewer, screenshots, video, UI Mode, Inspector, CI artifacts, retries, flaky-test policy, workers, parallelism, or sharding | `references/diagnostics-and-scale.md` |
+| 1 — High | Trace Viewer, screenshots, visual/accessibility baselines, video, UI Mode, Inspector, CI artifacts, retries, flaky-test policy, workers, parallelism, or sharding | `references/diagnostics-and-scale.md` |
 | 1 — High | Upgrade, deprecated or removed API, browser/package mismatch, unexplained runner failure, or version-sensitive review | `references/migrations-and-failures.md` |
 
 **Complete when:** every Playwright-specific decision is covered by a loaded branch and
@@ -127,6 +134,8 @@ Before finishing, confirm:
 - installed Playwright version and package owner were detected before version-sensitive
   advice;
 - local declarations and official release notes support every used API;
+- for E2E authoring, its reference and `test` were loaded, with setup and mocks leaving
+  the claimed behavior observable;
 - locators express user-facing semantics or an explicit test contract;
 - waits observe the behavior that marks readiness;
 - tests remain isolated across order, workers, projects, and retries;
