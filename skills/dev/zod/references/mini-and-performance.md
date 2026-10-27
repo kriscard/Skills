@@ -51,6 +51,29 @@ locale or provide stable custom errors when messages reach users or logs.
 fixtures, compare parsed output and issue paths, and compare production bundles with the project's
 actual bundler. A source-import change alone is not evidence of savings.
 
+## Pattern: compose Mini transform stages
+
+Mini's `z.pipe(input, output)` is binary. Compose additional stages with named intermediate schemas:
+first establish the wire grammar, then transform, then validate the normalized output.
+
+```ts
+import assert from "node:assert/strict";
+import * as z from "zod/mini";
+
+const RawCount = z.string().check(z.regex(/^[1-9]\d*$/));
+const ParsedCount = z.pipe(RawCount, z.transform(Number));
+const Count = z.pipe(ParsedCount, z.int().check(z.positive()));
+
+assert.equal(z.parse(Count, "12"), 12);
+assert.equal(z.safeParse(Count, "").success, false);
+assert.equal(z.safeParse(Count, "4.5").success, false);
+assert.equal(z.safeParse(Count, "9".repeat(400)).success, false);
+```
+
+**Observable result:** the consumer receives a positive safe integer, not the raw string. Lexical
+failures stop before conversion; numeric overflow fails the output schema. Typecheck every stage
+against the exact Mini import. Use a codec instead only when the caller needs a real reverse mapping.
+
 ## Pattern: Mini custom check plus input artifact
 
 **Use when:** a bundle-sensitive library consumer needs Mini runtime validation and a JSON Schema for
