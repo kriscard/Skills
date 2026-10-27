@@ -76,10 +76,14 @@ void queryClient.query(projectOptions(projectId, filters)).catch(reportPrefetchE
 
 `void` alone does not consume a rejection. Explicitly swallow only if ignored warming failures are
 intentional (`.catch(() => {})`); awaited reads should propagate or handle errors with their owner.
-Earlier v5 uses `fetchQuery`, `prefetchQuery`, `ensureQueryData` and their infinite equivalents;
-prefetch methods swallow errors, unlike fetch methods. The current methods deprecate those older
-APIs, but do not rewrite an older install to unavailable methods. Preserve differing ensure/fetch
-semantics rather than mechanically renaming calls. See the version matrix before choosing syntax.
+On earlier v5, check each installed method rather than inferring an API by symmetry. Common reads
+include `fetchQuery`, `prefetchQuery`, and `ensureQueryData`; infinite reads may use
+`fetchInfiniteQuery` or `prefetchInfiniteQuery`. `ensureInfiniteQueryData` is absent from some early
+v5 releases, including core 5.24.8. When absent, choose an available fetch/prefetch method according
+to its actual freshness and error semantics, not as a claimed ensure-equivalent. Prefetch methods
+swallow errors, unlike fetch methods. The current methods deprecate older APIs, but do not rewrite
+an older install to unavailable methods. Preserve differing ensure/fetch semantics rather than
+mechanically renaming calls. See the version matrix before choosing syntax.
 
 Use `queryOptions` for real sharing between hooks, loaders, and imperative reads; local inline
 options are fine with one caller unless the project's lint configuration requires otherwise.
