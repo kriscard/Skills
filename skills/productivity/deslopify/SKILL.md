@@ -57,7 +57,9 @@ Scan for these before rewriting. More slop patterns justify a stronger edit; mos
 **Vague attribution**:
 
 - "Experts believe", "studies show", "industry reports suggest" — name the source when the attribution supports the claim
-- If no source is available, flag the attribution rather than inventing a source, converting it into the author's claim, or silently strengthening it
+- Never remove or weaken an attribution because its source is missing. Preserve the attributed wording and flag it for sourcing; do not turn attributed belief into a fact, a hedge, or the author's own claim.
+- Example: keep "Experts believe the migration will cut incidents by 30%" in the revised text and note `Source needed for "Experts believe".` Do not rewrite it as "The migration may cut incidents by 30%."
+- Keep attribution that is already specific enough to evaluate, including a named source, a cited study, a bounded group such as "three interviewees," or a deliberately anonymous source whose role and reason for anonymity matter.
 
 **Sycophantic or chatbot phrasing**:
 
