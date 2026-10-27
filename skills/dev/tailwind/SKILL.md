@@ -2,18 +2,19 @@
 name: tailwind
 description: >-
   Version-aware Tailwind CSS implementation, migration, review, and debugging. Use
+  when authoring styled components or reviewing Tailwind patterns and examples;
   when work depends on Tailwind-specific utilities or directives; when configuring
   v3 content/config/plugins or v4 CSS-first @theme, @source, @utility, and build
   integrations; when migrating v3 to v4; or when Tailwind classes, variants,
-  animations, generated CSS, or source detection do not work. Detect the installed
-  major version before giving syntax. Do not use for choosing product design policy,
-  semantic token names, responsive behavior, accessibility, or general UI-system
+  animations, generated CSS, or source detection do not work. Detect the exact
+  resolved version before giving version-sensitive syntax. Do not use for choosing
+  product design policy, semantic token names, responsive behavior, accessibility, or general UI-system
   conventions; route those decisions to frontend.
 ---
 
 # Tailwind CSS
 
-Apply Tailwind syntax that matches the installed major version. Own Tailwind's build,
+Apply Tailwind syntax that matches the installed resolved version. Own Tailwind's build,
 configuration, utility, directive, migration, and generated-CSS mechanics. Let
 `frontend` own what the product should look like and how it should behave.
 
@@ -38,7 +39,11 @@ Classify the project:
 
 If no local version exists, state the version being targeted before supplying code.
 
-**Complete when:** the Tailwind major version, integration path, CSS entry point, and
+Check the exact resolved minor/patch before using APIs added after a major release;
+current v4 documentation is not proof that a feature exists in every v4 version. For a
+new project, record the chosen stable target rather than silently upgrading a neighbor.
+
+**Complete when:** the Tailwind resolved version, integration path, CSS entry point, and
 configuration owner are known.
 
 ### 2. Preserve the ownership boundary
@@ -60,6 +65,7 @@ browser policy owned by `frontend`.
 
 | Priority | Load when | Reference |
 |---|---|---|
+| 1 — High | Authoring or reviewing styled components, class/variant composition, theme usage, runtime values, or worked Tailwind patterns | `references/component-patterns.md` |
 | 1 — Critical | Detecting v3/v4, migrating, reviewing a mixed setup, renamed utilities, changed defaults, or browser/version boundaries | `references/version-and-migration.md` |
 | 1 — High | v4 CSS-first configuration, theme variables, source detection, safelisting, prefixes, legacy config/plugin compatibility, or dark variant syntax | `references/v4-configuration-and-sources.md` |
 | 2 — High | Utilities, arbitrary values/variants, custom utilities, component CSS, `@apply`, CSS modules, animation, starting styles, or 3D transforms | `references/utilities-components-and-animation.md` |
@@ -87,7 +93,9 @@ when applicable.
 
 Before finishing:
 
-- guidance matches the detected Tailwind major version;
+- guidance matches the resolved Tailwind version, including minor-sensitive APIs;
+- component-authoring work loaded the patterns reference and applicable frontend/React
+  owners, with complete class tokens and an explicit override/state contract;
 - v4 syntax is not prescribed to v3 projects, or vice versa;
 - source-detection and dynamic-class risks are checked;
 - migration work accounts for renamed utilities and changed defaults, not only config;
