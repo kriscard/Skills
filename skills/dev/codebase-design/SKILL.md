@@ -5,7 +5,8 @@ description: >-
   testability. Use when deciding what a module should hide, what callers should
   know, where dependencies should vary, whether an abstraction earns its cost,
   or how to make one subsystem easier to test and modify. Use for split/join
-  decisions about pipeline stages, shared knowledge, or oversized modules.
+  decisions about pipeline stages, shared knowledge, oversized modules, or
+  representation-driven special cases.
   Also use when another skill needs consistent deep-module vocabulary.
 ---
 
@@ -118,6 +119,16 @@ responsibility. Compare the current design with the proposed design through:
 - testing through the same interface callers use;
 - migration cost and compatibility.
 
+When one representation forces repeated empty, root, or sentinel checks across ordinary
+operations, compare it with an invariant that lets the normal operation handle those cases.
+For example, an empty range can represent no visible selection when copying or deleting that
+range already preserves the required behavior. Trace the branches and caller obligations removed,
+not just the reduced `if` count. Retain meaningful business, authorization, failure, and protocol
+distinctions; absence and an empty value are interchangeable only when the contract makes them so.
+A surprising sentinel, a more complicated common path, or one cheap local guard does not justify a
+representation change. Keep error-contract decisions with their owner and language-specific state
+modeling with `typescript`; use `refactor` for authorized behavior-preserving implementation.
+
 Keep existing behavior and public APIs unless the user authorizes a contract change.
 Avoid an abstraction when it only renames operations, forwards calls, or anticipates
 variation without evidence.
@@ -130,7 +141,8 @@ remains caller-owned, and why the resulting module provides more leverage.
 Specify how to prove the design improvement. Prefer observable checks such as fewer
 caller responsibilities, removal of repeated coordination, tests crossing the public
 interface, localized future changes, or elimination of implementation-aware call
-sites.
+sites. For a representation change, check normal, empty/root, and transition cases through the
+public interface, including preserved distinctions and any caller knowledge actually removed.
 
 Route a cross-system or hard-to-reverse decision to `architect`. Route authorized
 behavior-preserving implementation work to `refactor`.
