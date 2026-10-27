@@ -18,9 +18,11 @@ Dehydrate only data safe for that identity and use the framework's XSS-safe tran
 Raw `JSON.stringify` embedded in custom HTML is not safe escaping. Pair `serializeData` and
 `deserializeData` for non-JSON values. Clear identity-bound browser data when the account changes.
 
-Choose client `staleTime` intentionally so hydration does not cause an unwanted immediate refetch.
-Server cache retention is separate: server `gcTime` commonly defaults to `Infinity`; if overridden,
-clear request caches when ownership ends and avoid removing entries before hydration finishes.
+Choose client `staleTime` only from a supplied resource/project policy. If that policy is unknown,
+preserve the existing/default behavior, report the gap, and verify the resulting hydration refetch
+rather than inventing a duration. Server cache retention is separate: server `gcTime` commonly
+defaults to `Infinity`; if overridden, clear request caches when ownership ends and avoid removing
+entries before hydration finishes.
 
 **Failure checks:** two server requests cannot see each other's data; initial HTML and hydrated data
 agree; the first client observer uses the hydrated entry; account changes cannot expose old cache.
@@ -110,7 +112,9 @@ The exact Router syntax belongs to its installed docs. The Query-facing assertio
    `useLoaderData` alone does not create a Query observer;
 5. blocking reads are awaited and route-failing errors propagate; secondary warming is non-blocking
    with intentional rejection handling;
-6. Query invalidation and `router.invalidate()` are used only for the ownership layers that changed.
+6. Query invalidation and `router.invalidate()` are used only for the ownership layers that changed;
+7. freshness is inherited from an existing/supplied policy; when unknown, options leave it unset and
+   the implementation reports the unresolved owner decision instead of fabricating a TTL.
 
 A loader/consumer drift bug often looks like this: the loader fetches today's project, the component
 includes `asOf` in its key, navigation waits for unused data, then the component starts a second

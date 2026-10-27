@@ -33,7 +33,6 @@ export const issuesOptions = (projectId: string, filters: IssueFilters) =>
   queryOptions({
     queryKey: ["projects", projectId, "issues", filters] as const,
     queryFn: ({ signal }) => getIssues({ projectId, filters, signal }),
-    staleTime: 30_000,
   })
 ```
 
@@ -55,7 +54,6 @@ await queryClient.query(options)
 // Observer owns a consumer-specific projection and policy override.
 const openTitles = useQuery({
   ...options,
-  staleTime: 5_000,
   select: (issues) => issues.filter((issue) => issue.state === "open").map((issue) => issue.title),
 })
 
@@ -63,11 +61,13 @@ const openTitles = useQuery({
 void queryClient.query(options).catch(reportPrefetchError)
 ```
 
-Place overrides after the spread. Keep `select`, `enabled`, placeholders, polling, and screen-specific
-freshness at the consumer unless every consumer shares them. Avoid accepting a broad unparameterized
-`UseQueryOptions` object in a wrapper: its defaults can widen `data` to `unknown` and make `select`
-inference brittle. A custom hook is earned when it composes behavior—such as local filter state,
-a stable feature result, or related effects—not merely to hide one `useQuery` call.
+Place overrides after the spread. Keep `select`, `enabled`, placeholders, polling, and genuinely
+consumer-specific policy at the consumer unless every consumer shares it. Add `staleTime` only from a
+supplied resource requirement or an existing project policy; when neither exists, leave it unset and
+report freshness as unresolved rather than copying a duration from an example. Avoid accepting a
+broad unparameterized `UseQueryOptions` object in a wrapper: its defaults can widen `data` to `unknown`
+and make `select` inference brittle. A custom hook is earned when it composes behavior—such as local
+filter state, a stable feature result, or related effects—not merely to hide one `useQuery` call.
 
 **Failure checks:** loader, hook, and imperative callers use the same options inputs; callsite
 `select` infers its return; invalidation uses `options.queryKey`; removing a consumer also removes
@@ -163,6 +163,26 @@ During retries, inspect `failureReason`; `error` becomes final after retries are
 retry predicates from whether the operation can plausibly succeed later, not from a copied blanket
 setting.
 
+When the required freshness window is unknown, keep the existing option/client default (or omit a new
+option), record that the product/resource owner must decide it, and test no stronger freshness claim.
+Numeric durations in examples are scenario inputs, never library recommendations.
+
+## Connectivity and `networkMode`
+
+Choose the mode from what the operation can execute without network connectivity:
+
+| Mode | Use when | Observable state and failure behavior |
+| --- | --- | --- |
+| `"online"` (default) | The query or mutation needs the network | Work that cannot start offline does not call transport. A first load can be `status: "pending"` with `fetchStatus: "paused"`; retries pause and continue after reconnect. |
+| `"always"` | The operation is connectivity-independent, such as local async storage or a worker call | It starts while Query's online manager is offline, never pauses for connectivity, and reaches success/error normally. Retries also continue; reconnect refetch defaults are not meaningful for this mode. |
+| `"offlineFirst"` | A service worker, HTTP cache, or query persister should get one attempt before network retry behavior | The first attempt runs offline. A cache hit can succeed; after a miss/failure, retries pause until reconnect instead of failing through every retry immediately. |
+
+Do not use `"always"` merely to force a network request through an offline state, and do not describe
+`"offlineFirst"` as proof that arbitrary fetches work offline. Render paused work separately from an
+active request or terminal error. For the selected branch, set Query's online manager offline and
+assert transport call count, `fetchStatus`/`isPaused`, error timing, and whether reconnect continues
+the same work. Test queries and mutations separately when both are changed.
+
 ## Conditional and parallel reads
 
 Express data dependencies declaratively. Include the dependency in the key and use adapter-supported
@@ -218,6 +238,7 @@ non-Suspense observer when transport abort on observer loss is required.
 - [Query options](https://tanstack.com/query/latest/docs/framework/react/guides/query-options)
 - [Query keys](https://tanstack.com/query/latest/docs/framework/react/guides/query-keys)
 - [Important defaults](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults)
+- [Network mode](https://tanstack.com/query/latest/docs/framework/react/guides/network-mode)
 - [Prefetching](https://tanstack.com/query/latest/docs/framework/react/guides/prefetching)
 - [Disabling queries](https://tanstack.com/query/latest/docs/framework/react/guides/disabling-queries)
 - [Request waterfalls](https://tanstack.com/query/latest/docs/framework/react/guides/request-waterfalls)

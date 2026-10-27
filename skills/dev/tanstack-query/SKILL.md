@@ -39,11 +39,14 @@ possible; preserve a local draft when the user intentionally edits a snapshot.
 ### 3. Define the resource contract
 
 For every read, identify the resource, every result-changing input, canonical cached shape,
-freshness, cancellation path, and error boundary. For every write, identify the affected resources,
-authoritative response data, completion boundary, and concurrency behavior. Keep transport,
-runtime validation, domain transformation, Query policy, and UI projection as explicit seams.
+cancellation path, error boundary, and known freshness requirement. When freshness is unspecified,
+preserve existing/project defaults and report the policy gap instead of inventing a duration. For
+every write, identify affected resources, authoritative response data, completion boundary, list
+membership/order effects, and concurrency behavior. Keep transport, runtime validation, domain
+transformation, Query policy, and UI projection as explicit seams.
 
-**Complete when:** cache identity and the path back to server truth are unambiguous.
+**Complete when:** cache identity and the path back to server truth are unambiguous, while unknown
+policy is preserved and named for its owner.
 
 ### 4. Load the applicable reference
 
@@ -86,7 +89,8 @@ checks, and remaining gaps.
 
 1. **Identity:** keys include every result-changing input; normal and infinite data use distinct keys.
 2. **Repeatability:** `queryFn` returns or throws repeatably; event effects stay with event/mutation owners.
-3. **Freshness:** choose `staleTime` from the resource; use `gcTime` for inactive retention.
+3. **Freshness:** use a known resource policy; otherwise preserve defaults and report the unknown.
+   Use `gcTime` only for inactive retention.
 4. **Reconciliation:** update from an authoritative response or invalidate the resources made stale.
 5. **Cancellation:** pass `AbortSignal` to transport and cancel conflicting reads before cache optimism.
 6. **Optimism:** prefer a local pending preview; use cache optimism when multiple observers need it and

@@ -43,8 +43,9 @@ Cover only branches changed by the task:
   and continues on reconnect; `always` / `offlineFirst` behavior is tested only when configured;
 - cancellation reaches the request signal and stale work cannot overwrite newer/optimistic data;
 - successful mutations update or invalidate the intended entries and failed optimistic writes roll
-  back without losing unrelated concurrent changes; overlapping settlements do not refetch over a
-  still-pending related optimistic write;
+  back without losing unrelated concurrent changes; for same-resource optimism exercise
+  A-failure/B-pending, one-success/one-failure in both orders, both failures in both orders, and both
+  successes; overlapping settlements do not refetch over a still-pending related optimistic write;
 - hook-level mutation callbacks cover every invocation, while adapter per-call callbacks and
   `mutateAsync` composition are tested for consecutive/out-of-order calls when UI behavior depends
   on them;

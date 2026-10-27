@@ -103,30 +103,41 @@ query cache.
 Use cache optimism when multiple observers must see the pending state. The transaction is:
 
 1. await cancellation for every cache entry the preview touches;
-2. snapshot enough prior state to recover this operation;
+2. choose recovery from the concurrency contract: a snapshot only when overlap is externally
+   impossible, otherwise an operation-specific inverse or stable contribution identity;
 3. update immutably from current cache data;
-4. return rollback context from `onMutate`;
-5. remove or restore only the failed operation's contribution in `onError`;
+4. return the recovery context from `onMutate`;
+5. remove only the failed operation's contribution in `onError`;
 6. reconcile with an authoritative response or targeted invalidation.
 
+For a true boolean **toggle**, applying the same operation again is an inverse. This example is safe
+for overlapping toggles on one detail entry only under these explicit assumptions: every conflicting
+pending write is the same one-toggle operation, all use the same mutation key/recovery path, and no
+other owner writes an authoritative `active` value into this entry before reconciliation.
+
 ```ts
+const mutationKey = ["items", itemId, "toggle"] as const
+
 useMutation({
-  mutationKey: ["items", itemId, "toggle"],
+  mutationKey,
   mutationFn: () => api.toggleItem(itemId),
   onMutate: async () => {
     const queryKey = itemOptions(itemId).queryKey
     await queryClient.cancelQueries({ queryKey, exact: true })
-    const previous = queryClient.getQueryData<Item>(queryKey)
+    const previewApplied = queryClient.getQueryData<Item>(queryKey) !== undefined
     queryClient.setQueryData<Item>(queryKey, (item) =>
       item ? { ...item, active: !item.active } : item,
     )
-    return { previous, queryKey }
+    return { previewApplied, queryKey }
   },
   onError: (_error, _variables, context) => {
-    if (context?.previous) queryClient.setQueryData(context.queryKey, context.previous)
+    if (!context?.previewApplied) return
+    // Toggle only this failed operation back; preserve every other pending toggle.
+    queryClient.setQueryData<Item>(context.queryKey, (item) =>
+      item ? { ...item, active: !item.active } : item,
+    )
   },
   onSettled: () => {
-    const mutationKey = ["items", itemId, "toggle"] as const
     if (queryClient.isMutating({ mutationKey, exact: true }) === 1) {
       return queryClient.invalidateQueries({ queryKey: itemOptions(itemId).queryKey, exact: true })
     }
@@ -134,10 +145,23 @@ useMutation({
 })
 ```
 
+If A and B both preview a toggle, A failing while B is pending applies one inverse and leaves B's
+contribution visible. Either settlement order and either failure order reduce to the remaining
+successful-toggle parity; the final related mutation then invalidates once. This does **not**
+generalize to `setActive(value)`, arbitrary patches, list insertion/removal, or server-derived fields.
+Those need UI-only optimism, non-overlap guaranteed outside Query, or a contribution model designed
+for that operation.
+
 The current mutation is still counted during its callback, hence `=== 1`. Scope the count to all and
 only writes that can conflict. An unfiltered count can suppress unrelated reconciliation; a key that
 is too narrow permits a stale refetch over another preview. This guard solves settlement invalidation
-races, not overlapping rollback by itself.
+races; the operation-specific inverse above solves this example's rollback overlap.
+
+A whole-value snapshot restore is safe only when an external invariant prevents every overlapping
+preview and cache write for that entry until settlement. A mutation `scope` alone does not establish
+that invariant: current Query lifecycle runs `onMutate` before scope-gated `mutationFn` execution, so
+multiple scoped mutations can still apply optimistic previews. State the real non-overlap mechanism
+(for example, UI submission exclusion) and test it before using snapshot rollback.
 
 Complex optimism duplicates server behavior. Filtering, sorting, permissions, generated IDs, and
 cross-resource effects can make a seemingly simple cache patch incorrect. Prefer pending UI or
@@ -161,9 +185,18 @@ The smallest correction is often UI-only: derive the clicked row's temporary tog
 mutation's pending variables, keep other rows on query data, and reconcile the affected issue/list on
 success. No list snapshot or mutation scope is then needed. If every observer must see the preview,
 use an issue-specific mutation key, cancel only affected reads, patch from current cache state, and
-recover only that operation's contribution. Serialize only the same issue when its server contract
-requires ordered writes; unrelated issue IDs remain parallel. Guard settlement invalidation with the
-imperative exact-key count shown above when a related preview can still be pending.
+use a recovery operation that removes only the failed contribution—the toggle inverse above applies
+only to true toggle commands. Serialize only the same issue when its server contract requires ordered
+mutation-function execution; unrelated issue IDs remain parallel, and scope still does not make
+snapshot-based `onMutate` overlap-safe. Guard settlement invalidation with the imperative exact-key
+count shown above when a related preview can still be pending.
+
+**Review complete when:** the answer states whether the mutation response is authoritative and whether
+its patch can change filtered-list membership, sort position, permissions, generated fields, or
+aggregates. If those server effects are unknown or impractical to reproduce, keep the preview local or
+invalidate the affected list variants instead of claiming the optimistic list is correct. Exercise
+A-failure/B-pending, A-failure then B-success, B-failure then A-success, both failures in both orders,
+and both successes for the chosen same-resource recovery model.
 
 ## Ordering and serialization
 

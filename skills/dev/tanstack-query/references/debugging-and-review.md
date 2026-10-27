@@ -87,11 +87,15 @@ a demand for wrappers or architecture ceremony.
 ### Writes and concurrency
 
 - Is an authoritative mutation response written only into shapes it fully represents?
+- Can the write change filtered-list membership, sort position, permissions, generated fields, or
+  aggregates? If the client cannot reproduce those server effects, does it invalidate the affected
+  list variants rather than presenting a patched list as authoritative?
 - Does invalidation match resources made stale and wait only when refreshed truth is part of mutation
   completion?
 - Is UI-only optimism sufficient? If shared cache optimism is used, are cancellation, absent data,
   overlap-safe rollback, generated identity, server reconciliation, and settlement races handled?
-- Does a mutation scope serialize one real conflict rather than unrelated work?
+- Does a mutation scope serialize one real mutation-function conflict rather than unrelated work,
+  without being mistaken for serialization of optimistic `onMutate` callbacks?
 
 ### React and framework seams
 
