@@ -47,6 +47,15 @@ Keep the change centered on the named structural target. Choose only the techniq
 Follow local conventions and keep public APIs, dependencies, and architectural boundaries stable.
 Supporting renames or extractions belong in the same change only when they serve the target.
 
+Treat naming difficulty as design evidence: when several candidate names remain broad, conditional,
+or need implementation narration, inspect for unclear or mixed responsibilities, an ambiguous
+representation, or the wrong owner rather than choosing a longer generic label. Use `codebase-design`
+for module responsibility questions within this workflow. Within the authorized behavior-preserving
+scope, reshape or split only when the diagnosis supports it and a precise concept name becomes
+possible; otherwise report the unresolved ambiguity and seek permission for any required public API
+or architectural change. Naming evidence is neither a suffix blacklist nor an automatic split rule.
+Established domain vocabulary, short obvious locals, and generated or external names remain valid.
+
 Completion: the target is measurably improved and every changed line supports that improvement or
 preserves its contract.
 
