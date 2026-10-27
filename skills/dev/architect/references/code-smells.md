@@ -39,6 +39,36 @@ Callers depend on implementation details, undocumented ordering, internal data
 shape, or private lifecycle. Strengthen the interface or move the seam so callers
 need less knowledge.
 
+### Temporal coupling
+
+Ask whether callers must remember a required operation order or coordinate a
+lifecycle across separate calls. Move the sequence behind one operation or make
+state transitions explicit only when repeated call sites, defects, or tests show
+that ordering knowledge is leaking; a protocol whose order is already enforced by
+one owner is not evidence for another abstraction.
+
+### Hand-synchronized registries
+
+Ask whether adding one implementation requires matching edits to multiple lists,
+registries, factories, or capability maps. Establish one source of truth or derive
+the views only when history or current differences show recurring coordination or
+drift. Keep separate collections when they encode distinct policies or ownership.
+
+### Competing operation paths
+
+Ask whether the same domain operation can be performed through multiple entry
+points with duplicated or diverging validation, policy, side effects, or recovery.
+Converge them behind one owner only when their observable contract is the same and
+the parallel paths create drift or caller confusion; preserve paths with genuinely
+different semantics.
+
+### Repeated abstraction deviations
+
+Ask whether implementations repeatedly bypass, special-case, or extend the stated
+abstraction to deliver ordinary behavior. Redesign the abstraction when several
+deviations expose one coherent missing capability or false boundary. Treat an
+isolated exception as local evidence, not a reason to generalize the interface.
+
 ### Pass-through module
 
 A module delegates while adding no policy, translation, lifecycle, compatibility,
