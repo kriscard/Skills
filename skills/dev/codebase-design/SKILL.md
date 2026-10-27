@@ -4,8 +4,9 @@ description: >-
   Design and evaluate module interfaces, depth, seams, adapters, locality, and
   testability. Use when deciding what a module should hide, what callers should
   know, where dependencies should vary, whether an abstraction earns its cost,
-  or how to make one subsystem easier to test and modify. Also use when another
-  skill needs consistent deep-module vocabulary.
+  or how to make one subsystem easier to test and modify. Use for split/join
+  decisions about pipeline stages, shared knowledge, or oversized modules.
+  Also use when another skill needs consistent deep-module vocabulary.
 ---
 
 # Codebase Design
@@ -63,7 +64,34 @@ caller knowledge and centralized behavior rather than implementation size.
 **Complete when:** the module's depth, leverage, and locality are supported by
 specific caller and change evidence.
 
-### 4. Inspect seams and adapters
+### 4. Decide what belongs together
+
+For a proposed split or join, inventory the nonobvious knowledge each phase or
+module needs: format rules, invariants, policy decisions, and reasons to change.
+Trace duplicated knowledge, including back-door assumptions absent from signatures,
+to concrete code or contracts. Walk a representative format, invariant, or policy
+change: which implementations and callers must change together?
+
+Compare keeping, joining, and splitting the relevant responsibilities by total
+caller **and** implementation burden: interfaces and coordination added, knowledge
+hidden or duplicated, change amplification, locality, and demonstrated independent
+variability. Prefer one owner for knowledge that must change together; preserve
+meaningful responsibilities that can vary independently and necessary caller policy.
+Execution order, LOC, or short methods alone do not justify a split; shared input
+or execution proximity alone do not justify a join.
+
+For example, reading and parsing stages that both encode the same wire grammar
+may belong behind one protocol interface. Parsing and authorization sharing request
+data still need distinct trust responsibilities and a narrow validated contract.
+Preserve ownership, trust/security, deployment, and generated/framework-required
+boundaries through explicit contracts rather than collapsing them to remove overlap.
+If evidence is missing, identify the change or caller trace needed before choosing.
+
+**Complete when:** each proposed grouping has a knowledge/change trace and a
+join-versus-split rationale, including what remains independently owned. When
+composed by another workflow, keep this analysis in its existing output format.
+
+### 5. Inspect seams and adapters
 
 A **seam** is a place where behavior can vary without editing the caller. An
 **adapter** is a concrete implementation occupying a role at that seam. Reserve
@@ -77,7 +105,7 @@ platform difference, or a known source of change.
 **Complete when:** each proposed or existing seam has a demonstrated source of
 variation and its placement is justified independently from its interface design.
 
-### 5. Design a deeper alternative
+### 6. Design a deeper alternative
 
 Move stable policy and repeated knowledge behind the interface while preserving
 necessary caller control. Prefer the smallest coherent interface that owns the full
@@ -97,7 +125,7 @@ variation without evidence.
 **Complete when:** the recommendation states what moves behind the interface, what
 remains caller-owned, and why the resulting module provides more leverage.
 
-### 6. Define verification
+### 7. Define verification
 
 Specify how to prove the design improvement. Prefer observable checks such as fewer
 caller responsibilities, removal of repeated coordination, tests crossing the public
@@ -128,7 +156,7 @@ When invoked directly, return:
 
 1. **Module and callers** — scope, responsibility, dependencies, and evidence.
 2. **Interface burden** — what callers currently must know.
-3. **Diagnosis** — depth, locality, leaks, seams, and adapters.
+3. **Diagnosis** — depth, locality, leaks, seams, adapters, and any grouping decision.
 4. **Recommended interface** — responsibilities moved, retained, or removed.
 5. **Migration and verification** — compatibility, sequence, tests, and success checks.
 
