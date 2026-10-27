@@ -1,6 +1,6 @@
 # Skills
 
-A collection of 46 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
+A collection of 48 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
 
 ## Install
 
@@ -45,6 +45,7 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 | `research` | Retrieves current, source-grounded framework and API documentation |
 | `review` | Reviews selected or local code changes for production-impacting defects and project-rule violations |
 | `spec` | Builds separately reviewed requirements, technical design, and an executable plan, then records approval and stops before implementation |
+| `tanstack-query` | Implements, debugs, migrates, and reviews version-matched TanStack Query server-cache behavior |
 | `test` | Builds behavior-focused tests, selects credible boundaries, and records executable evidence across test runners |
 
 ### Obsidian
