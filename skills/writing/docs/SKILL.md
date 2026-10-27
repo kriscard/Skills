@@ -31,10 +31,11 @@ Complete when:
 
 ### 2. Load the matching reference
 
-Use the routing table below. If a template or type-specific rule applies, load that reference before
-writing.
+Use the routing table below. Load every reference whose condition applies before writing. The
+technical-style reference is additive: load it only when the prose needs sentence-level clarity work,
+not merely because the document is technical.
 
-Complete when the matching reference has been loaded, or no reference applies and that is stated.
+Complete when every applicable reference has been loaded, or no reference applies and that is stated.
 
 ### 3. Gather the minimum context
 
@@ -84,3 +85,4 @@ Complete when all applicable checks pass or failures are called out explicitly.
 | 2 | Creating or revising a README | `references/readme-guide.md` |
 | 2 | Creating or revising API documentation | `references/api-docs-guide.md` |
 | 2 | Creating or revising a task-oriented how-to guide | `references/how-to-guide.md` |
+| 3 | Technical prose needs sentence-level clarity work: reader-mode boundaries, condition/action order, common-path ordering, technical names, link text, modifier scope, or list introductions | `references/technical-style.md` |
