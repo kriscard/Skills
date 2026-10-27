@@ -1,72 +1,101 @@
-> **Read this when:** The task customizes Zod messages, consumes issues, formats errors, localizes output, or projects validation failures into an API or form.
+> **Read this when:** The task consumes Zod issues, customizes messages, projects API/form errors, localizes output, or logs contract failures.
 
-# Errors
+# Structured errors
 
-## Keep validation evidence structured
+## Preserve evidence until the consumer boundary
 
-Use `safeParse` when invalid data is an ordinary result and `parse` when the boundary intentionally
-throws. Inspect `ZodError.issues` for program logic. Preserve issue `code`, `path`, and relevant
-metadata until the presentation boundary; converting everything to one string too early loses the
-evidence needed by nested forms, APIs, logs, and tests.
+Use `safeParse` when invalid input is an ordinary branch and `parse` when the caller intentionally
+throws. Program logic should inspect `ZodError.issues`, retaining at least `code`, `path`, and relevant
+issue metadata. Converting the error to one string too early prevents nested field projection,
+monitoring aggregation, and stable tests.
 
-Do not expose raw validation details automatically across a public API. Map issues to the product's
-stable error contract at that boundary. Zod excludes the original input from issues by default to
-reduce accidental sensitive-data logging; enable `reportInput: true` only when that exposure is
-reviewed, and do not log raw payloads merely to diagnose a path/code failure. Browser announcements,
-field association, focus, and recovery belong to `frontend`; form-wide versus field errors and
-submission lifecycle belong to `react-hook-form`.
+Choose a formatter for the consumer:
 
-## Match the installed version
+- `z.treeifyError(error)` for nested object/array traversal;
+- `z.flattenError(error)` for shallow field/form errors;
+- `z.prettifyError(error)` for human-readable CLI or diagnostic text;
+- `error.issues` for programmatic handling and public-contract projection.
 
-### Zod 4
+## Pattern: safe public projection and diagnostic logging
 
-Use the unified `error` parameter for schema-level or per-parse customization. Return `undefined`
-from an error function when lower-precedence handling should continue. Do not introduce legacy
-`errorMap`, `message`, `required_error`, or `invalid_type_error` options into new v4 code.
+**Use when:** a contract failure must reach an API client, form adapter, or observability system without
+exposing the payload.
 
-For the verified 4.6.7 contract, error precedence is highest to lowest: failing **check**, containing
-**schema**, **per-parse**, **global customError**, then **localeError**. A schema error is the fallback
-for its checks when the failing check has no error of its own. Older v4 releases may differ: inspect
-declarations/source and test the conflicting layers rather than assuming all v4 builds match.
+```ts
+import { z } from "zod";
 
-In the verified 4.6.7 contract, a failed `safeParse` materializes and customizes its error on the
-first read of `result.error`, not when parsing returns. Changing global `z.config()` or locale state between those
-two moments changes the resulting messages, and an error-map side effect does not run if the error
-is never read. Do not use mutable global configuration as request-scoped localization; keep the
-configuration stable across parse and error consumption.
+type ValidationProblem = {
+  type: "validation";
+  issues: Array<{ code: string; path: string[]; message: string }>;
+};
 
-Choose the top-level formatter from the consumer:
+export function toValidationProblem(error: z.ZodError): ValidationProblem {
+  return {
+    type: "validation",
+    issues: error.issues.map((issue) => ({
+      code: issue.code,
+      path: issue.path.map(String),
+      message: issue.message,
+    })),
+  };
+}
+```
 
-- `z.treeifyError()` for nested traversal;
-- `z.flattenError()` for a shallow field/form projection;
-- `z.prettifyError()` for human-readable text such as CLI or logs;
-- `error.issues` for programmatic handling.
+At an internal transport boundary, log stable context plus the same structural evidence:
 
-`z.formatError()` also exists but is deprecated; prefer `z.treeifyError()` for new nested projections.
-The legacy instance methods `error.format()` and `error.flatten()` are deprecated. The top-level
-`z.flattenError()` is the current shallow formatter; distinguish it from the legacy instance method
-when reviewing code.
+```ts
+const result = SubscriptionSchema.safeParse(payload);
+if (!result.success) {
+  logger.warn("subscription contract rejected", {
+    endpoint: "/api/subscriptions/:id",
+    schema: "SubscriptionSchema",
+    issues: result.error.issues.map(({ code, path }) => ({ code, path })),
+  });
+  throw new ContractError(toValidationProblem(result.error));
+}
+```
 
-### Zod 3
+**Observable result:** the query/request fails, operators can group failures by schema and path, and
+neither output includes the raw response. Define `ContractError` in the owning transport layer so its
+retry/status behavior matches that system.
 
-Use v3's documented message/error-map and `ZodError` formatting APIs. Do not paste v4 top-level
-formatters into a v3 project. During migration, snapshot or assert representative issue paths and
-consumer projections because issue shapes and error-map precedence can change.
+**Alternative:** `z.flattenError()` is convenient for shallow forms; `z.treeifyError()` preserves a
+nested shape. Browser announcements, focus, field registration, and server-error lifecycle remain
+frontend/form-owned.
+
+**Failure check:** test the public shape, nested paths, a root-level issue (`path: []`), multiple issues,
+and serialization. Assert that secrets and raw payload fields do not appear.
 
 ## Customize at the narrowest stable layer
 
-Prefer default messages unless the product needs domain wording, localization, or a stable external
-error contract. Keep schema validation facts separate from presentation copy when multiple consumers
-share a schema. Avoid a global error customization when a schema-local or boundary projection is
-sufficient; global policy increases coupling and test surface.
+Zod 4 uses the unified `error` parameter for schema/check and per-parse customization. Return
+`undefined` from an error function to allow lower-precedence handling to continue. Prefer default
+messages unless the product requires domain wording, localization, or a stable public contract.
 
-For tests, assert the issue code/path or stable external projection that matters. Full message
-snapshots are appropriate only when exact wording is itself the contract.
+Keep validation facts separate from presentation copy when a schema has multiple consumers. A field
+schema can own wording specific to that field; a boundary projector can translate issue codes/paths
+into API or UI copy. Avoid mutable global error configuration for request-scoped localization because
+concurrent work can observe the wrong locale.
+
+For tests, assert issue code/path or the stable external projection. Snapshot full messages only when
+exact wording is itself the contract.
+
+## Sensitive input stays out by default
+
+Zod omits input values from issues by default to reduce accidental logging of secrets and personal
+data. Enable `reportInput: true` only for a reviewed boundary with explicit redaction and retention
+rules. Structured issue paths normally provide enough diagnosis; do not log the original payload just
+because parsing failed.
+
+## Specific version caveat
+
+In exact `zod@4.6.7` probes, a failed `safeParse` applied error customization on first access to
+`result.error`. Mutating global locale/configuration between parsing and that read changed messages.
+Treat this as a version-specific receipt, not an all-Zod-4 rule: keep global configuration stable and
+test the installed version if code depends on error-map timing.
 
 ## Official sources
 
-- [Customizing errors, input reporting, and localization](https://zod.dev/error-customization)
-- [Zod 4.6: lazy safe-parse error materialization](https://zod.dev/blog/zod-4-6#%EF%B8%8F-error-maps-run-on-the-first-read-of-error)
+- [Customizing errors and input reporting](https://zod.dev/error-customization)
 - [Formatting errors](https://zod.dev/error-formatting)
-- [Zod 4 migration guide: error customization and formatting](https://zod.dev/v4/changelog)
-- [Official Zod v3 documentation source](https://github.com/colinhacks/zod/tree/main/packages/docs-v3)
+- [Zod 4.6 error-map timing note](https://zod.dev/blog/zod-4-6#%EF%B8%8F-error-maps-run-on-the-first-read-of-error)

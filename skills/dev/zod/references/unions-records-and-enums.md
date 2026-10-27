@@ -1,58 +1,76 @@
-> **Read this when:** The task parses tagged variants, ordinary unions, enum values, exhaustive enum-keyed records, or sparse enum maps.
+> **Read this when:** The task parses tagged variants, overlapping alternatives, enum values, exhaustive enum-keyed records, or sparse enum maps.
 
 # Unions, records, and enums
 
-## Choose a runtime variant contract
+## Pattern: tagged transport variants
 
-Use `z.discriminatedUnion(key, options)` when object variants share a stable discriminator. It
-selects by that key; test unknown/missing tags and invalid payloads within each selected branch.
-Use `z.union()` when no such tag exists. Ordinary unions try options in order and return the first
-successful parsed result, so overlapping alternatives and transformations can make order observable.
-General domain-state and exhaustiveness design belongs to `typescript`.
-
-Current v4 supports union and pipe discriminator schemas and nested discriminated-union
-composition. This is not a v3 promise or a license to use an arbitrary transform as a discriminator:
-confirm literal extraction in the installed declarations/runtime, including every accepted raw tag.
-Prefer plain literals/enums unless richer tags serve the actual contract.
+**Use when:** object variants share a stable discriminator. `z.discriminatedUnion()` selects by that
+key and produces focused failures for unknown tags or an invalid selected branch.
 
 ```ts
-// Verified with zod@4.6.7, import { z } from "zod/v4".
-const Failure = z.discriminatedUnion("code", [
-  z.object({ status: z.literal("failed"), code: z.literal("missing") }),
-  z.object({ status: z.literal("failed"), code: z.literal("invalid"), reason: z.string() }),
+import { z } from "zod";
+
+const PaymentResult = z.discriminatedUnion("status", [
+  z.strictObject({
+    status: z.literal("paid"),
+    receiptId: z.string().min(1),
+  }),
+  z.strictObject({
+    status: z.literal("declined"),
+    reason: z.enum(["insufficient_funds", "expired_card", "blocked"]),
+  }),
 ]);
-const Result = z.discriminatedUnion("status", [
-  z.object({ status: z.literal("ok"), data: z.string() }),
-  Failure,
-]);
+
+type PaymentResult = z.output<typeof PaymentResult>;
 ```
 
-V3 supports simpler object alternatives; flatten branches or use an ordinary union when its
-installed discriminator contract cannot compose the required graph. Do not migrate solely for syntax.
+**Observable result:** TypeScript narrows `receiptId` and `reason` from `status`, while runtime parsing
+rejects missing/unknown tags and branch-specific malformed data.
 
-## Decide whether enum keys are required
+**Alternative:** use `z.union()` when no reliable discriminator exists. Ordinary unions try options
+in order and return the first successful parsed result; order is observable when branches overlap or
+transform values. Prefer plain literal/enum discriminators unless the installed Zod 4 declarations and
+runtime confirm a richer discriminator contract is necessary.
 
-In v4, `z.enum(enumLike)` accepts supported enum-like objects/TypeScript enums and replaces
-`z.nativeEnum()`. For literal lists, preserve literal inference (an inline array or `as const`).
-V3 uses `z.enum()` for string literal tuples and `z.nativeEnum()` for supported enum-like values.
+**Failure check:** test every tag, missing/unknown tags, invalid payload inside each selected branch,
+and ambiguous ordinary-union inputs if order matters.
+
+## Pattern: complete versus sparse enum maps
+
+**Use when:** a record's legal keys are a finite enum. Choose whether every key is required.
 
 ```ts
-// Verified with zod@4.6.7, import { z } from "zod/v4".
-const Key = z.enum(["name", "email"]);
-const Complete = z.record(Key, z.string());
-const Sparse = z.partialRecord(Key, z.string());
-Complete.safeParse({ name: "Ada" }); // failure: email is required
-Sparse.parse({ name: "Ada" }); // success
+const Channel = z.enum(["email", "sms"]);
+
+const CompletePreferences = z.record(Channel, z.boolean());
+const PreferencePatch = z.partialRecord(Channel, z.boolean());
+
+CompletePreferences.parse({ email: true, sms: false });
+PreferencePatch.parse({ sms: true });
 ```
 
-A v4 enum-keyed record requires every enum key and validates each value; `z.partialRecord()` makes
-those keys optional but still rejects keys outside the enum. Test missing keys, unexpected keys,
-and invalid present values. V3 enum-keyed records are partial rather than exhaustive, and v4's
-`partialRecord` is not a v3 API. Recheck inferred optionality and runtime acceptance together during
-migration. Do not use object strictness as a substitute for choosing the record's key contract.
+A Zod 4 enum-keyed `z.record()` requires every enum key. `z.partialRecord()` makes those keys optional
+while continuing to reject keys outside the enum.
+
+**Alternative:** use `z.strictObject()` when fields have different value schemas or field-specific
+metadata. Use `z.record(z.string(), Value)` when keys are genuinely open-ended.
+
+**Failure check:** cover missing keys, unexpected keys, and invalid present values. Assert inferred
+optionality together with runtime acceptance.
+
+## Preserve literal inference
+
+For literal enums, pass an inline tuple or an `as const` array:
+
+```ts
+const plans = ["essential", "scale", "elite"] as const;
+const Plan = z.enum(plans);
+```
+
+A widened `string[]` loses the finite literal union. `z.enum(enumLike)` can also consume supported
+enum-like objects, but a plain const object/tuple is often clearer for a transport contract.
 
 ## Official sources
 
-- [Discriminated unions, enums, and records](https://zod.dev/api)
-- [V4 upgraded discriminated unions](https://zod.dev/v4#upgraded-zdiscriminatedunion)
-- [V3-to-v4 enum and record changes](https://zod.dev/v4/changelog)
+- [Discriminated unions, ordinary unions, enums, and records](https://zod.dev/api)
+- [Zod 4 discriminated-union capabilities](https://zod.dev/v4#upgraded-zdiscriminatedunion)

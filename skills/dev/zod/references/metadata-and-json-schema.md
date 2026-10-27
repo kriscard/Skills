@@ -1,80 +1,104 @@
-> **Read this when:** The task attaches metadata, uses registries, converts Zod to/from JSON Schema, generates structured-output schemas, or evaluates schema-driven documentation/code generation.
+> **Read this when:** A Zod 4 schema drives JSON Schema, structured outputs, documentation, registries, code generation, or an OpenAPI-related artifact.
 
-# Metadata, registries, and JSON Schema
+# Metadata and JSON Schema artifacts
 
-## Keep metadata separate from validation
+## Start from artifact ownership
 
-Metadata describes a schema for documentation and tooling; it does not add runtime validation.
-Use `.meta({...})` for the global registry's standard fields or a typed `z.registry<Meta>()` when a
-separate consumer owns a different metadata contract.
+Metadata does not add runtime validation. Add it only when a named consumer needs titles,
+descriptions, examples, IDs, or custom fields. Use `.meta({...})` for global-registry metadata and a
+typed `z.registry<Meta>()` when a separate tool owns a distinct metadata contract.
 
-Metadata propagation through derived schemas is version-sensitive. Current web docs describe
-metadata as instance-specific, but verified `zod@4.6.7` registry lookup inherits non-`id` metadata from
-a parent schema and JSON Schema conversion can still reference the parent's ID. Attach metadata to the
-final exported schema and assert the generated artifact instead of assuming clone behavior.
-`.register(registry, metadata)` is unusual because it returns the original schema.
+Attach metadata to the final exported schema rather than an intermediate shape. Treat IDs as published,
+unique contract identifiers and enforce uniqueness in artifact tests or registry-building code. Avoid
+secrets and internal-only instructions in metadata that may be published.
 
-Treat registry `id` values as unique and enforce that in application tooling. Current web docs say
-duplicate IDs throw, but verified `zod@4.6.7` registries overwrite the ID lookup without throwing, so
-do not use runtime rejection as the uniqueness check.
+## Pattern: publish the intended direction
 
-Do not add metadata or a global registry merely because a generator might exist later. Name the
-consumer, required fields, registry lifetime, and whether global state is acceptable first.
-
-## Convert in the intended direction and dialect
-
-In compatible v4 entrypoints, `z.toJSONSchema(Schema)` converts the schema's **output** contract by
-default. Use `{ io: "input" }` when the artifact describes accepted wire input instead. This choice is
-observable for defaults, coercion, pipes, codecs, and transforms.
-
-Select the target expected by the consumer. Verified `zod@4.6.7` defaults to JSON Schema Draft
-2020-12 and also supports Draft 7, Draft 4, and an OpenAPI 3.0 target. Do not label one dialect as another or
-assume an OpenAPI document generator accepts every JSON Schema keyword unchanged.
-
-Some runtime contracts have no sound JSON Schema representation. Verified `zod@4.6.7` conversion
-throws by default for unrepresentable schemas such as transforms. Prefer changing the artifact boundary or
-supplying an explicitly reviewed representation; `{ unrepresentable: "any" }` emits permissive
-schemas and can silently erase constraints, so it is not a general fallback.
+**Use when:** tooling consumes a JSON Schema generated from a Zod-owned contract. Capability-check
+`z.toJSONSchema` in the installed entrypoint, then choose whether the artifact describes accepted
+input or parsed output.
 
 ```ts
-// Verified with zod@4.6.7, import { z } from "zod/v4".
-const Count = z.codec(z.string().regex(/^\d+$/), z.number().int(), {
+import { z } from "zod";
+
+const Count = z.codec(z.string().regex(/^\d+$/), z.number().int().nonnegative(), {
   decode: Number,
   encode: String,
 });
-const acceptedInput = z.toJSONSchema(Count, { io: "input" }); // string contract
-const producedOutput = z.toJSONSchema(Count); // integer contract
+
+const acceptedInput = z.toJSONSchema(Count, { io: "input" });
+const parsedOutput = z.toJSONSchema(Count);
 ```
 
-Metadata from the selected registry is copied into generated JSON Schema. Registered IDs may cause
-the schema to be extracted into `$defs` and referenced with `$ref`. Treat titles, descriptions,
-examples, and IDs as published contract data; reject collisions in your own checks and avoid
-embedding secrets or internal-only details.
+**Observable result:** `acceptedInput` is a string schema with the digit pattern; `parsedOutput` is a
+nonnegative integer schema. The default direction is output, which is wrong for a wire-input artifact
+when coercion, transforms, defaults, pipes, or codecs change representation.
 
-## Treat reverse conversion and generators as separate contracts
+Select the dialect required by the consumer. Current implementations can target JSON Schema drafts
+and OpenAPI 3.0, but an OpenAPI document generator remains a separate integration: it also owns routes,
+parameters, responses, components, and dialect-specific constraints.
 
-`z.fromJSONSchema()` is experimental in the current Classic API and absent from the current Mini
-entrypoint. Gate it on installed declarations, pin behavior with representative parse cases, and do
-not build a stable public API around assumed conversion completeness.
+**Alternative:** publish the pre-transform wire schema directly when conversion is one-way or the
+output uses runtime-only values. If an external OpenAPI document is authoritative, generate/consume
+from that source with a synchronization owner rather than maintaining two independent contracts.
 
-Native `z.toJSONSchema()` is a good first check for Zod 4 schema conversion, but it is not a blanket
-replacement for OpenAPI route/document generators, client generators, or framework adapters. Inspect
-the installed tool's supported Zod major, dialect, input/output direction, metadata conventions, and
-runtime-validation guarantees. When an external OpenAPI document is authoritative, avoid creating a
-second hand-maintained contract without an explicit synchronization owner.
+**Failure check:** assert direction and representative nodes, then validate a real value with Zod and
+with the downstream consumer. Do not stop at “conversion did not throw.”
 
-## Verify the artifact
+## Pattern: test the artifact as a product
 
-- typecheck the exact entrypoint and converter options;
-- assert representative generated nodes, required keys, unknown-key behavior, metadata, and refs;
-- test at least one runtime value against the Zod schema as well as the downstream artifact consumer;
-- snapshot only stable external structure, not incidental key ordering;
-- document whether the artifact describes accepted input, parsed output, or both.
+```ts
+import assert from "node:assert/strict";
+
+const OrderWire = z
+  .strictObject({
+    id: z.uuid(),
+    quantity: z.number().int().positive(),
+  })
+  .meta({ title: "Order payload" });
+
+const artifact = z.toJSONSchema(OrderWire, { io: "input" });
+
+assert.equal(artifact.type, "object");
+assert.deepEqual(artifact.required, ["id", "quantity"]);
+assert.equal(artifact.additionalProperties, false);
+const quantityArtifact = artifact.properties?.quantity;
+assert.ok(quantityArtifact && typeof quantityArtifact === "object");
+if (quantityArtifact && typeof quantityArtifact === "object" && "type" in quantityArtifact) {
+  assert.equal(quantityArtifact.type, "integer");
+}
+```
+
+Also assert selected metadata and `$ref`/`$defs` behavior when those are part of the published
+contract. Snapshot only stable external structure, not incidental key ordering. Keep a runtime parse
+fixture beside the artifact test so documentation cannot drift from behavior unnoticed.
+
+## Handle unrepresentable schemas explicitly
+
+Some runtime contracts have no sound JSON Schema representation, including ordinary transforms and
+runtime-only values. Conversion throws by default. Prefer moving the artifact boundary to a
+representable wire schema or supplying a narrowly reviewed representation. A blanket
+`{ unrepresentable: "any" }` emits permissive `{}` nodes and can silently erase constraints.
+
+Native conversion is the first option for Zod-owned JSON Schema. Route/OpenAPI libraries, client
+code generators, database adapters, and AI structured-output consumers still need exact-version tests
+for dialect, metadata, input/output direction, and runtime-validation guarantees.
+
+`z.fromJSONSchema()` is experimental in current Classic documentation and is not a stable inverse of
+every generated artifact. Gate it on installed declarations and pin representative parse behavior
+before putting it behind a public API.
+
+## Specific version caveat
+
+Current documentation describes metadata as instance-specific and duplicate registry IDs as errors.
+Exact `zod@4.6.7` probes observed inherited parent metadata during lookup/conversion and duplicate-ID
+lookup replacement instead of a throw. This is a patch-specific receipt, not a general Zod 4 rule:
+attach metadata to final schemas, enforce ID uniqueness yourself, and test the installed version's
+artifact.
 
 ## Official sources
 
 - [Metadata and registries](https://zod.dev/metadata)
-- [Versioned 4.6.7 registry implementation](https://github.com/colinhacks/zod/blob/b500a2ee95134f81d74da7911d7378dd2853d042/packages/zod/src/v4/core/registries.ts)
-- [JSON Schema conversion, direction, dialects, and unrepresentable types](https://zod.dev/json-schema)
-- [Zod 4.6: `fromJSONSchema()` changes](https://zod.dev/blog/zod-4-6)
-- [Library-author and adapter compatibility](https://zod.dev/library-authors)
+- [JSON Schema direction, dialects, and unrepresentable types](https://zod.dev/json-schema)
+- [Codecs](https://zod.dev/codecs)
+- [Library and adapter compatibility](https://zod.dev/library-authors)

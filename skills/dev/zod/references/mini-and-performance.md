@@ -1,97 +1,161 @@
-> **Read this when:** The task proposes Zod Mini, Zod Core, caching, schema-construction changes, bundle optimization, or parse-performance work.
+> **Read this when:** The task considers Zod Mini, bundle reduction, boolean-only validation, compilation, schema construction, caching, or parse throughput.
 
-# Zod Mini and performance
+# Classic, Mini, and measured performance
 
-## Start with evidence
+## Choose from a measured constraint
 
-Name the constrained surface and measure the relevant signal before changing APIs:
+Use Classic by default. Choose Mini when a production browser bundle has an unusually strict size
+budget and the measured reduction justifies a less discoverable functional API. Backend code and
+ordinary applications rarely benefit from changing APIs for a generic “smaller is faster” claim.
 
-- client bundle contribution and network conditions for bundle work;
-- parse throughput and representative data for runtime work;
+Measure the signal that motivated the work:
+
+- production chunk bytes and target network/device conditions for Mini;
+- representative valid and invalid payload throughput for parser work;
 - TypeScript diagnostics for typechecking cost;
-- schema construction frequency only when profiles show it matters.
+- CSP/no-eval behavior and startup cost for compilation.
 
-Use regular Zod by default. The official guidance recommends Zod Mini mainly for unusually strict
-front-end bundle constraints; its functional API trades discoverability and chaining ergonomics for
-better tree-shaking. Do not migrate backend code or an ordinary application to Mini from a generic
-claim that smaller is faster.
+## Pattern: translate Classic to Mini deliberately
 
-## Use Mini as a deliberate v4 contract
+Classic and Mini provide the same validation purpose through different authoring styles:
 
-`zod/mini` is Zod 4's functional, tree-shakable API. The same Mini contract is exported from
-`zod/v4/mini` and the compatibility path `zod/v4-mini`. The standalone `@zod/mini` package
-re-exports its peer `zod/mini` and is versioned in lockstep since 4.5; verify both installed versions
-and peer ranges. Parsing methods remain available, while most schema operations use top-level
-functions and `.check()`. Confirm adapter compatibility before passing Mini schemas to ecosystem
-libraries.
+```ts
+// Classic
+import { z } from "zod";
 
-Do not copy Classic method syntax blindly. For custom Mini predicates use
-`Schema.check(z.refine(predicate, params))`; for lower-level or multiple-issue control use
-`Schema.check(z.check((ctx) => { ... }))`. Mini schemas do not expose `.refine()` or
-`.superRefine()` methods.
+const ClassicName = z.string().trim().min(1).max(80);
+```
 
-Zod Mini does not load the English locale by default, so issue messages may be `"Invalid input"`
-until a locale or custom errors are configured. Include that behavior in tests when messages reach
-users or logs.
+```ts
+// Mini
+import * as z from "zod/mini";
 
-Do not import `zod/v4/core` in application code for performance. Core is a low-level substrate for
-library authors building on both Zod and Zod Mini, and its internal definitions are not a stable
-shortcut for ordinary validation.
+const MiniName = z.string().check(z.trim(), z.minLength(1), z.maxLength(80));
+```
 
-## Optimize the demonstrated cost
+Mini keeps parsing methods, while most modifiers become wrappers or checks:
 
-- For TypeScript cost, prefer explicit object shape spread over long chained `.extend()` calls.
-- For parse cost, simplify the schema or use lower-level `.check()` only after profiling the real
-  path and preserving equivalent failures.
-- For bundle cost, compare production bundles with regular Zod and Mini using the project's bundler.
-- Ordinary module-level schema reuse is not a cache proposal and needs no speculative machinery.
-  Do not add memoization or parsed-result
-  caches without repeated-cost evidence, a correct cache key, bounded lifetime, and invalidation
-  rules. Parsed input, locale, error customization, and async dependencies can make speculative
-  caches incorrect as well as unnecessary.
+```ts
+const MaybeName = z.nullable(z.optional(MiniName));
+const AdultAge = z.number().check(z.refine((age) => age >= 18, { error: "Adult only" }));
+```
 
-Verify with the same metric that justified the change and retain behavioral parse cases. A smaller
-bundle or faster benchmark does not excuse changed input/output types, issue paths, unknown-key
-behavior, or refinement execution.
+Use `Schema.check(z.refine(...))` for a custom predicate and `Schema.check(z.check(...))` for
+lower-level multiple-issue control. Mini schemas do not offer Classic `.refine()` or `.superRefine()`
+methods. Confirm adapter compatibility before passing Mini schemas to an ecosystem library.
 
-## Compile or validate only a measured hot path
+Mini does not load the English locale by default, so issue messages may be `"Invalid input"`. Load a
+locale or provide stable custom errors when messages reach users or logs.
 
-The following contracts were verified against `zod@4.6.7` full API declarations/source. Inspect the
-effective entrypoint before using these newer APIs; Mini uses functional equivalents where exposed.
-A v4 label alone is insufficient.
+**Failure check:** typecheck the exact Mini import, execute equivalent Classic/Mini valid and invalid
+fixtures, compare parsed output and issue paths, and compare production bundles with the project's
+actual bundler. A source-import change alone is not evidence of savings.
 
-- `z.compile(Schema)` returns a compiled clone when supported; keep the returned schema. Its forward
-  synchronous fast path falls back to the regular parser on invalid input for detailed issues.
-  Benchmark realistic valid **and invalid** traffic, parsed outputs, and issue paths.
-- Runtime compilation uses `new Function`; strict CSP/no-eval prevents that acceleration. Default
-  compilation can return the original schema unchanged, so do not claim success from a non-throwing
-  call. `{ strict: true }` surfaces refusal. Keep the standard parser under these constraints;
-  an externally generated parser is a separate, explicitly reviewed implementation, not an automatic
-  recommendation to bypass CSP.
-- Async schemas cannot be compiled: default compilation falls back, strict mode throws. Async parse
-  calls and reverse encoding use the standard parser. Unsupported constructs (including coercion,
-  custom `when`, recursion, and callback catches) can cause partial or whole-schema fallback; inspect
-  the installed support rules and verify the actual path rather than promising acceleration.
-- Effects executed on an invalid fast path may execute **twice** when runtime fallback repeats them.
-  Keep refinements/transforms pure; compilation is not safe evidence of exactly-once side effects.
-- Compiler code adds bundle bytes. Compare production bundle output; Mini plus compiler may lose the
-  size benefit that motivated Mini. No universal bundle or throughput number applies to a project.
-- In Classic, `Schema.validate(input)` and `z.validate(Schema, input)` are equivalent entry forms.
-  Mini exposes only the functional `z.validate(Schema, input)` form; Mini schema instances do not
-  have `.validate()` or `.validateAsync()`. The synchronous call returns a boolean guard on the
-  **input** type, not parsed output. It can short-circuit on the first issue and supplies neither
-  transformed data nor detailed errors. This is not a guarantee that later refinement callbacks
-  never run: in the verified uncompiled chained-refinement probe, both callbacks ran despite the
-  first failing. Use `Schema.validateAsync(input)` in Classic or `z.validateAsync(Schema, input)` in
-  Mini for async schemas; the promise cannot narrow a value. Use parse/safeParse when consumers need
-  normalized output or issues; do not validate and then parse by default, which repeats work and
-  effects. Validation may still run effects, so test their behavior.
+## Pattern: Mini custom check plus input artifact
+
+**Use when:** a bundle-sensitive library consumer needs Mini runtime validation and a JSON Schema for
+its accepted input. Keep representable checks visible and test what the artifact cannot express.
+
+```ts
+import assert from "node:assert/strict";
+import * as z from "zod/mini";
+
+const ProductInput = z
+  .strictObject({
+    code: z.string().check(
+      z.minLength(1),
+      z.refine((value) => value !== "RESERVED", { error: "Reserved code" }),
+    ),
+    quantity: z.string().check(z.regex(/^[1-9]\d*$/)),
+  })
+  .check(z.meta({ title: "Product input" }));
+
+const rejected = z.safeParse(ProductInput, { code: "RESERVED", quantity: "2" });
+assert.equal(rejected.success, false);
+if (!rejected.success) assert.deepEqual(rejected.error.issues[0]?.path, ["code"]);
+
+const artifact = z.toJSONSchema(ProductInput, { io: "input" });
+assert.equal(artifact.title, "Product input");
+assert.equal(artifact.additionalProperties, false);
+const quantityArtifact = artifact.properties?.quantity;
+assert.ok(quantityArtifact && typeof quantityArtifact === "object");
+if (quantityArtifact && typeof quantityArtifact === "object" && "pattern" in quantityArtifact) {
+  assert.equal(quantityArtifact.pattern, "^[1-9]\\d*$");
+}
+assert.equal(JSON.stringify(artifact).includes("RESERVED"), false);
+```
+
+**Observable result:** Mini enforces the custom reserved-code predicate at runtime; the input artifact
+preserves object policy, metadata, minimum length, and regex, but not the arbitrary predicate. A
+successful conversion is not proof that every runtime refinement survived.
+
+**Alternative:** if the external consumer must enforce the same condition, express it with a
+representable schema construct (for example enum or regex) when honest, or publish a separately owned
+artifact rule and test it against the same fixtures. Do not silently label the weaker artifact as the
+complete runtime contract.
+
+**Failure check:** validate the positive and negative runtime cases, assert the final artifact's
+dialect/direction/metadata and key constraints, and inspect omissions. Conversion of an unrepresentable
+transform may throw; keep that as an artifact-build failure or move generation to a representable wire
+schema instead of using a permissive fallback.
+
+## Parse and validate answer different questions
+
+Parsing returns normalized output or structured failure. Newer Zod 4 minors may also expose boolean
+validation; capability-check the installed declarations.
+
+- Classic may expose `Schema.validate(input)` and `z.validate(Schema, input)`.
+- Mini uses functional `z.validate(Schema, input)`; Mini instances do not expose `.validate()`.
+- Async schemas require the installed async validation form.
+
+`validate` answers whether the **input** is valid. It does not return transformed output or issues.
+It may still execute refinements/transforms, so effects must remain pure. Do not validate and then
+parse by default; that repeats work and callbacks.
+
+**Use parse/safeParse when:** a consumer needs normalized data, issue details, or a Query/request
+failure. **Use validate when:** a measured hot path genuinely needs only a boolean and no output.
+
+## Compile only a demonstrated hot path
+
+Compilation is a newer optional Zod 4 capability. Inspect the effective entrypoint, keep the returned
+compiled schema, and benchmark it against the ordinary schema:
+
+```ts
+const CompiledOrder = z.compile(OrderSchema);
+const order = CompiledOrder.parse(payload);
+```
+
+Runtime compilation uses dynamic code generation. Strict CSP/no-eval can prevent acceleration;
+unsupported or async constructs can cause partial or whole-schema fallback. A non-throwing compile
+call does not prove the fast path was installed. Use strict compiler options where available when the
+task must surface refusal.
+
+Benchmark realistic valid and invalid traffic. Invalid inputs may fall back to the regular parser for
+detailed issues, and effects on a failed fast path can execute again during fallback. Keep refinements
+and transforms pure and verify parsed output, issue paths, and async behavior—not throughput alone.
+Compiler code also adds bundle bytes, so Mini plus compiler can defeat a bundle-size goal.
+
+## Optimize simpler costs first
+
+- Prefer explicit object shape spread over long `.extend()` chains when TypeScript diagnostics show a
+  composition cost.
+- Reuse module-level schemas; ordinary reuse needs no cache layer.
+- Add parsed-result caches only with repeated-cost evidence, a correct key, bounded lifetime, and
+  invalidation rules. Locale, error customization, async dependencies, and mutable input can make
+  speculative caches incorrect.
+- Use lower-level `.check()` only when it clarifies multiple issues or a profile demonstrates the
+  need; preserve the same output and failures.
+
+## Specific version caveat
+
+Compile/validate details above were executable in exact `zod@4.6.7`, including Classic instance
+validation and Mini functional validation. They are capability-qualified because earlier Zod 4 minors
+do not expose every API. Test the installed declaration and runtime instead of generalizing a patch
+receipt to all Zod 4.
 
 ## Official sources
 
-- [Compilation: fallbacks, CSP, bundle cost, and effects](https://zod.dev/compile)
-- [Zod 4.6: validate and standalone Mini](https://zod.dev/blog/zod-4-6)
 - [Zod Mini](https://zod.dev/packages/mini)
-- [Zod Core](https://zod.dev/packages/core)
-- [Zod 4 release notes and benchmarks](https://zod.dev/v4)
-- [Defining schemas: object extension and checks](https://zod.dev/api)
+- [Compilation and CSP/fallback behavior](https://zod.dev/compile)
+- [Zod 4.6 boolean validation](https://zod.dev/blog/zod-4-6)
+- [Schema checks and object composition](https://zod.dev/api)

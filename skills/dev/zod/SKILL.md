@@ -1,118 +1,95 @@
 ---
 name: zod
 description: >-
-  Version-aware Zod implementation, migration, review, and debugging. Use for
-  requested work on Zod schemas, parsing, coercion, transforms, refinements, error
-  formatting, object composition, Zod Mini, codecs, discriminated unions, enum
-  records, measured compile/validate work, or a Zod v3-to-v4 migration. Existing
-  Zod usage or a nearby parse failure alone does not make unrelated UI or
-  authorization work a schema task. Detect the effective v3/v4 import contract
-  before giving syntax. Compose with typescript for language-wide modeling and
-  trust boundaries, frontend for browser validation and feedback, and
-  react-hook-form for form ownership and lifecycle. Do not invoke for a generic
-  TypeScript trust boundary or form task that has no Zod-specific work.
+  Zod 4 schema implementation, review, and debugging. Use for runtime parsing,
+  coercion, transforms, codecs, object composition, refinements, structured
+  errors, metadata, JSON Schema, Zod Mini, or measured validation performance.
+  Inspect the installed Zod 4 entrypoint and capabilities before using
+  minor-sensitive APIs. Compose with typescript for domain modeling, frontend
+  for browser feedback, react-hook-form for form lifecycle, and query owners for
+  cache and retry behavior.
 ---
 
-# Zod
+# Zod 4
 
-Treat the installed package, import path, and declarations as the contract. Zod validates and
-transforms values; it does not own the surrounding domain model, browser workflow, or form
-lifecycle.
+Make untrusted values earn a trusted type once. A schema owns the runtime boundary and its parsed
+value; neighboring libraries own transport, caching, UI state, and business workflows.
 
 ## Workflow
 
-### 1. Detect the effective Zod contract
+### 1. Establish the effective contract
 
-First identify the Zod contract the requested work changes, diagnoses, or verifies. If only a
-neighboring concern is in scope, keep that work with its owner; report a separate schema issue
-without starting an unrequested diagnosis.
+Inspect the resolved `zod` version, actual import path, TypeScript configuration, and affected
+adapter declarations. This skill targets Zod 4. Use the package root or `zod/v4` for Classic and a
+Mini entrypoint only when the code intentionally uses Mini's functional API. Capability-check APIs
+introduced during Zod 4 instead of treating the major as a promise that every minor exposes them.
 
-Inspect manifests, lockfiles, package-manager output, Zod imports, TypeScript configuration, and
-`node_modules/zod/package.json` when available. Record both the resolved package version and the
-entrypoint used by affected code:
+**Complete when:** the exact Zod 4 version, entrypoint, TypeScript version, and adapter versions are
+known, and every proposed API exists in those installed declarations.
 
-- `zod/v3` is explicitly Zod 3;
-- `zod/v4` is the explicit Zod 4 Classic API;
-- `zod/v4/mini`, `zod/v4-mini`, and `zod/mini` are explicit Zod 4 Mini APIs;
-- standalone `@zod/mini` re-exports its peer `zod/mini`; inspect both resolved versions;
-- a package-root `zod` import follows the resolved package's exported root;
-- Zod 3.25 can expose both v3 and v4 subpaths, so the package major alone may not identify the API.
+### 2. Write the boundary contract
 
-Inspect installed declarations when an ecosystem adapter or library constrains accepted schema
-types. If Zod is not installed, state the target version before supplying code.
+Before code, record:
 
-**Complete when:** the exact package version, import contract, TypeScript version, and affected
-adapter versions are known.
+- the untrusted producer and raw representation;
+- the parsed output and whether it is still a wire model or a domain value;
+- strip, reject, preserve, or catchall behavior for unknown object keys;
+- synchronous or asynchronous parsing;
+- whether invalid input throws, branches locally, or becomes an adapter error;
+- whether reverse encoding or a published JSON Schema artifact is required.
 
-### 2. Frame the schema boundary
+Use `unknown` at external boundaries. Parse once, then pass the parsed output inward until another
+trust boundary is crossed. Keep independent domain rules outside schemas unless they are part of the
+boundary's validity.
 
-Name the untrusted input, parsed output, transformations, failure consumer, unknown-key policy, and
-whether parsing can be asynchronous. Keep input `unknown` at an external boundary until parsing
-succeeds; do not repeatedly parse values already validated within the same ownership boundary.
+**Complete when:** input, output, object policy, failure consumer, and artifact direction are explicit.
 
-Compose with the owning skill instead of expanding Zod's scope:
-
-- `typescript` owns domain-state modeling, generic relationships, and trust-boundary placement;
-- `frontend` owns browser inputs, accessible feedback, and authoritative server boundaries;
-- `react-hook-form` owns form values, defaults, adapters, dirty state, and submission lifecycle;
-- `react` owns component state, rendering, and Effects.
-
-**Complete when:** input, output, failure, async behavior, and neighboring owners are explicit.
-
-### 3. Load only the matching reference
+### 3. Load the matching reference
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — Critical | Detecting v3/v4, upgrading, reviewing mixed imports, or changing ecosystem/library compatibility | `references/version-and-migration.md` |
-| 1 — Critical | Input/output types, parsing, pipes, transforms, codecs, default/prefault/catch/readonly wrappers, form-string conversion, coercion, or async schemas | `references/types-and-parsing.md` |
-| 1 — High | Object strictness, unknown keys, extension, merging, intersections, refinements, or cross-field rules | `references/objects-and-refinements.md` |
-| 1 — High | Tagged/discriminated or ordinary unions, enums, exhaustive records, or sparse enum maps | `references/unions-records-and-enums.md` |
-| 1 — High | Custom messages, `ZodError`, issue handling, error formatting, localization, or form/API error projection | `references/errors.md` |
-| 2 — Conditional | Metadata, registries, JSON Schema conversion, structured-output schemas, or schema-driven documentation/code generation | `references/metadata-and-json-schema.md` |
-| 2 — Conditional | Bundle size, parse speed, compile/validate APIs, CSP/no-eval, Zod Mini, Zod Core, schema construction cost, caching, or performance claims | `references/mini-and-performance.md` |
+| 1 — Critical | Imports, package capabilities, adapters, Standard Schema, or optional/newer Zod 4 APIs | `references/imports-and-capabilities.md` |
+| 1 — Critical | Boundary parsing, Query fetchers, input/output types, form conversion, coercion, transforms, defaults, codecs, or async schemas | `references/types-and-parsing.md` |
+| 1 — High | Object policy, composition, PATCH schemas, refinements, or cross-field rules | `references/objects-and-refinements.md` |
+| 1 — High | Custom messages, issues, error formatting, localization, logging, or API/form projections | `references/errors.md` |
+| 1 — High | Tagged unions, ordinary unions, enums, exhaustive records, or sparse enum maps | `references/unions-records-and-enums.md` |
+| 2 — Conditional | Metadata, registries, JSON Schema, structured outputs, documentation, or code generation | `references/metadata-and-json-schema.md` |
+| 2 — Conditional | Classic versus Mini, bundle size, compiler/validate APIs, CSP, or parse performance | `references/mini-and-performance.md` |
 
-Use v3 documentation and installed declarations for v3 code. Do not translate a v4 API backward
-unless migration is the requested task.
+### 4. Implement the smallest complete pattern
 
-### 4. Implement or report
+Prefer a schema and a caller that make the success value and failure path observable. Preserve
+`z.input` and `z.output` when conversion changes representation. Give adapters the schema contract
+they support; do not assume validation also supplies transformed output, async parsing, or the error
+shape the consumer expects.
 
-- **Implement:** make the smallest schema change that establishes the required runtime fact and
-  preserves distinct input/output types.
-- **Migrate:** inventory affected APIs first, change imports and semantics deliberately, then verify
-  parsed values and failure shapes—not only compilation.
-- **Review:** report version mismatches, unsafe coercion, lost input/output distinctions, async parse
-  mistakes, object-policy ambiguity, refinement failures, and error-projection problems with file
-  evidence.
-- **Debug:** reproduce with the smallest schema and input, inspect `issues`, then trace transforms,
-  refinements, object policy, and adapter behavior in parse order.
+For React Hook Form, show the Zod input/output handoff but leave defaults, dirty state, and submission
+lifecycle to that owner. For TanStack Query, make HTTP and parse failures reject the query function,
+but leave retry, cache, and rendering policy to Query/frontend owners.
 
-**Complete when:** the schema's success value and failure path are verified against the installed
-contract.
+**Complete when:** the requested integration receives parsed output or structured failure without a
+second parse or an unchecked assertion.
 
-### 5. Verify
+### 5. Verify observable behavior
 
-Run the narrowest executable parse cases for valid and invalid input, then the affected typecheck,
-tests, and repository checks. Cover null/missing, extra keys, ambiguous raw values, transformed output,
-and issue paths/projections as applicable; include async cases when any nested effect is async. For a
-migration, compare representative parsed outputs and issue paths before and after the change.
+Run exact-entrypoint cases for valid and invalid input, then the affected typecheck and tests. Cover
+missing/null values, extra keys, ambiguous raw strings, transformed output, and issue paths as
+applicable. Use async parsing end to end when any nested effect is async.
 
-When Zod integrates with React Hook Form, verify the form's input model, transformed submission
-output, resolver version, and error projection while leaving defaults and lifecycle decisions to
-`react-hook-form`.
+For artifacts, assert direction, dialect, required keys, object policy, metadata, and refs. For Mini
+or performance changes, compare production bundles or representative throughput while preserving the
+same outputs and failures.
 
-**Complete when:** sync/async behavior, inferred input/output types, object policy, and error
-consumption have evidence.
+**Complete when:** runtime results, inferred input/output types, failure projection, and generated
+artifacts have executable evidence.
 
 ## Completion gate
 
-Before finishing:
-
-- guidance matches the effective v3/v4 entrypoint, not a guessed package major;
-- coercion semantics are intentional and tested with ambiguous inputs;
-- async refinements or transforms use async parsing end to end;
-- object composition preserves explicit unknown-key and refinement behavior;
-- v4 code uses current error, object, and composition contracts instead of legacy equivalents;
-- JSON Schema generation selects input/output direction, target dialect, and unrepresentable-type policy intentionally;
-- Zod Mini or low-level performance APIs are chosen only from measured constraints;
-- generic TypeScript, frontend, React, and form-lifecycle concerns remain with their owners;
-- version-sensitive claims link to official Zod documentation.
+- installed Zod 4 imports and declarations support every API used;
+- untrusted input is parsed once before entering trusted domain or query-cache data;
+- coercion and fallback behavior is tested with ambiguous inputs;
+- object composition preserves explicit key policy and refinements;
+- errors retain `code` and `path` until the consumer projection and exclude sensitive input;
+- codecs are reserved for real round trips and report recoverable conversion failures as issues;
+- JSON Schema states whether it describes accepted input or parsed output;
+- Classic, Mini, compile, or validate choices follow measured needs rather than novelty.

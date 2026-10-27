@@ -1,75 +1,135 @@
-> **Read this when:** The task changes object unknown-key behavior, composition, extension, intersections, refinements, or cross-field validation.
+> **Read this when:** The task chooses unknown-key behavior, composes objects, creates PATCH schemas, or validates cross-field relationships.
 
 # Objects and refinements
 
-## Make unknown-key policy visible
+## Make unknown-key behavior part of the contract
 
-Plain `z.object()` strips unrecognized keys by default. Choose a different policy only from the
-boundary contract:
+- `z.object({...})` strips unrecognized keys from parsed output.
+- `z.strictObject({...})` rejects unrecognized keys.
+- `z.looseObject({...})` preserves them.
+- `.catchall(ValueSchema)` validates every unrecognized value.
 
-- **v4:** `z.strictObject()` rejects unknown keys; `z.looseObject()` preserves them; `.catchall()`
-  validates unknown values.
-- **v3:** `.strict()`, `.passthrough()`, the default strip behavior, and `.catchall()` are the
-  corresponding supported contracts.
+Choose from consumer needs. Strip supports additive producers while returning a stable internal shape;
+strict detects misspellings and closed command payloads; loose/catchall supports extension data. Strict
+is not automatically more secure—rejecting, stripping, and validating extensions are different API
+contracts.
 
-At security-sensitive boundaries, strictness is not automatically safer: rejecting unknown keys,
-stripping them, or validating a controlled extension map are different API decisions. State which
-one the consumer requires and test the parsed output, not only acceptance.
+**Failure check:** parse an input with one extra key and assert both acceptance and the exact parsed
+output. Composition must not change this policy accidentally.
 
-## Compose objects as objects
+## Pattern: PATCH validity is not merged-entity validity
 
-For v4 object composition:
+**Use when:** a complete object has a cross-field rule but PATCH carries only changed fields. Separate
+field-level wire checks from the invariant that requires the complete entity.
 
-- use shape spread when multiple shapes are combined or strictness should be visually explicit;
-- use `.extend()` for a small deliberate extension when overwrites are acceptable;
-- use `.safeExtend()` when assignability must be preserved or the base object has refinements;
-- avoid legacy `.merge()` and avoid `z.intersection()` as an object-merging shortcut.
+```ts
+import { z } from "zod";
 
-Shape spread makes overwrite order and the resulting `z.object`, `z.strictObject`, or
-`z.looseObject` policy explicit and is usually the best TypeScript contract for large composed
-schemas. `.extend()` can overwrite fields and chained calls can impose avoidable typechecking cost.
+const BookingFields = z.strictObject({
+  startsOn: z.iso.date(),
+  endsOn: z.iso.date(),
+});
 
-For v3, use its documented object APIs and verify the inherited unknown-key/catchall policy when
-using `.merge()`. Prefer object composition over intersections because intersections return a less
-useful intersection schema without object methods such as `pick` and `omit`.
+export const Booking = BookingFields.refine(
+  ({ startsOn, endsOn }) => endsOn >= startsOn,
+  { path: ["endsOn"], error: "End must not precede start" },
+);
 
-Never replace a refined base object with a shape-only reconstruction without deciding whether its
-refinements must survive.
+export const BookingPatch = BookingFields.partial().refine(
+  (patch) => Object.keys(patch).length > 0,
+  { error: "Provide at least one field" },
+);
 
-## Prefer built-in checks, then refinements
+type Booking = z.output<typeof Booking>;
 
-Use a built-in schema or check when it expresses the rule. In Classic, use `.refine()` for one custom
-issue and cross-field predicates; attach a deliberate `path` when a specific field should own the
-feedback. Mini expresses the same custom predicate as `Schema.check(z.refine(...))`; see the Mini
-reference before translating any method chain. Refinement functions return success/failure and should
-not throw.
+export function applyBookingPatch(current: Booking, input: unknown): Booking {
+  const patch = BookingPatch.parse(input); // wire shape and non-empty subset
+  return Booking.parse({ ...current, ...patch }); // complete invariant after merge
+}
+```
 
-When multiple issues or lower-level control are required, match the installed contract:
+**Observable result:** `{ startsOn: "2026-03-01" }` can be a valid wire PATCH yet fail after merging
+with an entity whose `endsOn` is `2026-02-01`. The final error remains attributable to `endsOn`.
+Empty and unknown-key patches fail before merge. Building PATCH from `BookingFields` is deliberate:
+mechanically calling `.partial()` on a refined complete object has varied across Zod 4 minors, and a
+partial value cannot prove an invariant whose sibling field may be absent.
 
-- v3 commonly uses `.superRefine()` with `ctx.addIssue()`;
-- v4 supports its current check/refinement APIs, with `.check()` as the lower-level and potentially
-  faster mechanism. Do not choose it for ordinary validation without a control or measured
-  performance need.
+```ts
+const current = Booking.parse({ startsOn: "2026-01-01", endsOn: "2026-02-01" });
+BookingPatch.parse({ startsOn: "2026-03-01" }); // valid partial wire input
 
-If a refinement is async, every caller must use async parsing. Keep database/network checks out of a
-schema when batching, cancellation, authorization, transaction ownership, or failure recovery
-belongs to a service layer rather than validation.
+const merged = Booking.safeParse({ ...current, startsOn: "2026-03-01" });
+if (!merged.success) console.assert(merged.error.issues[0]?.path[0] === "endsOn");
+```
 
-In compatible v4 releases, checks normally continue after continuable issues, collecting multiple
-failures. A failing refinement with `abort: true` is non-continuable and prevents later dependent
-checks; a wrong base type also prevents refinements from receiving an unsafe value. Async behavior
-is transitive through nested schemas and requires async parsing end to end.
+**Alternative:** define PATCH fields separately when omission, `null`, and a value mean different
+operations, or update rules differ from create rules. Reuse field schemas only where the runtime
+contracts are actually identical.
 
-Use v4 `when` only when an independent check is incorrectly skipped because an unrelated field
-failed. Its predicate controls scheduling, not validity: safe-parse a separate prerequisite schema
-containing every field that the refinement reads, for example
-`when(payload) { return Prerequisites.safeParse(payload.value).success; }`.
-Keep prerequisites free of the refinement itself to avoid recursion, and test invalid prerequisite
-values as well as unrelated-field failures. `when` can override normal scheduling safeguards;
-returning true unconditionally can expose unsafe values or uncaught exceptions.
+**Failure check:** cover empty object, one valid field, explicit `undefined`/`null` if they can arrive,
+unknown keys, invalid present values, a partial that breaks the merged entity, and one that preserves
+it. Persist only the output of the complete `Booking.parse`.
+
+## Compose objects without losing policy or refinements
+
+Use shape spread when combining several unrefined field shapes or making the resulting constructor
+policy visible:
+
+```ts
+const PersistedBookingFields = z.strictObject({
+  id: z.uuid(),
+  ...BookingFields.shape,
+  createdAt: z.iso.datetime(),
+});
+```
+
+Use `.extend()` for a small extension where overwrites are deliberate. Use `.safeExtend()` when field
+assignability must be preserved or the base object carries refinements:
+
+```ts
+const NamedBooking = Booking.safeExtend({ name: z.string().min(1) });
+```
+
+`NamedBooking` retains the date-order rule. Reconstructing from `Booking.shape` produces only fields;
+it does not carry the refinement. This is useful for deliberately building `BookingPatch` from field
+checks, but not for a stronger complete entity. Avoid intersections as an object-merging shortcut:
+they return an intersection schema rather than an object schema with useful object operations.
+
+**Failure check:** test overwrite order, unknown keys, and the original refinement after composition.
+For large compositions, run the project typecheck; explicit shape spread can avoid the cost of long
+`.extend()` chains.
+
+## Pattern: cross-field validation with actionable paths
+
+**Use when:** validity depends on multiple fields and belongs to the boundary itself, such as password
+confirmation or a date range.
+
+```ts
+const PasswordChange = z
+  .strictObject({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(12),
+    confirmPassword: z.string(),
+  })
+  .refine(({ newPassword, confirmPassword }) => newPassword === confirmPassword, {
+    path: ["confirmPassword"],
+    error: "Passwords do not match",
+  });
+```
+
+The `path` makes the issue project naturally to the confirmation field. Use a built-in check first,
+`.refine()` for one predicate/issue, and lower-level `.check()` only when multiple issues or measured
+control requires it. Refinements report failure; they should not throw.
+
+**Alternative:** keep authorization, database uniqueness, inventory, and other service-owned rules in
+the service layer when they need batching, cancellation, transactions, or authoritative server state.
+If a boundary check is asynchronous, use async parsing through every caller.
+
+**Failure check:** assert the issue path as well as failure. Cover wrong base types, each independent
+field failure, and the cross-field failure. When scheduling an advanced conditional refinement with
+an installed `when` capability, validate a separate prerequisite schema containing every field the
+refinement reads; do not return true unconditionally.
 
 ## Official sources
 
-- [Defining schemas: objects, extension, intersections, and refinements](https://zod.dev/api)
-- [Zod 4 migration guide: object and refinement changes](https://zod.dev/v4/changelog)
-- [Official Zod v3 documentation source](https://github.com/colinhacks/zod/tree/main/packages/docs-v3)
+- [Objects, extension, intersections, partials, and refinements](https://zod.dev/api)
