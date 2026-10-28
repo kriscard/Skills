@@ -38,14 +38,6 @@ export const sharedReferenceMirrors = [
     ],
   },
   {
-    source: "skills/dev/review/references/review-core.md",
-    targets: ["skills/dev/pr-review/references/review-core.md"],
-  },
-  {
-    source: "skills/dev/review/references/frontend-risk-checks.md",
-    targets: ["skills/dev/pr-review/references/frontend-risk-checks.md"],
-  },
-  {
     source: "skills/writing/blog/references/story-circle.md",
     targets: ["skills/writing/talk/references/story-circle.md"],
   },

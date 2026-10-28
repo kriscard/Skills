@@ -79,4 +79,4 @@ During this skill:
 - keep unresolved blockers explicit instead of approving around them;
 - treat edits to an approved stage as invalidating that stage and every dependent approval.
 
-Completion requires all three canonical files, matching SHA-256 hashes in `approval.md`, and explicit approval of the current requirements, design, and plan. Implementation begins only through a separate workflow.
+Completion requires all three canonical files, matching SHA-256 hashes in `approval.md`, and explicit approval of the current requirements, design, and plan. Report the artifact directory as the handoff for a separate `implement` request, then stop. Approval of this planning workflow does not itself authorize implementation.
