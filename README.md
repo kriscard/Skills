@@ -43,6 +43,7 @@ before installing this version rather than silently overwriting it.
 | `analyze-repo` | Audits a full repository and produces a visual architecture and technical-debt report |
 | `architect` | Guides system and module design decisions, trade-offs, and ADRs |
 | `commit` | Creates safe conventional commits and optionally pushes them after approval |
+| `create-pr` | Prepares, opens, updates, and recovers GitHub PRs with repository-aware descriptions, verified targets, and explicit publication authority |
 | `debug` | Diagnoses bugs, failures, and unexpected behavior from root cause to verification |
 | `frontend` | Reviews frontend architecture, TypeScript boundaries, accessibility, and browser security |
 | `code-review` | Reviews PR, branch, working-tree, or selected code with evidence-based risk, standards, spec, and design checks; coordinates authorized repair and verification loops |
