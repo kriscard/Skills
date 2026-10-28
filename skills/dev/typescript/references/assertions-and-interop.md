@@ -41,11 +41,11 @@ interoperability or extension semantics require change.
 
 ## Collected practices
 
-Practices 20–29 are policy alternatives, not automatic overrides of current guidance.
+The following practices are policy alternatives, not automatic overrides of current guidance.
 Before applying one as policy, read its adoption decision in the [catalog](practice-catalog.md),
 the sole persistent adoption record. Keep the documented conflicts explicit.
 
-## Practice 20 — Preserve established evidence
+## Preserve established evidence
 
 Keep inference, use a compatibility check, or introduce a named owner contract instead
 of flowing syntactically established values into explicitly broad/anonymous target types
@@ -65,7 +65,7 @@ containers, and anonymous object targets. Local syntax analysis is not the full 
 type checker. A deliberate public abstraction can be correct under current guidance; do not
 remove an abstraction solely because it exposes less than its implementation.
 
-## Practice 21 — Avoid widen-then-assert flows
+## Avoid widen-then-assert flows
 
 Reject local const flows that first broaden known data and later assert the broad binding
 to a narrower type. The intermediate broad type does not establish a new fact; it destroys
@@ -81,12 +81,13 @@ const account = widened as { id: string; active: boolean };
 const checked = source satisfies { id: string; active: boolean };
 ```
 
-Unlike #20, this practice specifically requires a later assertion; unlike #23, assertions
-need not be adjacent. An actual validating transformation changes the evidence; another
+Unlike [Preserve established evidence](#preserve-established-evidence), this practice
+specifically requires a later assertion; unlike [Prohibit chained assertions](#prohibit-chained-assertions),
+assertions need not be adjacent. An actual validating transformation changes the evidence; another
 annotation or alias does not. A local const-based lint check does not establish arbitrary
 whole-program dataflow.
 
-## Practice 22 — Restrict as assertions
+## Restrict as assertions
 
 Treat every `as` as a potential runtime crash and permit casting only after validation
 under this stricter alternative. Prefer adding discriminants, fixing wide source types,
@@ -109,7 +110,7 @@ compiler cannot express it.
 construction. Keep this stronger restriction visible as a selectable policy alternative; do not
 silently turn it into a ban or rewrite existing APIs to satisfy it.
 
-## Practice 23 — Prohibit chained assertions
+## Prohibit chained assertions
 
 Reject adjacent `as` and angle-bracket assertion chains, including parenthesized/mixed
 chains. A broader middle type does not prove the final type.
@@ -126,7 +127,7 @@ chain such as `({ id: 1 } as const) as User`. Angle-bracket syntax is also check
 though it is unavailable in TSX. In a genuinely inexpressible interop seam, current policy
 requires independently established evidence; a chain itself never supplies that proof.
 
-## Practice 24 — Satisfies for compatibility
+## Satisfies for compatibility
 
 Use `satisfies` when a concrete expression should be checked against a contract without
 replacing its useful inferred shape with the target type. An assertion asks the compiler
@@ -152,7 +153,7 @@ check, not a parser, runtime validator, or universal literal-freezing operator. 
 annotation remains correct when the wider type is the public abstraction. Requires a
 compatible TypeScript version (introduced in 4.9).
 
-## Practice 25 — Assertion safety comments
+## Assertion safety comments
 
 Require a nearby justification for every non-const TypeScript assertion. Use `SAFETY:` as
 the default marker; the comment must state the invariant, not merely repeat the target type.
@@ -173,7 +174,7 @@ Checking marker placement does not establish whether the explanation is true.
 assertion. Selection of this practice chooses a stricter comment requirement; it does not
 make a well-commented but false assertion safe.
 
-## Practice 26 — Narrowing hierarchy
+## Narrowing hierarchy
 
 Order approaches as: discriminant switch/if, property-presence `in`, primitive
 `typeof`/class `instanceof`, a custom guard, then `as` only after validation. Prefer evidence
@@ -193,10 +194,11 @@ value type. Choose narrowing that proves the needed fact; `instanceof` also has 
 and custom-instance semantics. This preference is not a theorem that one operator
 is always safer than another.
 
-**Conflict:** #27 generally prohibits runtime `typeof`, including checks treated here as
+**Conflict:** [Restrict runtime typeof](#restrict-runtime-typeof) generally prohibits runtime
+`typeof`, including checks treated here as
 normal narrowing. Do not activate both unchanged.
 
-## Practice 27 — Restrict runtime typeof
+## Restrict runtime typeof
 
 Decode external values into meaningful domain types at I/O boundaries rather than branching
 on representation in downstream code. The rule rejects runtime unary `typeof` by default,
@@ -216,11 +218,12 @@ is a type predicate. An automated implementation can expose this as
 `{ allowInTypeGuards: true }`; that option is not assumed to exist in the target project.
 Type-position `typeof` is not the runtime unary operator and is not prohibited by this rule.
 
-**Conflict:** current guidance and #26 allow honest primitive narrowing. If selected,
+**Conflict:** current guidance and the [Narrowing hierarchy](#narrowing-hierarchy) allow
+honest primitive narrowing. If selected,
 decide guard/parser exemptions explicitly; do not replace `typeof` with assertions or
 an incomplete schema merely to evade a syntactic check.
 
-## Practice 28 — Restrict Reflect.get
+## Restrict Reflect.get
 
 Use typed property access for domain values and decode dynamic input before reading it.
 The restriction covers calls to the global `Reflect.get`, including a computed literal method
@@ -238,7 +241,7 @@ For a truly dynamic key, model the key/value relationship rather than asserting 
 owner. Selecting a blanket ban requires deciding those exceptions rather than pushing
 the same dynamic behavior into ordinary callers.
 
-## Practice 29 — Restrict Reflect.apply
+## Restrict Reflect.apply
 
 Prefer direct typed calls or a named interface for dynamic dispatch. The rule checks the
 global `Reflect.apply` (including computed literal access) and respects local shadowing.
@@ -253,7 +256,8 @@ const result = handler(...args);
 The replacement must preserve `this`, argument, and exception semantics; removing a
 receiver blindly changes behavior. Dynamic invocation can belong to a proxy/adapter under
 current policy. Isolate it and test the contract rather than claiming direct calls are
-always equivalent. Consult the catalog for adoption of this policy and #28.
+always equivalent. Consult the catalog for adoption of this policy and
+[Restrict Reflect.get](#restrict-reflectget).
 
 ## Review questions
 

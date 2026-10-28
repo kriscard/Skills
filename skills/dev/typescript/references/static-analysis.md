@@ -14,13 +14,13 @@ reading for ordinary typed application edits.
 
 ## Collected implementation patterns
 
-Practices 39–47 are implementation patterns for static analysis, **not application-code
+The following practices are implementation patterns for static analysis, **not application-code
 lint restrictions**. The examples and limits describe analyzer design, not a mandate to
-add a parser or implement this machinery in every project. Before applying a numbered
+add a parser or implement this machinery in every project. Before applying a collected
 pattern as policy, read its adoption decision in the [catalog](practice-catalog.md), the
 sole persistent adoption record.
 
-## Practice 39 — Resolve lexical bindings
+## Resolve lexical bindings
 
 Resolve an identifier to its actual binding by asking the scope manager for the use site's
 scope, checking its variable map, then walking `upper` scopes. A spelling shared with a
@@ -41,7 +41,7 @@ and distinguish unresolved/global references. Test nested scopes, parameter shad
 imports, and local reassignments. Parser scope objects are the boundary: do not reconstruct
 lexical identity with a global name-to-node map.
 
-## Practice 40 — Respect shadowed built-ins
+## Respect shadowed built-ins
 
 Check that a recognized name really refers to the built-in before applying built-in
 semantics. A local `Reflect`, `Record`, or other competing declaration must not be treated
@@ -62,7 +62,7 @@ Value and type namespaces need their respective lookup rules; test imports, clas
 interfaces, and generic parameters as shadowing cases. These are illustrative snippets
 with project-owned custom types, not declarations to add to an application.
 
-## Practice 41 — Resolve aliases and generic substitutions
+## Resolve aliases and generic substitutions
 
 Follow the nearest visible type alias and substitute supplied type arguments or defaults
 before classifying the result. Otherwise a direct type and its equivalent alias receive
@@ -82,7 +82,7 @@ license to invent a result. Resolution is local syntactic analysis, not imported
 or arbitrary conditional-type evaluation. Use the actual compiler API when the required
 claim exceeds this evidence.
 
-## Practice 42 — Respect type-parameter scope
+## Respect type-parameter scope
 
 A generic parameter, mapped-type key, or inferred conditional-type parameter can shadow
 an outer alias. Collect binders at the use site rather than resolving every type name
@@ -102,7 +102,7 @@ An inferred name does not automatically bind the false branch. Test both branche
 nested/shadowed generics; a binder's syntactic existence is not enough to prove visibility
 everywhere in the parent node.
 
-## Practice 43 — Normalize syntax wrappers
+## Normalize syntax wrappers
 
 Unwrap syntax that does not change the underlying expression being inspected: parentheses,
 chain wrappers, type/const assertions, non-null assertions, and `satisfies` where supported.
@@ -120,7 +120,7 @@ runtime behavior. Normalize only the evidence needed by the rule and preserve or
 nodes/locations for diagnostics and edits. Different helpers intentionally unwrap different
 sets of wrappers; do not assume one universal list fits every analysis.
 
-## Practice 44 — Require receiver evidence
+## Require receiver evidence
 
 Establish a known array receiver before flagging an array-specific pipeline or copy. The
 helper recognizes array literals, supported array annotations/tuples, selected array-
@@ -139,7 +139,7 @@ still a local heuristic: an asserted annotation is not runtime validation, and t
 is not a full semantic checker of every possible alias/shadowing form. Test positive and
 negative receivers rather than extrapolating method names to universal semantics.
 
-## Practice 45 — Guard recursive analysis
+## Guard recursive analysis
 
 Track visited bindings/aliases so recursive aliases and cyclic initializer/reference flows
 do not recurse forever. Use binding/declaration identity where available and keep the
@@ -155,7 +155,7 @@ This intentionally pathological input illustrates analyzer robustness, not valid
 modeling. Pass visited sets through resolution and clone branch state where needed. Stopping on a cycle means evidence is unresolved; it does not mean the target is
 safe. Avoid a global visited set that causes one path to suppress another unrelated match.
 
-## Practice 46 — Cache per-program analysis
+## Cache per-program analysis
 
 Collect lexical aliases/bindings once for a program AST and reuse that environment. Store
 environments in a `WeakMap<Program, TypeAliasEnvironment>` keyed by program identity,
@@ -179,7 +179,7 @@ configuration/visitor keys, invalidate or rebuild. `WeakMap` permits collection 
 program is unreachable; it does not magically repair stale analysis or bound a live AST's
 memory usage. Prefer caching expensive reusable evidence over caching trivial lookups.
 
-## Practice 47 — Normalize parameter forms
+## Normalize parameter forms
 
 Read annotations and local binding names consistently across ordinary parameters,
 TypeScript parameter properties, rest elements, and default/assignment patterns. Annotation
@@ -205,6 +205,6 @@ instead of checking only `Identifier` parameters.
 
 The analyzer distinguishes syntax evidence from semantic proof, respects supported lexical
 bindings, terminates on cycles, and has fixtures for wrappers/shadowing/parameter variants.
-Cached results are bound to the correct AST. Apply numbered patterns as policy only per
+Cached results are bound to the correct AST. Apply collected patterns as policy only per
 the catalog or explicit task selection; ordinary TypeScript edits do not require implementing
 this analysis machinery.

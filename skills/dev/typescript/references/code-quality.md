@@ -25,11 +25,11 @@ not a competing prose layout policy. Stricter policy alternatives appear below.
 
 ## Collected practices
 
-Practices 30–33 and 37–38 remain full policy alternatives, not enforced by inclusion here.
+The following practices remain full policy alternatives, not enforced by inclusion here.
 Before applying one as policy, read its adoption decision in the [catalog](practice-catalog.md),
 the sole persistent adoption record.
 
-## Practice 30 — Avoid adjacent array filter/map passes
+## Avoid adjacent array filter/map passes
 
 Reject adjacent array `filter().map()` and `map().filter()` passes in favor of
 supported lazy iterator helpers or a single transformation. It recognizes local array
@@ -58,7 +58,7 @@ values. Preserve these facts or retain the original pipeline.
 need to combine them. Use the catalog decision for this syntactic prohibition; its presence
 alone is not an automatic performance finding.
 
-## Practice 31 — Avoid copying growing reducer accumulators
+## Avoid copying growing reducer accumulators
 
 Repeatedly copying everything accumulated so far can cause quadratic work as input grows.
 Check `Object.assign({}, acc, ...)`, `Array.from(acc)`, and array copy methods
@@ -97,7 +97,7 @@ of the current item just because it appears inside a reducer. Under current
 guidance, a small bounded immutable reduction can be reasonable; establish scale/impact
 before calling it a performance bug.
 
-## Practice 32 — Explicit conditional object construction
+## Explicit conditional object construction
 
 Prohibit conditional spreads with an empty-object branch because property
 omission is hidden inside an expression. Build the object and add the property only when
@@ -121,7 +121,7 @@ the whole object can be clearer.
 **Conflict:** current guidance permits conditional spreads when readable and semantically
 correct. This policy alternative is not proof the original form is unsafe.
 
-## Practice 33 — Named object arguments
+## Named object arguments
 
 Prefer one named options object over positional arguments to make argument order
 self-documenting and permit API evolution. Exempt allocation-sensitive
@@ -143,10 +143,11 @@ openSelection({
 
 These show alternative APIs; changing the signature requires updating real callers and
 preserving the public contract. Current guidance chooses from API meaning and convention
-rather than universally requiring objects. This is independent of #19's broad `object`
-annotation restriction; named owner-provided options types satisfy that restriction.
+rather than universally requiring objects. This is independent of
+[Restrict broad object parameters](runtime-boundaries.md#restrict-broad-object-parameters);
+named owner-provided options types satisfy that restriction.
 
-## Practice 37 — Domain naming instead of shape
+## Domain naming instead of shape
 
 Prohibit the case-insensitive substring `shape` in owned JS/TS/private/JSX
 symbol names because it describes structure rather than domain responsibility. Rename
@@ -165,7 +166,7 @@ geometry vocabulary or names containing the same letters. **Conflict:** current 
 allows precise domain names and does not treat substring presence as a defect. Select the
 strict policy explicitly rather than silently replacing it with a vague naming preference.
 
-## Practice 38 — Structural blank-line grouping
+## Structural blank-line grouping
 
 Apply a padding-line policy with whitespace-only fixes:
 

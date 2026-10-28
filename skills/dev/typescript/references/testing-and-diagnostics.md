@@ -19,11 +19,11 @@ and platform mechanics to the applicable testing/frontend/framework skill.
 
 ## Collected practices
 
-Practices 34–36 are policy alternatives, not automatic default bans. Before applying one
+The following practices are policy alternatives, not automatic default bans. Before applying one
 as policy, read its adoption decision in the [catalog](practice-catalog.md), the sole
 persistent adoption record.
 
-## Practice 34 — No module mocking
+## No module mocking
 
 Prohibit Jest/Vitest module mocking and replace dependencies
 through a real interface, dependency injection, a service layer, or a faithful test
@@ -58,7 +58,7 @@ unnecessary production indirection. Current guidance evaluates test boundaries r
 banning syntax; if this stricter rule is selected, keep replacement at the narrow real
 seam. Test the fake's relevant contract against the real implementation when drift matters.
 
-## Practice 35 — Prefer real execution in tests
+## Prefer real execution in tests
 
 Do not mock what can run: use framework real-test primitives, leak/disposable
 checks, and running-build UI verification. Mock only dependencies that cannot run locally.
@@ -82,10 +82,11 @@ a keyboard interaction works.
 ban. Safety, credentials, cost, nondeterminism, and unavailable services may require a
 faithful substitute. Do not use production accounts or perform destructive/external effects
 without authority. Select framework/browser tooling through its owner and state the
-remaining evidence gap. #34 prohibits particular module mechanisms; #35 asks for real
+remaining evidence gap. [No module mocking](#no-module-mocking) prohibits particular module
+mechanisms; [Prefer real execution in tests](#prefer-real-execution-in-tests) asks for real
 behavioral evidence and is not satisfied merely by swapping module mocks for injected fakes.
 
-## Practice 36 — Structured telemetry
+## Structured telemetry
 
 Prefer structured logger diagnostics with enough context to debug from an ID and prohibit
 `console.log` in shipped code under this policy. Reuse the project's logger and stable contextual

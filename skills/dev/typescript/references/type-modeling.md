@@ -18,7 +18,8 @@ abstraction. Respect repository `type`, `interface`, and `enum` conventions.
 
 A brand requires construction evidence, not a particular spelling. A parser, complete
 guard, checked constructor, or validating SDK can provide it. A local assertion after
-proof is currently permitted; a stricter alternative is documented in practice 5.
+proof is currently permitted; a stricter alternative is documented in
+[Validated branded primitives](#validated-branded-primitives).
 
 ```typescript
 declare const accountIdBrand: unique symbol;
@@ -56,15 +57,15 @@ function decodeWith<T>(decoder: Decoder<T>, input: unknown): T {
 Remove a generic that only renames `unknown`, requires assertions throughout, or exposes
 machinery no caller uses. Preserve literal/relational information rather than widening
 and reconstructing it. Compatibility-check details live in
-[practice 24](assertions-and-interop.md#practice-24--satisfies-for-compatibility).
+[Satisfies for compatibility](assertions-and-interop.md#satisfies-for-compatibility).
 
 ## Collected practices
 
-Practices 1–6 are collected policy alternatives, not automatic default policy. Before
+The following practices are collected policy alternatives, not automatic default policy. Before
 applying one as policy, read its adoption decision in the [catalog](practice-catalog.md).
 The catalog alone records persistent adoption status.
 
-## Practice 1 — Discriminated unions
+## Discriminated unions
 
 Represent variants with a shared literal field and a distinct value per variant. Put
 required data on the variant that owns it, rather than allowing contradictory boolean
@@ -85,7 +86,7 @@ type LoadState<T> =
 Use when variants have different data or behavior. Independent optional properties are
 not automatically variants; establish the actual state invariant before replacing them.
 
-## Practice 2 — Exhaustive handling with never
+## Exhaustive handling with never
 
 For a closed union, assign the remaining whole value to a `never` local in the default
 arm. A new variant then fails compilation at handlers that have not been updated.
@@ -114,7 +115,7 @@ returning a value. This is static coverage, not runtime validation of external i
 validate before treating arbitrary data as the union. Keep deliberate fallback behavior
 for open protocols distinct from exhaustive closed-domain handling.
 
-## Practice 3 — Constructive modeling
+## Constructive modeling
 
 Choose parts whose arrangement encodes the invariant instead of relying on comments or
 repeated checks: `[T, ...T[]]` for a non-empty collection and `[T, T][]` for pairs instead
@@ -143,7 +144,7 @@ not prohibit negative/NaN durations or invalid dates. Use that representation on
 explicit validation or a documented weaker invariant; do not claim plain `number` makes
 negative ranges unconstructable.
 
-## Practice 4 — Simplest total types
+## Simplest total types
 
 Keep `T[]` while every operation has a defined result for `[]`. Strengthen only when the
 looser input forces `!`, `arr[0] as T`, or a supposedly unreachable throw. Returning
@@ -164,7 +165,7 @@ function requiredFirst<T>(items: [T, ...T[]]): T {
 Choose based on the caller's real contract. Match `.at()` to runtime support. Do not
 require non-empty input for a sum that already defines its empty result.
 
-## Practice 5 — Validated branded primitives
+## Validated branded primitives
 
 Prevent accidental interchange of equal-representation values, such as two ID types.
 This stricter alternative requires `& { readonly __brand: 'X' }`, construction through a
@@ -192,7 +193,7 @@ Use brands for demonstrated interchange risks, not every number/string by reflex
 checked-constructor assertions. The exact brand spelling and guard-only restriction
 require explicit selection, not an automatic migration of existing brands.
 
-## Practice 6 — Derive contracts before duplicating
+## Derive contracts before duplicating
 
 Use the schema or generated owner of a shape. Prefer supported schema inference, then
 `Pick`, `Omit`, `Parameters`, `ReturnType`, `Awaited`, or `typeof` where these preserve the

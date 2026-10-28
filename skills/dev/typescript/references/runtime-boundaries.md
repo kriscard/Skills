@@ -54,19 +54,20 @@ function requireDecoded<T>(decoder: Decoder<T>, input: unknown): T {
 ```
 
 Current policy permits `unknown` and raw dictionaries at real boundaries, including
-parsers, low-level adapters, generic containers, and error causes. Restrictions 15–19
-are policy alternatives subject to catalog selection, not reasons to disguise untrusted data in a named
-alias. Brand construction is documented in [type modeling](type-modeling.md#practice-5--validated-branded-primitives).
+parsers, low-level adapters, generic containers, and error causes. The broad-contract
+restrictions below are policy alternatives subject to catalog selection, not reasons to
+disguise untrusted data in a named alias. Brand construction is documented in
+[Validated branded primitives](type-modeling.md#validated-branded-primitives).
 
 ## Collected practices
 
-Practices 7–19 preserve policy alternatives and their limits. Before applying one as
+The following practices preserve policy alternatives and their limits. Before applying one as
 policy, read its adoption decision in the [catalog](practice-catalog.md), the sole persistent
-adoption record. Numbered sections do not replace current guidance merely by being documented.
+adoption record. Collected sections do not replace current guidance merely by being documented.
 Schema examples assume an already installed, compatible Zod API; adapt to the repository's
 real decoder rather than adding Zod.
 
-## Practice 7 — External data as unknown, not any
+## External data as unknown, not any
 
 Start untrusted input as `unknown`, forcing evidence before property access. This includes
 RPC payloads, JSON parsing, IPC, files, environment data, database results, and browser
@@ -85,10 +86,10 @@ function hasId(input: unknown): input is { id: string } {
 ```
 
 Assign an `any`-returning deserializer result to `unknown` immediately. This contains
-static unsafety but does not itself validate anything. Contrast practice 15's stricter
-parameter policy; do not reconcile them by casting unknown input to a domain type.
+static unsafety but does not itself validate anything. Contrast the stricter
+[Restrict explicit unknown parameters](#restrict-explicit-unknown-parameters) policy; do not reconcile them by casting unknown input to a domain type.
 
-## Practice 8 — Schemas before structural guards
+## Schemas before structural guards
 
 Before hand-checking an external object property by property, look for the repository's
 schema library and existing schemas. Let one schema own validation and infer its output;
@@ -107,10 +108,11 @@ function parseUser(input: unknown): User {
 
 Reuse the installed decoder's inference helper and actual versioned API. This is not a
 requirement to introduce a schema dependency for one guard or to revalidate trusted values.
-Primitive/local checks remain ordinary evidence under current guidance and #26;
-#27 proposes a stricter restriction.
+Primitive/local checks remain ordinary evidence under current guidance and the
+[Narrowing hierarchy](assertions-and-interop.md#narrowing-hierarchy);
+[Restrict runtime typeof](assertions-and-interop.md#restrict-runtime-typeof) proposes a stricter restriction.
 
-## Practice 9 — Honest type guards
+## Honest type guards
 
 A predicate must verify every fact it claims. A guard checking only `id` cannot honestly
 claim a user with required `name`, and mere property presence does not prove its type.
@@ -125,12 +127,13 @@ function isUser(input: unknown): input is User {
 }
 ```
 
-Use the full schema from #8 or check both fields. Test malformed, missing, null, and
+Use the full schema from [Schemas before structural guards](#schemas-before-structural-guards)
+or check both fields. Test malformed, missing, null, and
 wrong-type cases. Predicate signatures are trusted by the compiler; naming a function
 `isUser` does not make its claim sound. A guard over an already closed union may only
 need its discriminant, because the rest of the facts are already established.
 
-## Practice 10 — Schema compatibility with an existing type
+## Schema compatibility with an existing type
 
 When a type already owns the contract, give the schema a compatible schema-type annotation.
 The compiler should reject a validator that omits required fields instead of requiring an
@@ -146,11 +149,12 @@ const UserSchema: z.ZodType<User> = z.object({
 });
 ```
 
-When the schema owns the contract, infer from it instead (#8). Match the installed
+When the schema owns the contract, infer from it instead
+([Schemas before structural guards](#schemas-before-structural-guards)). Match the installed
 schema API: transforms/defaults can distinguish input and output types. Static schema
 compatibility checks output assignability; it is not a proof of all semantic invariants.
 
-## Practice 11 — Parse once at the trust boundary
+## Parse once at the trust boundary
 
 Decode when data crosses into an owned domain, producing a named trusted type. Raw
 `Record<string, unknown>` dictionaries stop at that parse instead of spreading through
@@ -167,7 +171,7 @@ The example assumes the real parser and domain operation. Validate at another bo
 when needed; do not treat a once-valid mutable object as permanently valid after arbitrary
 mutation. A typed generated SDK counts only if its runtime decoding establishes the claim.
 
-## Practice 12 — Explicit expected-validation failure paths
+## Explicit expected-validation failure paths
 
 Use `safeParse` or the decoder's result-style equivalent when rejection is expected rather
 than exceptional. Keep successful output and failure information separate.
@@ -180,12 +184,13 @@ if (!result.success) {
 return { ok: true, value: result.data };
 ```
 
-This is a function-body fragment using the schema from #8. Map decoder issues to the
+This is a function-body fragment using the schema from
+[Schemas before structural guards](#schemas-before-structural-guards). Map decoder issues to the
 public error contract when necessary; preserve useful causes without exposing secrets.
 Throwing parse APIs remain appropriate where invalid input really is exceptional. Never
 fall back to `return input as User` on failure.
 
-## Practice 13 — Forward-compatible wire decoding
+## Forward-compatible wire decoding
 
 Allow unknown wire fields so new producer fields do not break older consumers; use
 `ignoreUnknownFields` in decoders that support it. Keep validation of known required fields
@@ -196,7 +201,7 @@ and not a universal Zod setting. Use the installed API's actual equivalent. A se
 boundary, signed payload, command whitelist, or deliberately closed protocol may require
 rejecting extras. Record that policy rather than silently weakening it for compatibility.
 
-## Practice 14 — Versioned persisted JSON
+## Versioned persisted JSON
 
 Persist an explicit format version and handle parse failures. After deserialization,
 validate the envelope and version-specific payload, then migrate or reject unsupported
@@ -217,7 +222,7 @@ Match `Error` cause support to the runtime. A try/catch around JSON parsing hand
 errors, not malformed domain values, unknown versions, or migrations. Browser storage
 mechanics and persistence migrations still belong to their platform/data owners.
 
-## Practice 15 — Restrict explicit unknown parameters
+## Restrict explicit unknown parameters
 
 The rule rejects explicitly `unknown` parameters (including unions containing direct
 `unknown`) and asks callers to parse at I/O boundaries before invoking a named domain API.
@@ -235,12 +240,14 @@ function processUser(input: User): void {}
 function reportFailure(cause: unknown): void {}
 ```
 
-**Conflict:** a general decoder naturally accepts `unknown` (#7–8). The current skill
+**Conflict:** a general decoder naturally accepts `unknown`
+([External data as unknown, not any](#external-data-as-unknown-not-any) and
+[Schemas before structural guards](#schemas-before-structural-guards)). The current skill
 permits that. If selecting this stricter policy, explicitly determine where decoding
 functions are allowed; do not make a lying guard or hide `unknown` merely to evade lint.
 The rule is syntactic and is not a proof that accepted named types have been parsed.
 
-## Practice 16 — Restrict unknown return contracts
+## Restrict unknown return contracts
 
 The rule rejects explicit `unknown`, unions containing it, and `Promise<unknown>` or
 `PromiseLike<unknown>` return contracts, including resolved visible aliases handled by its
@@ -260,7 +267,7 @@ can intentionally return untrusted values under current policy. This syntactic r
 inferred returns and nested `unknown` fields in some contracts; passing lint does not
 establish runtime safety. Decide adapter exceptions before adoption.
 
-## Practice 17 — Keep unknown visible instead of aliasing it
+## Keep unknown visible instead of aliasing it
 
 Reject aliases whose resolved type is `unknown`; a domain-looking name must not hide that
 no evidence exists. The implementation follows visible aliases and generic substitutions,
@@ -278,7 +285,7 @@ const raw: unknown = JSON.parse(text);
 type. Current guidance also discourages aliases without meaning but permits intentional
 low-level abstractions. Do not replace the alias with an asserted domain type.
 
-## Practice 18 — Restrict unsafe dictionary value types
+## Restrict unsafe dictionary value types
 
 Reject dictionary contracts whose direct values resolve to `unknown`, `any`, `object`,
 `{}`, or a union containing these escape hatches. If automating this policy, inspect index
@@ -303,7 +310,7 @@ implementation considerations, not claims that a particular checker is installed
 Selecting a blanket ban requires a boundary exception or a different honest representation,
 not merely hiding the same contract behind a mapped type or alias.
 
-## Practice 19 — Restrict broad object parameters
+## Restrict broad object parameters
 
 Reject function parameters explicitly typed as broad `object`, including supported local
 aliases. Accept a named owner type and establish boundary evidence before calling it.
@@ -319,7 +326,7 @@ function save(options: SaveOptions): void {}
 ```
 
 The rule permits generic constraints such as `<T extends object>`; it is not a ban on
-object-valued arguments or named argument objects (#33). A type annotation alone
+object-valued arguments or [Named object arguments](code-quality.md#named-object-arguments). A type annotation alone
 still does not prove that external input was decoded.
 
 ## Completion criterion

@@ -73,24 +73,24 @@ green. State what was verified and what remains runtime-dependent.
 
 ## Collected practices are not automatic policy
 
-The references document 47 numbered practices; documenting a practice does not activate it.
-Use the unnumbered **Current skill guidance** sections as the existing default. Numbered
-sections preserve policy alternatives, examples, exceptions, and conflicts for selection.
+The references document 47 collected practices; documenting a practice does not activate it.
+Use the **Current skill guidance** sections as the existing default. Collected sections
+preserve policy alternatives, examples, exceptions, and conflicts for selection.
 The **Decision** column in `references/practice-catalog.md` is the single authority for
-persistent adoption status. Before applying a numbered practice as policy, read its catalog
+persistent adoption status. Before applying a collected practice as policy, read its catalog
 entry and full section; pending or excluded entries do not introduce new review findings.
 A task-specific request can select a practice for that task without changing persistent
 status. Durable changes update the catalog decision and, only when needed, the affected
 conditions or conflicting guidance—not a second copy of the adoption status.
 
-Automation notes in numbered sections describe optional enforcement designs, not installed
+Automation notes in collected sections describe optional enforcement designs, not installed
 checker capabilities. Verify the target project's actual tooling before configuring options;
 collecting or selecting a practice does not authorize a tooling installation.
 
 ## References
 
 Read every reference whose trigger matches the task, not the entire collection. Each
-numbered practice has one canonical section; the catalog is an index, not a substitute.
+collected practice has one canonical section; the catalog is an index, not a substitute.
 
 | Priority | Load when | Reference |
 |---|---|---|
@@ -100,7 +100,7 @@ numbered practice has one canonical section; the catalog is an index, not a subs
 | 2 — Conditional | Collection pipelines, reducers, iterator helpers, object construction, argument design, symbol naming, spacing, or syntactic code-quality findings | `references/code-quality.md` |
 | 2 — Conditional | TypeScript module mocks, dependency-injection test seams, real dependency tests, disposal/leak checks, running-UI evidence, structured logging, or console diagnostics | `references/testing-and-diagnostics.md` |
 | 2 — Conditional | Implementing lint rules, TypeScript AST tooling, codemods, alias/type analysis, scope resolution, or program-analysis caches | `references/static-analysis.md` |
-| 1 — Policy check | Before applying a numbered practice as policy; selecting practices, changing adoption status, comparing policy alternatives, or auditing coverage of all 47 practices | `references/practice-catalog.md` |
+| 1 — Policy check | Before applying a collected practice as policy; selecting practices, changing adoption status, comparing policy alternatives, or auditing coverage of all 47 practices | `references/practice-catalog.md` |
 
 ## Ownership Boundary
 
@@ -123,5 +123,5 @@ Before finishing:
 - generics preserve a caller-visible relationship rather than hiding `unknown`;
 - assertions and suppressions are local, justified, and do not launder evidence;
 - checks use established scripts, and unverified runtime behavior is explicit;
-- numbered policy decisions follow the catalog or explicit task selection, and conflicting
+- collected policy decisions follow the catalog or explicit task selection, and conflicting
   policy alternatives are reported rather than silently combined.
