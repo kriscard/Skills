@@ -18,7 +18,7 @@ abstraction. Respect repository `type`, `interface`, and `enum` conventions.
 
 A brand requires construction evidence, not a particular spelling. A parser, complete
 guard, checked constructor, or validating SDK can provide it. A local assertion after
-proof is currently permitted; Cursor's stricter alternative is documented in practice 5.
+proof is currently permitted; a stricter alternative is documented in practice 5.
 
 ```typescript
 declare const accountIdBrand: unique symbol;
@@ -60,18 +60,15 @@ and reconstructing it. Compatibility-check details live in
 
 ## Collected practices
 
-**Adoption: Pending for practices 1–6.** These are Cursor source positions, not new default
-policy. See the [catalog](practice-catalog.md) for selection and pinned provenance.
-Each source link reaches the original examples.
+**Adoption: Pending for practices 1–6.** These are collected policy alternatives, not new
+default policy. See the [catalog](practice-catalog.md) for selection.
 
 ## Practice 1 — Discriminated unions
-
-**Source:** [Cursor: Discriminated unions][cursor-patterns].
 
 Represent variants with a shared literal field and a distinct value per variant. Put
 required data on the variant that owns it, rather than allowing contradictory boolean
 flags and optional-field bags. Keep the discriminant name consistent in the local API;
-Cursor suggests `kind`, `type`, or `tag`, not one mandatory global spelling.
+Use `kind`, `type`, or `tag` as appropriate, not one mandatory global spelling.
 
 ```typescript
 // Bad: ready-without-data and simultaneous data/error compile.
@@ -88,8 +85,6 @@ Use when variants have different data or behavior. Independent optional properti
 not automatically variants; establish the actual state invariant before replacing them.
 
 ## Practice 2 — Exhaustive handling with never
-
-**Source:** [Cursor: Exhaustiveness][cursor-patterns].
 
 For a closed union, assign the remaining whole value to a `never` local in the default
 arm. A new variant then fails compilation at handlers that have not been updated.
@@ -120,8 +115,6 @@ for open protocols distinct from exhaustive closed-domain handling.
 
 ## Practice 3 — Constructive modeling
 
-**Source:** [Cursor: Constructive modeling][cursor-patterns].
-
 Choose parts whose arrangement encodes the invariant instead of relying on comments or
 repeated checks: `[T, ...T[]]` for a non-empty collection and `[T, T][]` for pairs instead
 of an even-length flat array. Establish the property once where ordinary input arrives.
@@ -144,14 +137,12 @@ invalidate collection invariants; a type is not a runtime freeze. A non-empty tu
 index zero exists, not that arbitrary numeric indexing is safe under
 `noUncheckedIndexedAccess`.
 
-**Source caveat:** Cursor also proposes `start: Date` plus `durationMs: number` as preventing
-negative ranges. The representation alone does not prohibit negative/NaN durations or
-invalid dates. Preserve that modeling idea only with explicit validation or a documented
-weaker invariant; do not claim plain `number` makes negative ranges unconstructable.
+**Modeling caveat:** representing a range as `start: Date` plus `durationMs: number` does
+not prohibit negative/NaN durations or invalid dates. Use that representation only with
+explicit validation or a documented weaker invariant; do not claim plain `number` makes
+negative ranges unconstructable.
 
 ## Practice 4 — Simplest total types
-
-**Source:** [Cursor: Simplest total type][cursor-patterns].
 
 Keep `T[]` while every operation has a defined result for `[]`. Strengthen only when the
 looser input forces `!`, `arr[0] as T`, or a supposedly unreachable throw. Returning
@@ -174,12 +165,10 @@ require non-empty input for a sum that already defines its empty result.
 
 ## Practice 5 — Validated branded primitives
 
-**Source:** [Cursor: Branded types][cursor-patterns].
-
 Prevent accidental interchange of equal-representation values, such as two ID types.
-Cursor specifically requires `& { readonly __brand: 'X' }`, construction through a guard,
-and no brand-producing `as`. Its parser checks once and downstream consumers trust the
-brand.
+This stricter alternative requires `& { readonly __brand: 'X' }`, construction through a
+guard, and no brand-producing `as`. The parser checks once and downstream consumers trust
+the brand.
 
 ```typescript
 type AccountId = string & { readonly __brand: 'AccountId' };
@@ -199,12 +188,10 @@ its implementation justifies the brand. Branding alone never validates the primi
 Use brands for demonstrated interchange risks, not every number/string by reflex.
 
 **Conflict with current guidance:** the current skill permits unique-symbol brands and
-checked-constructor assertions. Cursor's exact brand spelling and guard-only restriction
+checked-constructor assertions. The exact brand spelling and guard-only restriction
 remain pending choices, not an instruction to migrate existing brands.
 
 ## Practice 6 — Derive contracts before duplicating
-
-**Source:** [Cursor: Schema-derived types][cursor-patterns].
 
 Use the schema or generated owner of a shape. Prefer supported schema inference, then
 `Pick`, `Omit`, `Parameters`, `ReturnType`, `Awaited`, or `typeof` where these preserve the
@@ -229,6 +216,4 @@ that network/DB values were validated; see [runtime boundaries](runtime-boundari
 - Is exhaustive handling required, or is a default deliberate?
 - Which schema, generated contract, function, or value owns the shape?
 - Does each generic preserve a caller-visible relationship?
-- Is a source-specific restriction being mistaken for adopted policy?
-
-[cursor-patterns]: https://github.com/cursor/plugins/blob/c742dd61706fbacc1b95f1a20b7b988cf096ce6c/pstack/skills/typescript-best-practices/references/patterns.md
+- Is a pending restriction being mistaken for adopted policy?

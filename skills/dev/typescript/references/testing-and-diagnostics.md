@@ -20,13 +20,11 @@ and platform mechanics to the applicable testing/frontend/framework skill.
 ## Collected practices
 
 **Adoption: Pending for practices 34–36.** Select them through the
-[catalog](practice-catalog.md); source policies below are not current default bans.
+[catalog](practice-catalog.md); the policy alternatives below are not current default bans.
 
 ## Practice 34 — No module mocking
 
-**Source:** [anti-slop: no-module-mocking][module-mocking].
-
-The source prohibits Jest/Vitest module mocking and asks tests to replace dependencies
+Prohibit Jest/Vitest module mocking and replace dependencies
 through a real interface, dependency injection, a service layer, or a faithful test
 implementation. Replace a dependency the subject actually owns rather than patching the
 module loader and bypassing its public contract.
@@ -50,7 +48,7 @@ const fakeReader: AccountReader = {
 
 The rule recognizes supported Jest/Vitest objects and import aliases for `mock`, `doMock`,
 and `unstable_mockModule`, including computed literal method access. It respects shadowed
-bindings. The pinned implementation does not flag `unmock`, `doUnmock`, or `deepUnmock`;
+bindings. This restriction does not flag `unmock`, `doUnmock`, or `deepUnmock`;
 nor does it prohibit every spy or function stub by name or prove that an accepted fake
 preserves real dependency behavior.
 
@@ -61,9 +59,7 @@ seam. Test the fake's relevant contract against the real implementation when dri
 
 ## Practice 35 — Prefer real execution in tests
 
-**Source:** [Cursor: Real tests][cursor-skill].
-
-Cursor says not to mock what can run: use framework real-test primitives, leak/disposable
+Do not mock what can run: use framework real-test primitives, leak/disposable
 checks, and running-build UI verification. Mock only dependencies that cannot run locally.
 This asks for evidence through the real boundary, not merely a type-compatible simulation.
 
@@ -81,7 +77,7 @@ that boundary is the acceptance target, rather than mocking the adapter's own re
 function and declaring its wiring verified. A UI build succeeding is not evidence that
 a keyboard interaction works.
 
-**Limits:** the source's locally-runnable preference is stricter than a universal unit-test
+**Limits:** a preference for locally runnable dependencies is not a universal unit-test
 ban. Safety, credentials, cost, nondeterminism, and unavailable services may require a
 faithful substitute. Do not use production accounts or perform destructive/external effects
 without authority. Select framework/browser tooling through its owner and state the
@@ -90,10 +86,8 @@ behavioral evidence and is not satisfied merely by swapping module mocks for inj
 
 ## Practice 36 — Structured telemetry
 
-**Source:** [Cursor: Structured telemetry][cursor-skill].
-
-Cursor prefers structured logger diagnostics with enough context to debug from an ID and
-prohibits `console.log` in shipped code. Reuse the project's logger and stable contextual
+Prefer structured logger diagnostics with enough context to debug from an ID and prohibit
+`console.log` in shipped code under this policy. Reuse the project's logger and stable contextual
 fields rather than assembling unsearchable narrative strings.
 
 ```typescript
@@ -109,11 +103,8 @@ Use the installed API, preserve useful causes, and include a request/correlation
 available. Avoid logging raw secrets, tokens, personal payloads, or unbounded input merely
 to add context; follow the owner's redaction and retention policy.
 
-**Limits:** Cursor's source does not define a logger implementation, levels, sampling, or
+**Limits:** this policy does not define a logger implementation, levels, sampling, or
 schema. Do not invent those policies or install dependencies as a side effect. CLI stdout
 may be a user-facing output contract rather than telemetry; explicitly decide that case
 before applying a shipped-console ban. Current TypeScript guidance does not itself impose
 a logging migration.
-
-[module-mocking]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-module-mocking.ts
-[cursor-skill]: https://github.com/cursor/plugins/blob/c742dd61706fbacc1b95f1a20b7b988cf096ce6c/pstack/skills/typescript-best-practices/SKILL.md

@@ -70,10 +70,10 @@ green. State what was verified and what remains runtime-dependent.
 
 ## Collected practices are not automatic policy
 
-The references document 47 numbered practices from upstream sources. Their adoption is
+The references document 47 numbered practices. Their adoption is
 **Pending** until the user selects them; documenting a practice does not activate it.
 Use the unnumbered **Current skill guidance** sections as the existing default. Numbered
-sections preserve source positions, examples, exceptions, and conflicts for selection.
+sections preserve policy alternatives, examples, exceptions, and conflicts for selection.
 Do not turn a pending prohibition into a review finding or silently replace the current
 guidance with it. A task-specific request can select a practice for that task; durable
 policy changes require updating the catalog and its canonical section together.
@@ -91,7 +91,7 @@ numbered practice has one canonical section; the catalog is an index, not a subs
 | 2 — Conditional | Collection pipelines, reducers, iterator helpers, object construction, argument design, symbol naming, spacing, or syntactic code-quality findings | `references/code-quality.md` |
 | 2 — Conditional | TypeScript module mocks, dependency-injection test seams, real dependency tests, disposal/leak checks, running-UI evidence, structured logging, or console diagnostics | `references/testing-and-diagnostics.md` |
 | 2 — Conditional | Implementing lint rules, TypeScript AST tooling, codemods, alias/type analysis, scope resolution, or program-analysis caches | `references/static-analysis.md` |
-| 3 — Maintenance | Selecting practices, changing adoption status, comparing source policies, checking provenance, or auditing coverage of all 47 practices | `references/practice-catalog.md` |
+| 3 — Maintenance | Selecting practices, changing adoption status, comparing policy alternatives, or auditing coverage of all 47 practices | `references/practice-catalog.md` |
 
 ## Ownership Boundary
 
@@ -101,7 +101,7 @@ numbered practice has one canonical section; the catalog is an index, not a subs
   state, `postMessage`, and form feedback remain frontend concerns.
 - Framework behavior, testing architecture, formatting policy, and performance findings
   remain with their established owners unless the TypeScript contract itself is the issue.
-  The testing/diagnostics reference preserves upstream practices in full for selection;
+  The testing/diagnostics reference preserves collected practices in full for selection;
   it does not override those owners or authorize app runs, telemetry changes, or new tools.
 
 ## Completion Gate
@@ -114,5 +114,5 @@ Before finishing:
 - generics preserve a caller-visible relationship rather than hiding `unknown`;
 - assertions and suppressions are local, justified, and do not launder evidence;
 - checks use established scripts, and unverified runtime behavior is explicit;
-- numbered upstream practices remain pending unless explicitly selected, and conflicting
-  source positions are reported rather than silently combined.
+- numbered practices remain pending unless explicitly selected, and conflicting
+  policy alternatives are reported rather than silently combined.

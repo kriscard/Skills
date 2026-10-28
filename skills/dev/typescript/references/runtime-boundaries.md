@@ -55,19 +55,17 @@ function requireDecoded<T>(decoder: Decoder<T>, input: unknown): T {
 
 Current policy permits `unknown` and raw dictionaries at real boundaries, including
 parsers, low-level adapters, generic containers, and error causes. Restrictions 15–19
-are pending upstream alternatives, not reasons to disguise untrusted data in a named
+are pending policy alternatives, not reasons to disguise untrusted data in a named
 alias. Brand construction is documented in [type modeling](type-modeling.md#practice-5--validated-branded-primitives).
 
 ## Collected practices
 
-**Adoption: Pending for practices 7–19.** Source positions and their limits are preserved
+**Adoption: Pending for practices 7–19.** Policy alternatives and their limits are preserved
 below. [Catalog](practice-catalog.md) tracks selection; numbered sections do not replace
 the current guidance until selected. Schema examples assume an already installed,
 compatible Zod API; adapt to the repository's real decoder rather than adding Zod.
 
 ## Practice 7 — External data as unknown, not any
-
-**Source:** [Cursor: unknown over any][cursor-patterns].
 
 Start untrusted input as `unknown`, forcing evidence before property access. This includes
 RPC payloads, JSON parsing, IPC, files, environment data, database results, and browser
@@ -91,8 +89,6 @@ parameter policy; do not reconcile them by casting unknown input to a domain typ
 
 ## Practice 8 — Schemas before structural guards
 
-**Source:** [Cursor: Schemas before hand-rolled guards][cursor-patterns].
-
 Before hand-checking an external object property by property, look for the repository's
 schema library and existing schemas. Let one schema own validation and infer its output;
 avoid a schema, duplicate interface, and partial guard that can diverge.
@@ -110,12 +106,10 @@ function parseUser(input: unknown): User {
 
 Reuse the installed decoder's inference helper and actual versioned API. This is not a
 requirement to introduce a schema dependency for one guard or to revalidate trusted values.
-Primitive/local checks remain ordinary evidence under current guidance and Cursor #26;
-anti-slop #27 differs.
+Primitive/local checks remain ordinary evidence under current guidance and #26;
+#27 proposes a stricter restriction.
 
 ## Practice 9 — Honest type guards
-
-**Source:** [Cursor: Type guards and No as casts][cursor-patterns].
 
 A predicate must verify every fact it claims. A guard checking only `id` cannot honestly
 claim a user with required `name`, and mere property presence does not prove its type.
@@ -137,8 +131,6 @@ need its discriminant, because the rest of the facts are already established.
 
 ## Practice 10 — Schema compatibility with an existing type
 
-**Source:** [Cursor: No as casts, type-first validator example][cursor-patterns].
-
 When a type already owns the contract, give the schema a compatible schema-type annotation.
 The compiler should reject a validator that omits required fields instead of requiring an
 assertion after parsing.
@@ -159,8 +151,6 @@ compatibility checks output assignability; it is not a proof of all semantic inv
 
 ## Practice 11 — Parse once at the trust boundary
 
-**Source:** [Cursor: Boundary validation][cursor-patterns].
-
 Decode when data crosses into an owned domain, producing a named trusted type. Raw
 `Record<string, unknown>` dictionaries stop at that parse instead of spreading through
 business APIs. Internal callers consume the parsed type without repeated decoding.
@@ -177,8 +167,6 @@ when needed; do not treat a once-valid mutable object as permanently valid after
 mutation. A typed generated SDK counts only if its runtime decoding establishes the claim.
 
 ## Practice 12 — Explicit expected-validation failure paths
-
-**Source:** [Cursor: Schemas before hand-rolled guards][cursor-patterns].
 
 Use `safeParse` or the decoder's result-style equivalent when rejection is expected rather
 than exceptional. Keep successful output and failure information separate.
@@ -198,11 +186,9 @@ fall back to `return input as User` on failure.
 
 ## Practice 13 — Forward-compatible wire decoding
 
-**Source:** [Cursor: Boundary validation, wire formats][cursor-patterns].
-
-Cursor prescribes allowing unknown wire fields so new producer fields do not break older
-consumers; it mentions `ignoreUnknownFields` for supporting decoders. Keep validation of
-known required fields even when allowing additional fields.
+Allow unknown wire fields so new producer fields do not break older consumers; use
+`ignoreUnknownFields` in decoders that support it. Keep validation of known required fields
+even when allowing additional fields.
 
 **Compatibility caveat:** this is decoder/protocol-specific, not an option on `JSON.parse`
 and not a universal Zod setting. Use the installed API's actual equivalent. A security
@@ -210,8 +196,6 @@ boundary, signed payload, command whitelist, or deliberately closed protocol may
 rejecting extras. Record that policy rather than silently weakening it for compatibility.
 
 ## Practice 14 — Versioned persisted JSON
-
-**Source:** [Cursor: Boundary validation, persisted JSON][cursor-patterns].
 
 Persist an explicit format version and handle parse failures. After deserialization,
 validate the envelope and version-specific payload, then migrate or reject unsupported
@@ -234,8 +218,6 @@ mechanics and persistence migrations still belong to their platform/data owners.
 
 ## Practice 15 — Restrict explicit unknown parameters
 
-**Source:** [anti-slop: no-unknown-parameters][unknown-parameters].
-
 The rule rejects explicitly `unknown` parameters (including unions containing direct
 `unknown`) and asks callers to parse at I/O boundaries before invoking a named domain API.
 It checks function/method/signature parameter forms, including rest/default wrappers.
@@ -248,7 +230,7 @@ function process(input: unknown): void {}
 // Allowed domain API:
 function processUser(input: User): void {}
 
-// Explicit source exception:
+// Explicit policy exception:
 function reportFailure(cause: unknown): void {}
 ```
 
@@ -258,8 +240,6 @@ functions are allowed; do not make a lying guard or hide `unknown` merely to eva
 The rule is syntactic and is not a proof that accepted named types have been parsed.
 
 ## Practice 16 — Restrict unknown return contracts
-
-**Source:** [anti-slop: no-unknown-returns][unknown-returns].
 
 The rule rejects explicit `unknown`, unions containing it, and `Promise<unknown>` or
 `PromiseLike<unknown>` return contracts, including resolved visible aliases handled by its
@@ -275,20 +255,18 @@ function readUser(): User { return parseUser(input); }
 ```
 
 Here `input` denotes existing external input. Low-level raw readers and generic adapters
-can intentionally return untrusted values under current policy. The source rule allows
+can intentionally return untrusted values under current policy. This syntactic rule allows
 inferred returns and nested `unknown` fields in some contracts; passing lint does not
 establish runtime safety. Decide adapter exceptions before adoption.
 
 ## Practice 17 — Keep unknown visible instead of aliasing it
-
-**Source:** [anti-slop: no-unknown-type-aliases][unknown-aliases].
 
 Reject aliases whose resolved type is `unknown`; a domain-looking name must not hide that
 no evidence exists. The implementation follows visible aliases and generic substitutions,
 not every textual occurrence of `unknown` inside a larger useful container.
 
 ```typescript
-// Rejected by the source policy:
+// Rejected by this policy:
 type Payload = unknown;
 
 // Keep boundary uncertainty visible:
@@ -300,8 +278,6 @@ type. Current guidance also discourages aliases without meaning but permits inte
 low-level abstractions. Do not replace the alias with an asserted domain type.
 
 ## Practice 18 — Restrict unsafe dictionary value types
-
-**Source:** [anti-slop: no-unsafe-dictionary-type][dictionary].
 
 Reject dictionary contracts whose direct values resolve to `unknown`, `any`, `object`,
 `{}`, or a union containing these escape hatches. The helpers inspect index signatures,
@@ -318,7 +294,7 @@ type UsersById = Record<string, User>;
 
 This changes value specificity, not key existence. An open record can still have a missing
 key; choose optional lookup semantics, `noUncheckedIndexedAccess`, or `Map` as appropriate.
-Finite-key records differ from open dictionaries. The source exempts certain generic
+Finite-key records differ from open dictionaries. The rule exempts certain generic
 constraints and avoids reporting the same alias at every consumer.
 
 **Conflict:** the current skill permits raw dictionaries at an untrusted object boundary.
@@ -326,8 +302,6 @@ Selecting a blanket ban requires a boundary exception or a different honest repr
 not merely hiding the same contract behind a mapped type or alias.
 
 ## Practice 19 — Restrict broad object parameters
-
-**Source:** [anti-slop: no-object-parameters][object-parameters].
 
 Reject function parameters explicitly typed as broad `object`, including supported local
 aliases. Accept a named owner type and establish boundary evidence before calling it.
@@ -343,7 +317,7 @@ function save(options: SaveOptions): void {}
 ```
 
 The rule permits generic constraints such as `<T extends object>`; it is not a ban on
-object-valued arguments or Cursor's named argument objects (#33). A type annotation alone
+object-valued arguments or named argument objects (#33). A type annotation alone
 still does not prove that external input was decoded.
 
 ## Completion criterion
@@ -351,10 +325,3 @@ still does not prove that external input was decoded.
 Every untrusted path gains evidence before trusted use, successful decoding yields the
 intended internal type, failure remains honest, and consumers do not repeatedly validate
 the same value. Pending broad-contract bans are not applied without selection.
-
-[cursor-patterns]: https://github.com/cursor/plugins/blob/c742dd61706fbacc1b95f1a20b7b988cf096ce6c/pstack/skills/typescript-best-practices/references/patterns.md
-[unknown-parameters]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-parameters.ts
-[unknown-returns]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-returns.ts
-[unknown-aliases]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-type-aliases.ts
-[dictionary]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unsafe-dictionary-type.ts
-[object-parameters]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-object-parameters.ts

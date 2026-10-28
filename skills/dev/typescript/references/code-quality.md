@@ -21,31 +21,29 @@ require a schema dependency.
 Dynamic mechanisms and module mocking remain decisions for their owning adapter/testing
 boundary, not syntax defects by themselves. Do not flag a name solely for containing
 `shape`; preserve precise domain vocabulary. Formatting belongs to the installed tools,
-not a competing prose layout policy. Source-specific stricter positions appear below.
+not a competing prose layout policy. Stricter policy alternatives appear below.
 
 ## Collected practices
 
-**Adoption: Pending for practices 30–33 and 37–38.** Full source positions remain available
+**Adoption: Pending for practices 30–33 and 37–38.** Full policy alternatives remain available
 for selection in the [catalog](practice-catalog.md), not enforced by their inclusion here.
 
 ## Practice 30 — Avoid adjacent array filter/map passes
 
-**Source:** [anti-slop: no-array-filter-map][filter-map].
-
-The source rejects adjacent array `filter().map()` and `map().filter()` passes in favor of
+Reject adjacent array `filter().map()` and `map().filter()` passes in favor of
 supported lazy iterator helpers or a single transformation. It recognizes local array
 receivers; arbitrary custom collections and already-lazy pipelines are not assumed to be
 arrays just because their methods have those names.
 
 ```typescript
-// Source policy rejects consecutive eager passes:
+// This policy rejects consecutive eager passes:
 const labels = items.filter(isVisible).map(labelFor);
 
 // Possible replacement when callbacks are independent and semantics match:
 const labels = items.flatMap((item) => isVisible(item) ? [labelFor(item)] : []);
 ```
 
-For runtimes supporting iterator helpers, the source also proposes
+For runtimes supporting iterator helpers, another option is
 `items.values().filter(isVisible).map(labelFor).toArray()`. Match runtime/polyfill support,
 not just TypeScript `lib` declarations. `flatMap` is eager and may allocate per item; it
 is not automatically faster.
@@ -56,18 +54,16 @@ indexes; callback third arguments differ too. Map-then-filter predicates receive
 values. Preserve these facts or retain the original pipeline.
 
 **Conflict:** current guidance allows readable pipelines without a measured/established
-need to combine them. The source's syntactic prohibition is pending, not an automatic
+need to combine them. This syntactic prohibition is pending, not an automatic
 performance finding.
 
 ## Practice 31 — Avoid copying growing reducer accumulators
 
-**Source:** [anti-slop: no-reduce-accumulator-copy][accumulator].
-
 Repeatedly copying everything accumulated so far can cause quadratic work as input grows.
-The source catches `Object.assign({}, acc, ...)`, `Array.from(acc)`, and array copy methods
+Check `Object.assign({}, acc, ...)`, `Array.from(acc)`, and array copy methods
 such as `concat`, `slice`, `toSpliced`, `toSorted`, `toReversed`, and `with` when receiver
-and accumulator evidence match. It follows stable local aliases and respects shadowed
-globals. Its comment explicitly pairs it with `oxc/no-accumulating-spread` for spread copies.
+and accumulator evidence match. Follow stable local aliases and respect shadowed
+globals. Include spread copies in the check rather than only non-spread copy APIs.
 
 ```typescript
 // Each iteration copies the growing dictionary.
@@ -95,21 +91,19 @@ creating the original own property. Use a deliberately safe dictionary strategy.
 record typing also does not establish that every lookup exists.
 
 Mutation is appropriate only for a fresh locally owned accumulator; immutable state
-semantics may forbid it. The source permits mutation such as `acc.push(item)` and does not
-flag a copy of the current item just because it appears inside a reducer. Under current
+semantics may forbid it. Permit mutation such as `acc.push(item)` and do not flag a copy
+of the current item just because it appears inside a reducer. Under current
 guidance, a small bounded immutable reduction can be reasonable; establish scale/impact
 before calling it a performance bug.
 
 ## Practice 32 — Explicit conditional object construction
 
-**Source:** [anti-slop: no-conditional-empty-object-spread][conditional-spread].
-
-The source prohibits conditional spreads with an empty-object branch because property
+Prohibit conditional spreads with an empty-object branch because property
 omission is hidden inside an expression. Build the object and add the property only when
 present instead.
 
 ```typescript
-// Source policy rejects this form:
+// This policy rejects this form:
 const options = { id, ...(enabled ? { timeoutMs } : {}) };
 
 type RequestOptions = { id: string; timeoutMs?: number };
@@ -124,14 +118,12 @@ is not equivalent to omission for JSON/object inspection, some APIs, or
 the whole object can be clearer.
 
 **Conflict:** current guidance permits conditional spreads when readable and semantically
-correct. This pending source restriction is not proof the original form is unsafe.
+correct. This pending restriction is not proof the original form is unsafe.
 
 ## Practice 33 — Named object arguments
 
-**Source:** [Cursor: Object args][cursor-patterns].
-
 Prefer one named options object over positional arguments to make argument order
-self-documenting and permit API evolution. Cursor specifically exempts allocation-sensitive
+self-documenting and permit API evolution. Exempt allocation-sensitive
 hot paths such as per-frame rendering, tokenizers, and parsers.
 
 ```typescript
@@ -155,30 +147,26 @@ annotation restriction; named owner-provided options types satisfy that restrict
 
 ## Practice 37 — Domain naming instead of shape
 
-**Source:** [anti-slop: no-shape-in-symbol-names][shape-names].
-
-The source prohibits the case-insensitive substring `shape` in owned JS/TS/private/JSX
+Prohibit the case-insensitive substring `shape` in owned JS/TS/private/JSX
 symbol names because it describes structure rather than domain responsibility. Rename
 `PayloadShape` to a name describing what that payload means.
 
 ```typescript
-// Rejected under the source policy:
+// Rejected under this policy:
 type AccountShape = { id: string };
 // Domain name:
 type AccountSummary = { id: string };
 ```
 
 The rule allows borrowed member access such as `schema.shape.id`; it does not require
-renaming upstream library properties. Its substring policy can also reject legitimate
+renaming external library properties. Its substring policy can also reject legitimate
 geometry vocabulary or names containing the same letters. **Conflict:** current guidance
 allows precise domain names and does not treat substring presence as a defect. Select the
 strict policy explicitly rather than silently replacing it with a vague naming preference.
 
 ## Practice 38 — Structural blank-line grouping
 
-**Source:** [anti-slop: require-readable-spacing][spacing].
-
-The source wraps a padding-line rule with whitespace-only fixes. Its layout policy:
+Apply a padding-line policy with whitespace-only fixes:
 
 - Separate imports from subsequent non-import statements; imports may stay grouped.
 - Separate top-level non-import statements, subject to the grouping exceptions below.
@@ -216,10 +204,3 @@ Under current guidance, raise a finding only for lost/fabricated evidence, a mis
 contract, dynamic behavior leaking beyond its owner, a demonstrated complexity/runtime
 support problem, or duplicated type ownership likely to drift. Pending syntactic restrictions
 alone are not findings. Preserve readable local idioms unless an adopted rule says otherwise.
-
-[cursor-patterns]: https://github.com/cursor/plugins/blob/c742dd61706fbacc1b95f1a20b7b988cf096ce6c/pstack/skills/typescript-best-practices/references/patterns.md
-[filter-map]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-array-filter-map.ts
-[accumulator]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-reduce-accumulator-copy.ts
-[conditional-spread]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-conditional-empty-object-spread.ts
-[shape-names]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-shape-in-symbol-names.ts
-[spacing]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/require-readable-spacing.ts

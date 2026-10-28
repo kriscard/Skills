@@ -41,16 +41,15 @@ interoperability or extension semantics require change.
 
 ## Collected practices
 
-**Adoption: Pending for practices 20–29.** Source policies below do not override current
-guidance until selected. See the [catalog](practice-catalog.md) for conflicts and provenance.
+**Adoption: Pending for practices 20–29.** The policy alternatives below do not override
+current guidance until selected. See the [catalog](practice-catalog.md) for conflicts and
+selection.
 
 ## Practice 20 — Preserve established evidence
 
-**Source:** [anti-slop: no-known-value-widening][known-widening].
-
 Keep inference, use a compatibility check, or introduce a named owner contract instead
 of flowing syntactically established values into explicitly broad/anonymous target types
-that erase useful information. The source analyzes more than assertions: annotated
+that erase useful information. This policy covers more than assertions: annotated
 bindings, returns, and supported local function argument flows can lose evidence.
 
 ```typescript
@@ -68,8 +67,6 @@ remove an abstraction solely because it exposes less than its implementation.
 
 ## Practice 21 — Avoid widen-then-assert flows
 
-**Source:** [anti-slop: no-widen-then-assert][widen-assert].
-
 Reject local const flows that first broaden known data and later assert the broad binding
 to a narrower type. The intermediate broad type does not establish a new fact; it destroys
 information and the assertion invents it again. Preserve the original type or parse real
@@ -86,15 +83,13 @@ const checked = source satisfies { id: string; active: boolean };
 
 Unlike #20, this practice specifically requires a later assertion; unlike #23, assertions
 need not be adjacent. An actual validating transformation changes the evidence; another
-annotation or alias does not. Source coverage is local/const-based, not arbitrary whole-
-program dataflow.
+annotation or alias does not. A local const-based lint check does not establish arbitrary
+whole-program dataflow.
 
-## Practice 22 — Cursor's restriction on as
+## Practice 22 — Restrict as assertions
 
-**Source:** [Cursor: No as casts][cursor-patterns].
-
-Cursor describes every `as` as a potential runtime crash and permits casting only after
-validation. Its preferred repairs are adding discriminants, fixing wide source types,
+Treat every `as` as a potential runtime crash and permit casting only after validation
+under this stricter alternative. Prefer adding discriminants, fixing wide source types,
 parsing an untyped boundary, and considering branded types or `satisfies`.
 
 ```typescript
@@ -111,12 +106,10 @@ Neither a brand nor `satisfies` can prove an arbitrary runtime invariant just be
 compiler cannot express it.
 
 **Conflict:** current policy permits justified interop assertions, including checked brand
-construction. Keep Cursor's stronger wording visible as a pending policy choice; do not
+construction. Keep this stronger restriction visible as a pending policy choice; do not
 silently turn it into a ban or rewrite existing APIs to satisfy it.
 
 ## Practice 23 — Prohibit chained assertions
-
-**Source:** [anti-slop: no-chained-type-assertions][chained].
 
 Reject adjacent `as` and angle-bracket assertion chains, including parenthesized/mixed
 chains. A broader middle type does not prove the final type.
@@ -128,15 +121,12 @@ const user = input as unknown as User;
 const again = (input as unknown) as User;
 ```
 
-The source permits chains consisting entirely of const assertions, but rejects a mixed
+This policy permits chains consisting entirely of const assertions, but rejects a mixed
 chain such as `({ id: 1 } as const) as User`. Angle-bracket syntax is also checked even
 though it is unavailable in TSX. In a genuinely inexpressible interop seam, current policy
 requires independently established evidence; a chain itself never supplies that proof.
 
 ## Practice 24 — Satisfies for compatibility
-
-**Sources:** [Cursor: satisfies over as][cursor-patterns];
-[anti-slop: no-known-value-widening][known-widening].
 
 Use `satisfies` when a concrete expression should be checked against a contract without
 replacing its useful inferred shape with the target type. An assertion asks the compiler
@@ -164,8 +154,6 @@ compatible TypeScript version (introduced in 4.9).
 
 ## Practice 25 — Assertion safety comments
 
-**Source:** [anti-slop: require-safety-comment-for-type-assertion][safety].
-
 Require a nearby justification for every non-const TypeScript assertion. Default marker:
 `SAFETY:`; the rule accepts a non-empty configurable `markers` array. The comment must
 state the invariant, not merely repeat the target type.
@@ -176,19 +164,17 @@ const user = validatedValue as User;
 ```
 
 This illustrates the comment format, not a reason to add an unnecessary cast after a
-decoder that already returns `User`. The source recognizes comments immediately before
-the assertion or its containing statement and related surrounding forms; const assertions
-are exempt. Its implementation checks marker placement, not whether the explanation is true.
+decoder that already returns `User`. Accept comments immediately before the assertion or
+its containing statement and related surrounding forms; const assertions are exempt.
+Checking marker placement does not establish whether the explanation is true.
 
 **Conflict:** current policy requires explanations for non-obvious assertions, not every
 assertion. Selection of this practice chooses a stricter comment requirement; it does not
 make a well-commented but false assertion safe.
 
-## Practice 26 — Cursor's narrowing hierarchy
+## Practice 26 — Narrowing hierarchy
 
-**Source:** [Cursor: Narrowing hierarchy][cursor-patterns].
-
-Cursor orders approaches as: discriminant switch/if, property-presence `in`, primitive
+Order approaches as: discriminant switch/if, property-presence `in`, primitive
 `typeof`/class `instanceof`, a custom guard, then `as` only after validation. Prefer evidence
 already carried in a model instead of introducing a manually maintained predicate.
 
@@ -203,29 +189,27 @@ function area(value: Geometry): number {
 
 The union is already trusted. On arbitrary input, `in` proves presence, not the property's
 value type. Choose narrowing that proves the needed fact; `instanceof` also has cross-realm
-and custom-instance semantics. This source preference is not a theorem that one operator
+and custom-instance semantics. This preference is not a theorem that one operator
 is always safer than another.
 
-**Conflict:** anti-slop #27 generally prohibits runtime `typeof`, including checks that
-Cursor treats as normal narrowing. Do not activate both unchanged.
+**Conflict:** #27 generally prohibits runtime `typeof`, including checks treated here as
+normal narrowing. Do not activate both unchanged.
 
-## Practice 27 — anti-slop's runtime typeof restriction
-
-**Source:** [anti-slop: no-runtime-typeof][runtime-typeof].
+## Practice 27 — Restrict runtime typeof
 
 Decode external values into meaningful domain types at I/O boundaries rather than branching
 on representation in downstream code. The rule rejects runtime unary `typeof` by default,
 including inside custom type guards.
 
 ```typescript
-// Rejected under the default source policy:
+// Rejected under this strict policy:
 if (typeof input === 'string') consumeText(input);
 
 // Allowed existence probe:
 if (typeof optionalGlobal !== 'undefined') useOptionalGlobal();
 ```
 
-The source exempts comparisons with the literal `'undefined'` using `===`, `!==`, `==`, or
+This policy exempts comparisons with the literal `'undefined'` using `===`, `!==`, `==`, or
 `!=`. Configuration `{ allowInTypeGuards: true }` additionally permits checks inside a
 function whose return annotation is a type predicate. Type-position `typeof` is not the
 runtime unary operator and is not prohibited by this rule.
@@ -236,10 +220,8 @@ an incomplete schema merely to evade a syntactic check.
 
 ## Practice 28 — Restrict Reflect.get
 
-**Source:** [anti-slop: no-reflect-get][reflect-get].
-
 Use typed property access for domain values and decode dynamic input before reading it.
-The source checks calls to the global `Reflect.get`, including a computed literal method
+The restriction covers calls to the global `Reflect.get`, including a computed literal method
 name; a shadowed local `Reflect` binding is not the same built-in.
 
 ```typescript
@@ -255,8 +237,6 @@ owner. Selecting a blanket ban requires deciding those exceptions rather than pu
 the same dynamic behavior into ordinary callers.
 
 ## Practice 29 — Restrict Reflect.apply
-
-**Source:** [anti-slop: no-reflect-apply][reflect-apply].
 
 Prefer direct typed calls or a named interface for dynamic dispatch. The rule checks the
 global `Reflect.apply` (including computed literal access) and respects local shadowing.
@@ -280,13 +260,4 @@ always equivalent. This distinction remains pending alongside #28.
 - Does the dynamic behavior remain with its actual owner?
 - Will a suppression become unused when diagnostics disappear?
 - Do compiler and runtime recommendations match the full installed configuration?
-- Is an upstream prohibition pending, selected, or in conflict with another selected rule?
-
-[cursor-patterns]: https://github.com/cursor/plugins/blob/c742dd61706fbacc1b95f1a20b7b988cf096ce6c/pstack/skills/typescript-best-practices/references/patterns.md
-[known-widening]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-known-value-widening.ts
-[widen-assert]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-widen-then-assert.ts
-[chained]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-chained-type-assertions.ts
-[safety]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/require-safety-comment-for-type-assertion.ts
-[runtime-typeof]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-runtime-typeof.ts
-[reflect-get]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-reflect-get.ts
-[reflect-apply]: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-reflect-apply.ts
+- Is a prohibition pending, selected, or in conflict with another selected rule?
