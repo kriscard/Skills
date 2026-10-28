@@ -1,6 +1,6 @@
 # Skills
 
-A collection of 46 agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
+Agent skills for software development, Obsidian workflows, writing, productivity, dotfiles, and learning.
 
 ## Install
 
@@ -46,6 +46,7 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 | `review` | Reviews selected or local code changes for production-impacting defects and project-rule violations |
 | `spec` | Builds separately reviewed requirements, technical design, and an executable plan, then records approval and stops before implementation |
 | `test` | Builds behavior-focused tests, selects credible boundaries, and records executable evidence across test runners |
+| `zod` | Implements, reviews, and debugs practical Zod 4 boundaries, conversions, errors, and artifacts |
 
 ### Obsidian
 
