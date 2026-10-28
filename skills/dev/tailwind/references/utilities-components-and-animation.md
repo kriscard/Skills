@@ -1,147 +1,121 @@
-> **Read this when:** implementing or reviewing Tailwind utilities, arbitrary values or variants, custom utilities, component CSS, CSS modules, animations, starting styles, or 3D transforms.
+> **Read this when:** Choosing among built-in utilities, arbitrary values/variants, custom utilities, ordinary CSS, `@apply`, separately compiled component CSS, or motion utilities.
 
-# Utilities, components, and animation
+# Utilities, custom CSS, and motion
 
-## Utility syntax
+Start with the project's token and built-in utility. Introduce a new styling API only
+when the value or selector has a stable reusable contract.
 
-Prefer an existing project token and built-in utility. Use arbitrary values for genuine
-one-offs, and promote repeated values only when they represent a stable system choice:
+## Choose the smallest extension
+
+Use an arbitrary value for a genuine one-off and a token for a repeated system choice:
 
 ```html
 <div class="top-[117px] bg-(--panel-bg) text-[length:var(--label-size)]"></div>
 ```
 
-V4 parentheses are shorthand for CSS custom properties and insert `var()`
-automatically. Square brackets still express arbitrary values. Add a CSS data-type hint
-when the namespace is ambiguous.
+The v4 custom-property shorthand inserts `var()`; square brackets remain the general
+arbitrary-value syntax. Add a CSS data-type hint when Tailwind cannot infer the intended
+namespace. Repetition is evidence to inspect, not an automatic token: promote the value
+only when callers should share its meaning.
 
-Use slash modifiers for opacity and other modifier-aware utilities, for example
-`bg-black/50` or `text-sm/6`. Put v4's important marker last, such as `flex!` or
-`hover:bg-red-600!`, and reserve it for a demonstrated cascade conflict.
-
-Use arbitrary variants for one-off selectors and at-rules:
+Use an arbitrary variant for one local selector or at-rule:
 
 ```html
 <li class="[&.is-dragging]:cursor-grabbing"></li>
 <div class="[@supports(display:grid)]:grid"></div>
 ```
 
-Register a repeated variant with `@custom-variant` instead of duplicating selector
-strings.
+When a selector becomes a stable repeated state contract, name it with
+`@custom-variant`. Prefer native `aria-*`, `data-*`, `group`, or `peer` variants when
+they already express the relationship.
 
-## Custom utilities and component CSS
+**Failure checks:** every arbitrary token appears literally in detected source; repeated
+values have the same meaning, not merely the same number; the selector matches the real
+DOM relationship.
 
-In v4, register utilities that must compose with Tailwind variants through `@utility`:
+## Register a utility only for a reusable utility contract
+
+A v4 `@utility` participates in variants and should implement only the supported value
+forms:
 
 ```css
 @utility content-auto {
   content-visibility: auto;
-}
-
-@utility scrollbar-hidden {
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  contain-intrinsic-size: auto 20rem;
 }
 ```
 
-Functional v4 utilities can use `--value()` for theme, bare, literal, and arbitrary
-values, and `--modifier()` for slash modifiers. Implement only the value forms the
-utility's contract needs. Register positive and negative forms separately when negative
-values are supported.
-
-V3 uses `@layer utilities` and `@layer components` for custom classes that participate
-in Tailwind's layer and variant processing. Do not replace this with `@utility` unless
-the project is on v4.
-
-Use ordinary CSS for third-party overrides and selectors that are not reusable utility
-APIs. Use `@apply` narrowly when custom CSS must reuse Tailwind declarations, such as a
-third-party widget override. Repeated markup should usually be extracted through the
-project's component/template mechanism instead of creating a CSS class for every
-combination of utilities.
-
-V4 stylesheets compiled separately from the main stylesheet, including CSS modules and
-Vue, Svelte, or Astro component style blocks, do not automatically see custom theme
-variables, utilities, or variants. Reference the main stylesheet without duplicating
-its output:
+Use ordinary CSS when the selector belongs to third-party markup or is not a reusable
+utility API. Use `@apply` narrowly when such CSS must consume project utilities:
 
 ```css
-@reference "../../app.css";
+@reference "../../styles.css";
 
-.title {
-  @apply text-2xl font-bold;
+.vendor-dialog__title {
+  @apply text-lg font-semibold text-surface-content;
 }
 ```
 
-Use `@reference "tailwindcss"` when only the uncustomized default theme is needed.
+`@reference` exposes the main stylesheet's theme, utilities, and variants to separately
+compiled CSS without duplicating its output. Use `@reference "tailwindcss"` only when
+the uncustomized default theme is sufficient.
 
-## Container and responsive syntax
+Repeated JSX is usually a component/template responsibility, not a reason to create a
+CSS class for every utility combination. Conversely, a React wrapper that only renames
+`flex items-center gap-2` has not created a component contract.
 
-V4 customizes the built-in `container` through `@utility` rather than the v3
-`theme.container` options:
+**Failure checks:** the custom utility composes with the variants it promises; component
+CSS resolves the intended reference; production output contains one copy of the needed
+rules; third-party overrides remain scoped to the integration.
 
-```css
-@utility container {
-  margin-inline: auto;
-  padding-inline: 2rem;
-}
+## Resolve conflicts before escalating specificity
+
+Choose mutually exclusive utilities before reaching for an important modifier. In v4,
+the important marker is trailing, such as `hover:bg-red-600!`. Use it only for a
+demonstrated cascade/specificity boundary whose owner is understood.
+
+Raw HTML class order does not define precedence between conflicting Tailwind utilities.
+A merge library can model some utility conflicts at a deliberate API boundary, but it
+does not replace cascade inspection for custom CSS, arbitrary properties, layers, or
+third-party rules.
+
+**Failure checks:** inspect generated and computed CSS; identify the winning layer,
+selector, and declaration; remove accidental conflicts rather than accumulating
+`!important`.
+
+## Make motion state-driven and bounded
+
+Use targeted transition properties and the state the primitive already exposes:
+
+```html
+<div
+  data-state="closed"
+  class="opacity-0 transition-opacity duration-150 data-[state=open]:opacity-100 motion-reduce:transition-none"
+></div>
 ```
 
-Tailwind supplies breakpoint, max-width, container-query, and arbitrary variants.
-Choose among them from the product's content and layout requirements through
-`frontend`; this skill owns their syntax, not a universal responsive strategy.
+For named project motion, define a v4 `--animate-*` theme variable with colocated
+keyframes. Use `starting:` only when the installed browser contract supports
+`@starting-style`. `motion-safe:` and `motion-reduce:` implement the product's motion
+contract; they do not decide what the reduced path should be.
 
-## Animation and transitions
+`transform-gpu` is a measured rendering control, not a default companion to animation.
+Compare paint, memory, and visual output before retaining it.
 
-Use built-in `animate-spin`, `animate-ping`, `animate-pulse`, `animate-bounce`, and
-`animate-none` when their behavior fits. In v4, create named project animations with an
-`--animate-*` theme variable and colocated keyframes:
+**Failure checks:** open/closed state drives the expected declarations; reduced-motion
+behavior matches the frontend contract; focus, dismissal, and announcements still work;
+no performance claim is made without measurement.
 
-```css
-@theme {
-  --animate-wiggle: wiggle 1s ease-in-out infinite;
+## Compatibility seam
 
-  @keyframes wiggle {
-    0%, 100% { transform: rotate(-3deg); }
-    50% { transform: rotate(3deg); }
-  }
-}
-```
+These examples target v4. For an existing v3 or mixed project, load
+`compatibility-and-migration.md` before using v4 directives, custom-property shorthand,
+important syntax, or stacked-variant ordering. Preserve working installed conventions
+unless migration is part of the request.
 
-V3 defines named animations in `theme.extend.animation` and keyframes in
-`theme.extend.keyframes`. Both versions support arbitrary animation values such as
-`animate-[wiggle_1s_ease-in-out_infinite]`.
-
-Use `motion-safe:` and `motion-reduce:` according to the interaction contract. Reduced
-motion behavior belongs to `frontend`; do not assume that removing every transition is
-the correct fallback.
-
-V4's `starting:` variant maps to `@starting-style` for entry transitions and transitions
-from `display: none`, often combined with `open:` for dialogs and popovers. Confirm the
-project's browser support before relying on this platform feature.
-
-V4 includes 3D APIs such as `perspective-*`, `transform-3d`, `rotate-x-*`, `rotate-y-*`,
-`translate-z-*`, and related origin utilities. Use them when the design calls for 3D
-space and verify fallbacks. `transform-gpu` is an opt-in troubleshooting/performance
-control, not a default companion to animation; compare rendering and memory behavior
-before adding it.
-
-## Migration-sensitive utility behavior
-
-- V4 gradient directions use names such as `bg-linear-to-r`; migration can require
-  `via-none` to clear a retained middle stop.
-- Border and ring width do not imply the v3 colors. Add explicit colors when required.
-- Individual transform utilities in v4 reset and transition through their individual
-  CSS properties, not only the composite `transform` property.
-- Order-sensitive stacked variants apply left-to-right in v4 and right-to-left in v3.
-
-## Official sources
+## Sources
 
 - [Adding custom styles](https://tailwindcss.com/docs/adding-custom-styles)
 - [Functions and directives](https://tailwindcss.com/docs/functions-and-directives)
 - [Hover, focus, and other states](https://tailwindcss.com/docs/hover-focus-and-other-states)
 - [Animation](https://tailwindcss.com/docs/animation)
-- [Perspective](https://tailwindcss.com/docs/perspective)
-- [Transform style](https://tailwindcss.com/docs/transform-style)
-- [Tailwind CSS v3 adding custom styles](https://v3.tailwindcss.com/docs/adding-custom-styles)
-- [Tailwind CSS v3 animation](https://v3.tailwindcss.com/docs/animation)

@@ -1,106 +1,96 @@
 ---
 name: tailwind
 description: >-
-  Version-aware Tailwind CSS implementation, migration, review, and debugging. Use
-  when authoring styled components or reviewing Tailwind patterns and examples;
-  when work depends on Tailwind-specific utilities or directives; when configuring
-  v3 content/config/plugins or v4 CSS-first @theme, @source, @utility, and build
-  integrations; when migrating v3 to v4; or when Tailwind classes, variants,
-  animations, generated CSS, or source detection do not work. Detect the exact
-  resolved version before giving version-sensitive syntax. Do not use for choosing
-  product design policy, semantic token names, responsive behavior, accessibility, or general UI-system
-  conventions; route those decisions to frontend.
+  Tailwind CSS implementation, review, and debugging for component patterns,
+  responsive composition, runtime values, themes, source visibility, custom CSS,
+  builds, and compatibility. Use when work depends on Tailwind utilities,
+  variants, directives, generated CSS, or integration behavior. Examples target
+  Tailwind v4; inspect installed capabilities before version-sensitive syntax and
+  preserve existing v3 or mixed projects unless migration is requested. Route
+  product design policy, semantic token naming, responsive behavior, and
+  accessibility decisions to frontend.
 ---
 
 # Tailwind CSS
 
-Apply Tailwind syntax that matches the installed resolved version. Own Tailwind's build,
-configuration, utility, directive, migration, and generated-CSS mechanics. Let
-`frontend` own what the product should look like and how it should behave.
+Implement an existing visual and interaction contract with complete, inspectable
+utilities. Prefer reusable decisions over utility catalogs. Tailwind owns syntax,
+generated CSS, source detection, and build mechanics; `frontend` owns product behavior
+and design policy, while `react` owns component APIs, composition, and state.
 
 ## Workflow
 
-### 1. Detect the Tailwind boundary
+### 1. Read the styling boundary
 
-Inspect manifests and lockfiles for `tailwindcss` and integration packages, then inspect
-the stylesheet entry point, Tailwind configuration, PostCSS/Vite configuration, and
-build scripts. Use the resolved package version when dependencies are installed; do not
-infer the major version from one familiar file.
+Inspect the manifest and lockfile, active stylesheet, build integration, nearby
+components, token sources, class-composition helpers, and source registration. Tailwind
+v4 is the default for new examples. Check the installed version or capability when it
+changes syntax, browser support, integration packages, or merge behavior; do not
+silently upgrade an existing project.
 
-Classify the project:
+**Complete when:** the active CSS entry, build owner, Tailwind capability, token source,
+and component conventions are known.
 
-- **v4:** `tailwindcss` 4.x, often with `@import "tailwindcss"`, CSS-first directives,
-  and `@tailwindcss/vite`, `@tailwindcss/postcss`, or `@tailwindcss/cli`.
-- **v3:** `tailwindcss` 3.x, normally with `tailwind.config.*`, a `content` array,
-  `@tailwind base/components/utilities`, and the `tailwindcss` CLI or PostCSS plugin.
-- **Migration or mixed:** v4 is installed while legacy config, directives, plugins, or
-  v3-era utilities remain. Treat compatibility APIs as migration evidence, not proof
-  that the project is v3.
+### 2. Choose explicit contracts
 
-If no local version exists, state the version being targeted before supplying code.
+Apply the checks that match the task:
 
-Check the exact resolved minor/patch before using APIs added after a major release;
-current v4 documentation is not proof that a feature exists in every v4 version. For a
-new project, record the chosen stable target rather than silently upgrading a neighbor.
+1. **Finite choices:** map supported values to complete literal utilities; add compound
+   choices only for real interacting axes.
+2. **Styling ownership:** choose mutually exclusive classes first. Treat caller
+   overrides as an explicit API; joining strings and resolving conflicts are different
+   operations.
+3. **Real state:** style native or primitive-provided ARIA/data state without inventing
+   duplicate state solely for CSS.
+4. **Runtime values:** validate data, then use a direct style or a static utility backed
+   by a CSS custom property.
+5. **Composition:** let features own placement and wrapping; let primitives own their
+   appearance and behavior contract; coordinate multi-part styles only where parts vary
+   together.
+6. **Theme and source:** keep runtime role aliases, shared theme imports, and class-bearing
+   source visibility as separate concerns.
 
-**Complete when:** the Tailwind resolved version, integration path, CSS entry point, and
-configuration owner are known.
+Load `frontend` when token meaning, hierarchy, responsive thresholds, RTL, theme
+activation, accessibility, or interaction behavior must be chosen. Load `react` when
+component props, slots, state ownership, or extraction changes.
 
-### 2. Preserve the ownership boundary
-
-Use the existing product tokens, components, class-composition helpers, and responsive
-conventions. Load `frontend` for semantic token design, visual hierarchy, breakpoint
-policy, container strategy, RTL behavior, dark-mode product policy, accessibility, or
-interaction behavior. This skill supplies Tailwind syntax after those decisions exist.
-
-Do not turn optional techniques into defaults. Choose color spaces from project
-requirements, optimize CSS from measured build/runtime evidence, preserve repository
-class-order policy, and use CPU/GPU transform controls only after observing a rendering
-need.
-
-**Complete when:** the request is separated into Tailwind mechanics and any product or
-browser policy owned by `frontend`.
+**Complete when:** each class, state, override, runtime value, and source path has a
+named owner and observable failure condition.
 
 ### 3. Load only the matching reference
 
 | Priority | Load when | Reference |
 |---|---|---|
-| 1 — High | Authoring or reviewing styled components, class/variant composition, theme usage, runtime values, or worked Tailwind patterns | `references/component-patterns.md` |
-| 1 — Critical | Detecting v3/v4, migrating, reviewing a mixed setup, renamed utilities, changed defaults, or browser/version boundaries | `references/version-and-migration.md` |
-| 1 — High | v4 CSS-first configuration, theme variables, source detection, safelisting, prefixes, legacy config/plugin compatibility, or dark variant syntax | `references/v4-configuration-and-sources.md` |
-| 2 — High | Utilities, arbitrary values/variants, custom utilities, component CSS, `@apply`, CSS modules, animation, starting styles, or 3D transforms | `references/utilities-components-and-animation.md` |
-| 2 — High | Vite, PostCSS, CLI, production builds, missing classes, stale output, monorepos, third-party packages, or generated-CSS debugging | `references/build-and-debug.md` |
+| 1 — High | Finite or compound variants, component styling ownership, caller overrides, native/primitive state, or coordinated component parts | `references/component-patterns.md` |
+| 1 — High | Container-responsive composition, long-content handling, runtime measurements, CSS custom properties, or direct-style alternatives | `references/responsive-and-runtime.md` |
+| 1 — High | Theme variables, runtime aliases, dark-theme selectors, shared theme CSS, external package source visibility, or safelisting | `references/theme-and-sources.md` |
+| 2 — High | Arbitrary values/variants, custom utilities, component CSS, `@apply`, CSS modules, animation, or motion | `references/utilities-components-and-animation.md` |
+| 2 — High | Build integration, production output, missing utilities, stale CSS, monorepos, or generated-CSS diagnosis | `references/build-and-debug.md` |
+| 2 — Conditional | Existing v3 or mixed projects, migrations, changed defaults, legacy config/plugins, or browser compatibility | `references/compatibility-and-migration.md` |
 
-For v3 work, use v3 documentation and installed declarations. Never translate v4
-syntax backward unless the task is a migration.
+### 4. Implement and prove the outcome
 
-### 4. Implement or report
+Make the smallest change that follows the installed stack. Run the owning build and
+inspect generated CSS for expected selectors/declarations and negative controls. For
+component examples, typecheck public props and test finite/runtime decisions through
+their public surface. When authoring tests, load `test` and follow the repository's
+existing runner and setup rather than duplicating test-framework rules here.
 
-- **Implement:** make the smallest version-matched change and retain the project's
-  current integration unless a documented incompatibility requires changing it.
-- **Migrate:** use the official upgrade tool when its runtime requirements fit, review
-  its diff, then check every applicable breaking-change category.
-- **Review:** report only version-specific correctness, build, extraction, migration,
-  and maintainability findings supported by project evidence.
-- **Debug:** verify input CSS, integration package, source visibility, complete class
-  tokens, generated output, and stylesheet loading in that order.
+Generated CSS proves compilation, not layout, keyboard behavior, contrast, focus
+management, assistive-technology behavior, or first-paint theming. Verify those through
+the owning frontend workflow when they are part of the task.
 
-**Complete when:** the requested Tailwind behavior is present, the actual build command
-passes, and browser-visible changes are verified through the owning frontend workflow
-when applicable.
+**Complete when:** the requested behavior is generated and loaded, failure controls
+behave as expected, repository checks pass, and unexecuted browser behavior is explicit.
 
 ## Completion gate
 
-Before finishing:
-
-- guidance matches the resolved Tailwind version, including minor-sensitive APIs;
-- component-authoring work loaded the patterns reference and applicable frontend/React
-  owners, with complete class tokens and an explicit override/state contract;
-- v4 syntax is not prescribed to v3 projects, or vice versa;
-- source-detection and dynamic-class risks are checked;
-- migration work accounts for renamed utilities and changed defaults, not only config;
-- build advice matches the installed integration rather than a generic recipe;
-- design, accessibility, and responsive policy remain with `frontend`;
-- no unsupported universal rule was introduced for color space, critical CSS, class
-  sorting, or transform acceleration;
-- official Tailwind documentation supports every version-sensitive claim.
+- v4 examples are used by default; installed-contract differences are stated only when
+  they affect correctness;
+- class choices are complete tokens and runtime data does not construct utilities;
+- override behavior is honest about what same-element `className` or `style` can change;
+- container/source/theme owners and stylesheet-relative paths are explicit;
+- state styling preserves native or primitive semantics;
+- optional libraries, color spaces, sorting, and abstraction layers remain conditional;
+- sources support version-sensitive claims and checks distinguish generated CSS from
+  real browser behavior.

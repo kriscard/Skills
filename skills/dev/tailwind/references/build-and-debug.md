@@ -1,147 +1,117 @@
-> **Read this when:** integrating Tailwind with Vite, PostCSS, or the CLI; preparing production output; or debugging missing utilities, stale CSS, monorepo sources, and third-party packages.
+> **Read this when:** Integrating Tailwind with the owning build, validating production output, or diagnosing missing utilities, stale CSS, monorepo sources, and third-party packages.
 
-# Build and debug
+# Build and generated-CSS diagnosis
 
-## Match the installed integration
+Use the repository's active integration and production command. Tailwind v4 commonly
+uses `@tailwindcss/vite`, `@tailwindcss/postcss`, or `@tailwindcss/cli`; install or
+replace an integration only when the host framework and existing toolchain require it.
+Existing v3 or mixed setups belong in `compatibility-and-migration.md`.
 
-Do not install every integration package. Keep one build path that matches the host
-framework and existing toolchain.
+## Trace one class from source to the page
 
-### V4 with Vite
+When a utility is missing, choose one expected token and follow it through the whole
+pipeline. For example, given:
 
-For a Vite-owned CSS pipeline, Tailwind recommends the dedicated plugin:
+```tsx
+const toneClasses = {
+  neutral: 'bg-white text-slate-950',
+  danger: 'bg-red-700 text-white',
+} as const;
 
-```ts
-import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
-
-export default defineConfig({
-  plugins: [tailwindcss()],
-});
+export function Banner({ tone }: { tone: keyof typeof toneClasses }) {
+  return <div className={toneClasses[tone]}>Status</div>;
+}
 ```
 
-Install `tailwindcss` and `@tailwindcss/vite`, then import Tailwind from the active CSS
-entry with `@import "tailwindcss";`. Preserve framework-specific integration when its
-official guide requires a different path.
+trace `bg-red-700` in this order.
 
-### V4 with PostCSS
-
-Use the dedicated plugin:
-
-```js
-export default {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
-```
-
-Install `tailwindcss`, `@tailwindcss/postcss`, and `postcss`. V4 handles imports and
-vendor prefixing for its pipeline, so remove `postcss-import` or `autoprefixer` only
-when no other stylesheet or plugin still depends on them.
-
-### V4 CLI
-
-Install `tailwindcss` and `@tailwindcss/cli`, then call the dedicated executable:
-
-```sh
-npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch
-```
-
-### V3
-
-Use the v3 package as its CLI or PostCSS plugin. Keep `tailwind.config.*`, configure all
-source paths under `content`, and use the three `@tailwind` directives in the input CSS.
-Follow the v3 framework guide rather than adapting a v4 installation snippet.
-
-The Play CDN is a development/prototyping path, not a production build integration.
-
-## Production output
-
-Run the repository's production build rather than inventing a separate Tailwind
-command. Confirm that minification, hashing, asset loading, and CSS inclusion happen in
-the owning framework/build tool. Do not prescribe manual critical-CSS extraction
-without measured render evidence and an owner for cache invalidation.
-
-V4 is designed to work directly with modern CSS and does not support Sass, Less, or
-Stylus as a preprocessing stage in the same way as a traditional preprocessor. Before
-removing a preprocessor from an existing project, inspect whether it owns non-Tailwind
-styles or framework behavior.
-
-Audit plugins during v4 migration. Remove a plugin only when v4 provides the same used
-capability and generated output confirms the replacement. A package being described as
-built-in is not proof that every project-specific option migrated unchanged.
-
-## Debugging order
-
-### 1. Confirm the active build
+### 1. Active integration and CSS entry
 
 - Run the exact development or production script that owns the page.
-- Confirm which CSS entry point is imported and whether the built asset reaches the
-  rendered document.
-- Check for duplicate Tailwind pipelines or stale generated files.
-- Confirm integration package majors match `tailwindcss`.
+- Identify the imported CSS entry and one active Tailwind pipeline.
+- Confirm the integration package is compatible with the installed `tailwindcss`.
+- Check for stale generated files or a second pipeline producing another asset.
 
-### 2. Confirm the input stylesheet
+Vite projects normally use the dedicated Vite plugin; PostCSS-owned frameworks use
+`@tailwindcss/postcss`; CLI workflows use `@tailwindcss/cli`. Preserve a framework's
+official integration rather than layering every option together.
 
-- V4 needs `@import "tailwindcss"`; v3 needs the `@tailwind` layer directives.
-- Confirm `@config`, `@plugin`, `@reference`, and relative source paths resolve from the
-  stylesheet that contains them.
-- In component-scoped or module CSS, add `@reference` before assuming a utility or theme
-  value is missing globally.
+### 2. Detectable source
 
-### 3. Confirm source visibility
+Search source text for the complete token. Tailwind does not execute expressions, so
+`` `bg-${tone}-700` `` cannot establish the finite alternatives. For external packages,
+verify automatic detection or add a stylesheet-relative `@source` at the owning CSS
+entry. Keep broad safelists as a last resort.
 
-- In v3, inspect `content` globs, extensions, working directory, transforms, and any
-  package paths.
-- In v4, inspect automatic exclusions, the build working directory, `source()` base,
-  explicit `@source` entries, and `source(none)` isolation.
-- Register external UI packages explicitly when they are ignored as dependencies.
-- Keep safelisting as a bounded fallback, not the first fix.
+### 3. Generated output
 
-### 4. Confirm class tokens
+Search the built CSS for the escaped selector and expected declaration:
 
-Tailwind scans text; it does not execute application code. Search for the full expected
-class string. Replace interpolation such as `` `text-${tone}-600` `` with a map whose
-values contain complete utilities. Check spelling, prefix position, variant order,
-arbitrary-value delimiters, and v3/v4 renamed utilities.
-
-### 5. Inspect generated CSS
-
-Search the built CSS for the escaped selector or expected declaration:
-
-- absent selector: extraction, configuration, version, or plugin problem;
-- selector present but absent from the page: asset/loading or stylesheet-order problem;
-- selector present and loaded but losing: cascade, specificity, layer, or important
+- selector absent → source visibility, token spelling, capability, plugin, or build-input
   problem;
-- declaration applied but visually wrong: changed default, browser support, layout, or
-  product-policy problem.
+- selector present but asset absent from the page → stylesheet import/loading problem;
+- selector loaded but losing → layer, specificity, selector, or important conflict;
+- declaration applied but visually wrong → layout, browser support, changed default, or
+  frontend-policy problem.
 
-Use browser computed styles to distinguish these cases. Do not solve every failure with
-`!important` or a safelist.
+Use computed styles when browser access is part of the authorized workflow. Do not
+solve every branch with `!important` or safelisting.
 
-### 6. Check rebuild behavior
+### 4. Rebuild and production behavior
 
-If watch mode misses changes or loops, inspect the build tool's dependency tracking,
-source breadth, generated outputs inside scanned paths, and monorepo working directory.
-Exclude generated or irrelevant trees rather than broadening scans indefinitely.
+If watch mode misses changes or loops, inspect dependency tracking, the working
+directory, source breadth, and generated output inside scanned paths. Exclude generated
+or irrelevant trees instead of widening scans indefinitely.
 
-## Review checklist
+Run the repository's production build. Confirm the owning framework handles CSS
+inclusion, minification, hashing, and asset loading. Performance changes require bundle,
+timing, or browser evidence; do not prescribe manual critical-CSS extraction without a
+measured need and cache owner.
 
-- Package and integration majors agree.
-- One active CSS entry imports the correct Tailwind version syntax.
-- Source registration covers every class owner without scanning generated output.
-- Dynamic variants map to complete class strings.
-- Custom CSS uses the version-correct extension API.
-- Production output is created and loaded by the owning build.
-- Performance changes are supported by build size, timing, or browser evidence.
+**Complete when:** the chosen token is present in source and generated CSS, the correct
+asset reaches the page, and any remaining visual failure is assigned to its actual
+cascade/browser/frontend owner.
 
-## Official sources
+## Prove positive and negative controls
+
+A credible source-detection check includes both:
+
+1. a complete literal utility that must appear;
+2. a dynamic fragment or omitted external source that must remain absent.
+
+For shared themes, separately verify a role utility from the imported theme and a
+package-only utility from the explicit source. One passing selector cannot prove both
+contracts.
+
+Structural build proof does not establish keyboard behavior, accessible naming,
+contrast, container layout, or first-paint theming. Report those as separate frontend
+checks.
+
+## Integration and preprocessing boundaries
+
+Tailwind v4 handles imports and vendor prefixing in its supported pipeline. Remove
+`postcss-import` or `autoprefixer` only when no other stylesheet/plugin still depends on
+them. V4 is not designed to run behind Sass, Less, or Stylus as a traditional
+preprocessor; inspect the non-Tailwind styles they own before changing that boundary.
+
+Remove a plugin during migration only when the replacement covers the used behavior and
+generated output proves it. “Built in” does not guarantee that project-specific options
+migrated unchanged.
+
+## Review checks
+
+- One active CSS entry and compatible integration own the page.
+- Every class-bearing source is detectable without scanning generated output.
+- Finite variants use complete literal tokens.
+- Theme imports and external source registration are checked independently.
+- Custom CSS uses the installed extension mechanism.
+- Production output is generated and loaded by the owning build.
+- Browser-visible and performance claims name their separate evidence.
+
+## Sources
 
 - [Installing with Vite](https://tailwindcss.com/docs/installation/using-vite)
 - [Installing with PostCSS](https://tailwindcss.com/docs/installation/using-postcss)
 - [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli)
 - [Detecting classes in source files](https://tailwindcss.com/docs/detecting-classes-in-source-files)
 - [Compatibility](https://tailwindcss.com/docs/compatibility)
-- [Tailwind CSS v3 installation](https://v3.tailwindcss.com/docs/installation)
-- [Tailwind CSS v3 content configuration](https://v3.tailwindcss.com/docs/content-configuration)
