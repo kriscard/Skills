@@ -1,93 +1,208 @@
-> **Read this when:** a TypeScript review concerns collection pipelines, reducers,
-> dynamic access or calls, iterator helpers, broad object types, or syntactic rules
-> presented as general code quality.
+> **Read this when:** working on collection pipelines, reducers, iterator helpers,
+> conditional object construction, argument design, symbol naming, spacing, or
+> syntactic TypeScript code-quality policies.
 
 # TypeScript Code Quality
 
-Judge the demonstrated semantics, cost, and ownership. Do not turn a lint catalog into
-a language-wide prohibition list or require a plugin installation.
+## Current skill guidance
 
-## Preserve readable ordinary code
+Judge demonstrated semantics, cost, and ownership rather than turning a lint catalog into
+universal prohibitions or requiring a plugin installation. Readable filter/map pipelines
+and conditional spreads are valid. Combine passes only for a demonstrated traversal or
+allocation concern while keeping clarity. Preserve callback ordering/index semantics and
+actual runtime support; declarations alone do not provide iterator helpers.
 
-Readable `filter().map()` and `map().filter()` pipelines are valid. Combine passes only
-when measurement, allocation pressure, or a hot path makes the extra traversal matter
-and the replacement remains clearer. Iterator helpers are an option only when the
-actual runtime supports them or the project provides a compatible polyfill; TypeScript
-library declarations alone do not add runtime methods.
+Named argument objects are useful when the API benefits, not universally mandatory or
+universally wasteful. Broad `object` parameter types and domain-specific options objects
+are different. When collection/API work involves untrusted dictionaries, `unknown`, primitive
+narrowing, or schema choices, read [Runtime Boundaries — Current skill guidance](runtime-boundaries.md#current-skill-guidance)
+for the canonical handling of those cases.
 
-Conditional object spread can be a clear way to omit a property. Raise a concern when
-omission versus `undefined` changes API semantics or the expression obscures control
-flow, not because an empty object appears in one branch.
+Dynamic mechanisms and module mocking remain decisions for their owning adapter/testing
+boundary, not syntax defects by themselves. Do not flag a name solely for containing
+`shape`; preserve precise domain vocabulary. Formatting belongs to the installed tools,
+not a competing prose layout policy. Stricter policy alternatives appear below.
 
-Named argument objects can improve evolvability and call-site clarity. A rule concerned
-with a parameter typed as broad `object` is not a ban on domain-specific options objects.
-Choose positional or object parameters from the API's meaning, call frequency, and
-repository convention rather than a universal allocation claim.
+## Collected practices
 
-## Report demonstrated costs
+The following practices remain full policy alternatives, not enforced by inclusion here.
+Before applying one as policy, read its adoption decision in the [catalog](practice-catalog.md),
+the sole persistent adoption record.
 
-Copying a growing accumulator on every reducer iteration can produce quadratic work:
+## Avoid adjacent array filter/map passes
+
+Reject adjacent array `filter().map()` and `map().filter()` passes in favor of
+supported lazy iterator helpers or a single transformation. It recognizes local array
+receivers; arbitrary custom collections and already-lazy pipelines are not assumed to be
+arrays just because their methods have those names.
 
 ```typescript
-// Risk: each iteration copies everything accumulated so far.
+// This policy rejects consecutive eager passes:
+const labels = items.filter(isVisible).map(labelFor);
+
+// Possible replacement when callbacks are independent and semantics match:
+const labels = items.flatMap((item) => isVisible(item) ? [labelFor(item)] : []);
+```
+
+For runtimes supporting iterator helpers, another option is
+`items.values().filter(isVisible).map(labelFor).toArray()`. Match runtime/polyfill support,
+not just TypeScript `lib` declarations. `flatMap` is eager and may allocate per item; it
+is not automatically faster.
+
+**Semantic limits:** eager filter-then-map runs all filters before any mapper; interleaving
+can change side effects. Mapping after filtering receives filtered indexes, not original
+indexes; callback third arguments differ too. Map-then-filter predicates receive mapped
+values. Preserve these facts or retain the original pipeline.
+
+**Conflict:** current guidance allows readable pipelines without a measured/established
+need to combine them. Use the catalog decision for this syntactic prohibition; its presence
+alone is not an automatic performance finding.
+
+## Avoid copying growing reducer accumulators
+
+Repeatedly copying everything accumulated so far can cause quadratic work as input grows.
+Check `Object.assign({}, acc, ...)`, `Array.from(acc)`, and array copy methods
+such as `concat`, `slice`, `toSpliced`, `toSorted`, `toReversed`, and `with` when receiver
+and accumulator evidence match. Follow stable local aliases and respect shadowed
+globals. Include spread copies in the check rather than only non-spread copy APIs.
+
+```typescript
+// Each iteration copies the growing dictionary.
 const byId = items.reduce<Record<string, Item>>(
   (acc, item) => ({ ...acc, [item.id]: item }),
   {},
 );
 
-// Better when the accumulator is fresh and locally owned.
-const byId = items.reduce<Record<string, Item>>((acc, item) => {
-  acc[item.id] = item;
-  return acc;
-}, {});
+// A fresh, locally owned Map avoids copying and accepts arbitrary string keys.
+const byIdMap = new Map<string, Item>();
+for (const item of items) byIdMap.set(item.id, item);
 ```
 
-Treat this as a demonstrated algorithmic cost, not a universal ban on immutable reducers.
-A small bounded reduction or code governed by immutable-state semantics may reasonably
-prefer copying. State the input scale or measured impact before calling it a performance
-bug.
+`Map` is an alternative API, not a drop-in object replacement: preserve serialization,
+lookup, insertion-order, and duplicate-key requirements when choosing it. If the output
+must remain an object and runtime support permits it, an alternative is:
 
-## Keep dynamic mechanisms with their owner
+```typescript
+const byIdObject = Object.fromEntries(items.map((item) => [item.id, item]));
+```
 
-Prefer typed property access and direct calls in application code because they preserve
-compiler help. Allow `Reflect.get`, `Reflect.apply`, proxies, instrumentation,
-compatibility shims, and metaprogramming where dynamic dispatch is the module's actual
-responsibility. Hide that mechanism behind a typed interface when ordinary callers do
-not need to know it.
+For arbitrary string IDs, do not blindly replace computed-property spread with
+`acc[item.id] = item` on `{}`: the key `__proto__` invokes the inherited setter rather than
+creating the original own property. Use a deliberately safe dictionary strategy. Open
+record typing also does not establish that every lookup exists.
 
-Module mocking is a testing-boundary decision, not a TypeScript syntax defect. Evaluate
-whether a test replaces the subject or crosses an owned boundary using the repository's
-testing guidance.
+Mutation is appropriate only for a fresh locally owned accumulator; immutable state
+semantics may forbid it. Permit mutation such as `acc.push(item)` and do not flag a copy
+of the current item just because it appears inside a reducer. Under current
+guidance, a small bounded immutable reduction can be reasonable; establish scale/impact
+before calling it a performance bug.
 
-## Keep honest escape hatches visible
+## Explicit conditional object construction
 
-`unknown` is correct for untrusted inputs, low-level adapters that intentionally force
-callers to parse, error causes, guards, and generic containers. `Record<string, unknown>`
-is useful at an untrusted object boundary. The concern is letting these broad types leak
-through trusted domain APIs or hiding them behind aliases with no added meaning.
+Prohibit conditional spreads with an empty-object branch because property
+omission is hidden inside an expression. Build the object and add the property only when
+present instead.
 
-Primitive `typeof`, `instanceof`, discriminants, and control-flow narrowing are ordinary
-TypeScript evidence. Structured external objects may need a schema, but a one-off
-primitive check does not.
+```typescript
+// This policy rejects this form:
+const options = { id, ...(enabled ? { timeoutMs } : {}) };
 
-Do not flag a symbol merely because its name contains `shape`; domain vocabulary should
-remain precise. Do not ban conditional spreads, dictionary types, or unknown parameters
-without a concrete contract problem.
+type RequestOptions = { id: string; timeoutMs?: number };
+const options: RequestOptions = { id };
+if (enabled) options.timeoutMs = timeoutMs;
+```
 
-## Separate formatting from semantics
+These are alternative snippets, not consecutive declarations. Preserve evaluation order,
+computed-key/prototype behavior, ownership, and actual omission. Assigning `undefined`
+is not equivalent to omission for JSON/object inspection, some APIs, or
+`exactOptionalPropertyTypes`. If explicit mutation is unsuitable, a conditional producing
+the whole object can be clearer.
 
-Spacing and blank-line layout belong to the installed formatter and repository lint
-configuration. Use those tools rather than prose rules that compete with automated
-formatting.
+**Conflict:** current guidance permits conditional spreads when readable and semantically
+correct. This policy alternative is not proof the original form is unsafe.
+
+## Named object arguments
+
+Prefer one named options object over positional arguments to make argument order
+self-documenting and permit API evolution. Exempt allocation-sensitive
+hot paths such as per-frame rendering, tokenizers, and parsers.
+
+```typescript
+// Position-sensitive call:
+openSelection(uri, 10, 1, 20, 1);
+
+// Named fields communicate meaning:
+openSelection({
+  uri,
+  startLine: 10,
+  startColumn: 1,
+  endLine: 20,
+  endColumn: 1,
+});
+```
+
+These show alternative APIs; changing the signature requires updating real callers and
+preserving the public contract. Current guidance chooses from API meaning and convention
+rather than universally requiring objects. This is independent of
+[Restrict broad object parameters](runtime-boundaries.md#restrict-broad-object-parameters);
+named owner-provided options types satisfy that restriction.
+
+## Domain naming instead of shape
+
+Prohibit the case-insensitive substring `shape` in owned JS/TS/private/JSX
+symbol names because it describes structure rather than domain responsibility. Rename
+`PayloadShape` to a name describing what that payload means.
+
+```typescript
+// Rejected under this policy:
+type AccountShape = { id: string };
+// Domain name:
+type AccountSummary = { id: string };
+```
+
+The rule allows borrowed member access such as `schema.shape.id`; it does not require
+renaming external library properties. Its substring policy can also reject legitimate
+geometry vocabulary or names containing the same letters. **Conflict:** current guidance
+allows precise domain names and does not treat substring presence as a defect. Select the
+strict policy explicitly rather than silently replacing it with a vague naming preference.
+
+## Structural blank-line grouping
+
+Apply a padding-line policy with whitespace-only fixes:
+
+- Separate imports from subsequent non-import statements; imports may stay grouped.
+- Separate top-level non-import statements, subject to the grouping exceptions below.
+- Separate function, class, interface, and type declarations from surrounding statements.
+- Separate multiline `const`, `let`, `var`, and `using` bindings from surrounding statements.
+- Insert blank lines before `return`, `if`, `switch`, `try`, `for`, `while`, and `do` groups,
+  and after block-like statements.
+- Permit consecutive single-line bindings to stay grouped at any scope, including module
+  scope. A binding with its own leading comment starts a new group; a trailing comment on
+  the previous line is not treated as that leading comment.
+- Keep overload signatures and their implementation grouped.
+
+```typescript
+const minimum = 1;
+const maximum = 10;
+
+// A documented binding starts a separate group.
+const fallback = 5;
+
+if (value < minimum) {
+  return fallback;
+}
+
+return Math.min(value, maximum);
+```
+
+This is a function-body fragment. Apply via the repository's formatter/linter if selected;
+do not manually impose a second contradictory formatting system. Current guidance delegates
+spacing to installed tools, so adopting this policy may require a separate approved tooling
+change. Collecting it here does not install the plugin or change formatting configuration.
 
 ## Review threshold
 
-Raise a TypeScript code-quality finding only when it identifies at least one of:
-
-- lost or fabricated type evidence;
-- an invalid or misleading public contract;
-- dynamic behavior leaking beyond its owner;
-- a demonstrated complexity or runtime-support problem;
-- duplicated type ownership likely to drift.
-
-Otherwise preserve the readable local idiom and repository convention.
+Under current guidance, raise a finding only for lost/fabricated evidence, a misleading
+contract, dynamic behavior leaking beyond its owner, a demonstrated complexity/runtime
+support problem, or duplicated type ownership likely to drift. Pending syntactic restrictions
+alone are not findings. Preserve readable local idioms unless an adopted rule says otherwise.
