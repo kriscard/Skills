@@ -1,32 +1,100 @@
 > **Read this when:** modeling domain states, choosing unions or constructive types,
-> deriving types from existing contracts, preserving inference, or designing generics.
+> constructing brands, deriving contracts, preserving inference, or designing generics.
 
 # Type Modeling
 
-Model the smallest set of values the program can use correctly. A stronger type earns
-its cost when it removes a real partial operation, assertion, repeated check, or
-impossible state.
+## Current skill guidance
 
-## Start from valid states
+Model the smallest set of values the program can use correctly. Strengthen a type when
+it removes a real partial operation, assertion, repeated check, or impossible state,
+not by reflex. Use stable discriminants for variants and exhaustive handling when the
+operation is meant to be total; deliberate extensible/default branches remain valid.
 
-Use a discriminated union when variants carry different data or behavior. Keep one
-stable discriminant and handle every variant when the operation is meant to be total.
+Derive from an existing schema, generated contract, function, or value before duplicating
+its shape. Expose a stable subset rather than leaking an entire generated transport API.
+Generated declarations are runtime evidence only when the generator/SDK actually decodes
+or validates values. Preserve inference unless a wider annotation is the intended public
+abstraction. Respect repository `type`, `interface`, and `enum` conventions.
+
+A brand requires construction evidence, not a particular spelling. A parser, complete
+guard, checked constructor, or validating SDK can provide it. A local assertion after
+proof is currently permitted; Cursor's stricter alternative is documented in practice 5.
 
 ```typescript
-// Bad: contradictory and incomplete states compile.
-type LoadState<T> = {
-  loading: boolean;
-  data?: T;
-  error?: Error;
-};
+declare const accountIdBrand: unique symbol;
+type AccountId = string & { readonly [accountIdBrand]: true };
 
-// Good: each value describes one reachable state.
+function parseAccountId(input: unknown): AccountId {
+  if (typeof input !== 'string' || !/^acct_[a-z0-9]+$/.test(input)) {
+    throw new Error('Invalid account id');
+  }
+  return input as AccountId;
+}
+```
+
+This current-policy constructor's assertion is backed by the immediately preceding check.
+Writing `input as AccountId` without that check does not validate or construct evidence.
+
+### Make generics carry a relationship
+
+Connect caller-visible facts: input to output, key to value, variant to handler, or schema
+to decoded result. Constrain only operations the implementation actually performs.
+
+```typescript
+// Bad: T is invented rather than established.
+function decode<T>(input: unknown): T {
+  return input as T;
+}
+
+type Decoder<T> = (input: unknown) => T;
+
+function decodeWith<T>(decoder: Decoder<T>, input: unknown): T {
+  return decoder(input);
+}
+```
+
+Remove a generic that only renames `unknown`, requires assertions throughout, or exposes
+machinery no caller uses. Preserve literal/relational information rather than widening
+and reconstructing it. Compatibility-check details live in
+[practice 24](assertions-and-interop.md#practice-24--satisfies-for-compatibility).
+
+## Collected practices
+
+**Adoption: Pending for practices 1–6.** These are Cursor source positions, not new default
+policy. See the [catalog](practice-catalog.md) for selection and pinned provenance.
+Each source link reaches the original examples.
+
+## Practice 1 — Discriminated unions
+
+**Source:** [Cursor: Discriminated unions][cursor-patterns].
+
+Represent variants with a shared literal field and a distinct value per variant. Put
+required data on the variant that owns it, rather than allowing contradictory boolean
+flags and optional-field bags. Keep the discriminant name consistent in the local API;
+Cursor suggests `kind`, `type`, or `tag`, not one mandatory global spelling.
+
+```typescript
+// Bad: ready-without-data and simultaneous data/error compile.
+type LooseState<T> = { loading: boolean; data?: T; error?: Error };
+
 type LoadState<T> =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'ready'; data: T }
   | { status: 'failed'; error: Error };
+```
 
+Use when variants have different data or behavior. Independent optional properties are
+not automatically variants; establish the actual state invariant before replacing them.
+
+## Practice 2 — Exhaustive handling with never
+
+**Source:** [Cursor: Exhaustiveness][cursor-patterns].
+
+For a closed union, assign the remaining whole value to a `never` local in the default
+arm. A new variant then fails compilation at handlers that have not been updated.
+
+```typescript
 function message<T>(state: LoadState<T>): string {
   switch (state.status) {
     case 'idle':
@@ -45,91 +113,122 @@ function message<T>(state: LoadState<T>): string {
 }
 ```
 
-Prefer a representation whose parts are independently valid. Examples include pairs
-instead of an even-length flat array, or a non-empty tuple when emptiness would force
-`!`, a cast, or a supposedly unreachable throw.
+In a void switch, use `const exhaustive: never = state; void exhaustive;` instead of
+returning a value. This is static coverage, not runtime validation of external input;
+validate before treating arbitrary data as the union. Keep deliberate fallback behavior
+for open protocols distinct from exhaustive closed-domain handling.
 
-Do not strengthen automatically. `T[]` is the simplest useful type when empty input has
-a defined result. If the operation can legitimately return no value, `T | undefined`
-may be more honest than requiring a non-empty input.
+## Practice 3 — Constructive modeling
 
-## Derive before duplicating
+**Source:** [Cursor: Constructive modeling][cursor-patterns].
 
-Look for an owner before declaring a parallel interface:
+Choose parts whose arrangement encodes the invariant instead of relying on comments or
+repeated checks: `[T, ...T[]]` for a non-empty collection and `[T, T][]` for pairs instead
+of an even-length flat array. Establish the property once where ordinary input arrives.
 
-1. an existing runtime schema and its supported inference helper;
-2. generated OpenAPI, GraphQL, protocol, database, or SDK types;
-3. an existing function or value through `Parameters`, `ReturnType`, `Awaited`,
-   `typeof`, `Pick`, or `Omit`;
-4. a new public contract when none of those expresses the responsibility.
+```typescript
+type NonEmpty<T> = [T, ...T[]];
+type Pairs<T> = [T, T][];
 
-Derivation should preserve ownership, not expose an entire generated transport type to
-callers that need only a stable subset.
+function isNonEmpty<T>(items: T[]): items is NonEmpty<T> {
+  return items.length > 0;
+}
+
+function first<T>(items: NonEmpty<T>): T {
+  return items[0];
+}
+```
+
+Expose derived readings when needed, such as flattening pairs. Mutable aliases can still
+invalidate collection invariants; a type is not a runtime freeze. A non-empty tuple proves
+index zero exists, not that arbitrary numeric indexing is safe under
+`noUncheckedIndexedAccess`.
+
+**Source caveat:** Cursor also proposes `start: Date` plus `durationMs: number` as preventing
+negative ranges. The representation alone does not prohibit negative/NaN durations or
+invalid dates. Preserve that modeling idea only with explicit validation or a documented
+weaker invariant; do not claim plain `number` makes negative ranges unconstructable.
+
+## Practice 4 — Simplest total types
+
+**Source:** [Cursor: Simplest total type][cursor-patterns].
+
+Keep `T[]` while every operation has a defined result for `[]`. Strengthen only when the
+looser input forces `!`, `arr[0] as T`, or a supposedly unreachable throw. Returning
+`T | undefined` is another honest total signature, not a failure to model strongly.
+
+```typescript
+const sum = (items: number[]) => items.reduce((total, n) => total + n, 0);
+
+function firstOrMissing<T>(items: T[]): T | undefined {
+  return items.at(0);
+}
+
+function requiredFirst<T>(items: [T, ...T[]]): T {
+  return items[0];
+}
+```
+
+Choose based on the caller's real contract. Match `.at()` to runtime support. Do not
+require non-empty input for a sum that already defines its empty result.
+
+## Practice 5 — Validated branded primitives
+
+**Source:** [Cursor: Branded types][cursor-patterns].
+
+Prevent accidental interchange of equal-representation values, such as two ID types.
+Cursor specifically requires `& { readonly __brand: 'X' }`, construction through a guard,
+and no brand-producing `as`. Its parser checks once and downstream consumers trust the
+brand.
+
+```typescript
+type AccountId = string & { readonly __brand: 'AccountId' };
+
+function isAccountId(input: string): input is AccountId {
+  return /^acct_[a-z0-9]+$/.test(input);
+}
+
+function parseAccountId(input: string): AccountId {
+  if (!isAccountId(input)) throw new Error('Invalid account id');
+  return input;
+}
+```
+
+The predicate body still bears the proof obligation; TypeScript does not establish that
+its implementation justifies the brand. Branding alone never validates the primitive.
+Use brands for demonstrated interchange risks, not every number/string by reflex.
+
+**Conflict with current guidance:** the current skill permits unique-symbol brands and
+checked-constructor assertions. Cursor's exact brand spelling and guard-only restriction
+remain pending choices, not an instruction to migrate existing brands.
+
+## Practice 6 — Derive contracts before duplicating
+
+**Source:** [Cursor: Schema-derived types][cursor-patterns].
+
+Use the schema or generated owner of a shape. Prefer supported schema inference, then
+`Pick`, `Omit`, `Parameters`, `ReturnType`, `Awaited`, or `typeof` where these preserve the
+required relationship. Hand-maintained parallel interfaces drift when owners change.
 
 ```typescript
 import type { GeneratedAccount } from './generated/account';
 
 type AccountSummary = Pick<GeneratedAccount, 'id' | 'displayName'>;
+type LoadedAccount = Awaited<ReturnType<typeof loadAccount>>;
 ```
 
-A generated TypeScript annotation describes a static shape. It is runtime evidence only
-when the generator or SDK documents that the value was decoded or validated before it
-reached the program.
-
-## Preserve inference
-
-Let precise values infer when no wider public contract is required. Use `satisfies` to
-check compatibility while retaining the expression's inferred literals and properties.
-Annotate when the annotation is itself the intended abstraction or public surface.
-
-```typescript
-type RetryPolicy = {
-  strategy: 'fixed' | 'exponential';
-  attempts: number;
-};
-
-const retryPolicy = {
-  strategy: 'exponential',
-  attempts: 3,
-} satisfies RetryPolicy;
-```
-
-Avoid widening a known value to `unknown`, `object`, or a broad record and later
-asserting it back to a narrower type. That discards evidence and then fabricates it.
-
-Respect repository conventions for `type`, `interface`, and `enum`. Use the construct
-whose interoperability and extension behavior match the existing public API; do not
-rewrite a sound convention for style alone.
-
-## Make generics carry a relationship
-
-A type parameter should connect facts the caller cares about: input to output, key to
-value, variant to handler, or schema to decoded result.
-
-```typescript
-// Bad: T cannot be inferred from an input and the implementation must invent evidence.
-function decode<T>(input: unknown): T {
-  return input as T;
-}
-
-// Good: the decoder supplies runtime evidence and preserves its output relationship.
-type Decoder<T> = (input: unknown) => T;
-
-function decodeWith<T>(decoder: Decoder<T>, input: unknown): T {
-  return decoder(input);
-}
-```
-
-Prefer inference from arguments and discriminants. Remove a generic that only renames
-`unknown`, requires assertions throughout the implementation, or exposes machinery no
-caller uses. Add constraints only for operations the implementation actually performs.
+The second example assumes an existing `loadAccount` API; derive from the real declaration.
+Define a new domain interface when that domain owns an independent stable contract rather
+than forcing utility types to couple unrelated APIs. A generated annotation does not prove
+that network/DB values were validated; see [runtime boundaries](runtime-boundaries.md).
 
 ## Review questions
 
-- Which invalid state or partial operation does this stronger model remove?
-- Does every union variant carry exactly the data its branch needs?
-- Is exhaustive handling required here, or is an extensible/default branch deliberate?
-- Is a schema, generated contract, function, or value already the source of truth?
-- Does each generic preserve a visible relationship?
-- Did an annotation erase useful literal or structural information without buying a
-  real abstraction?
+- Which invalid state or partial operation does the stronger model remove?
+- Does each variant carry the data its branch needs?
+- Is exhaustive handling required, or is a default deliberate?
+- Which schema, generated contract, function, or value owns the shape?
+- Does each generic preserve a caller-visible relationship?
+- Is a source-specific restriction being mistaken for adopted policy?
+
+[cursor-patterns]: https://github.com/cursor/plugins/blob/c742dd61706fbacc1b95f1a20b7b988cf096ce6c/pstack/skills/typescript-best-practices/references/patterns.md
