@@ -26,6 +26,14 @@ Review this React component for rendering bugs.
 
 The agent loads the relevant skill automatically. Skills that represent explicit workflows can also be invoked by name, such as `/daily`, `/standup`, or `/close-day`.
 
+## Review skill migration
+
+`code-review` replaces the former `review` and `pr-review` skills. Update callers to use
+`code-review` and select its matching playbook. Repository deletion does not itself remove
+previously installed skills: retire old registrations through the host's supported skill
+management workflow. If another collection already supplies `code-review`, choose one owner
+before installing this version rather than silently overwriting it.
+
 ## Skill catalog
 
 ### Development
@@ -37,13 +45,13 @@ The agent loads the relevant skill automatically. Skills that represent explicit
 | `commit` | Creates safe conventional commits and optionally pushes them after approval |
 | `debug` | Diagnoses bugs, failures, and unexpected behavior from root cause to verification |
 | `frontend` | Reviews frontend architecture, TypeScript boundaries, accessibility, and browser security |
-| `pr-review` | Reviews PR or branch diffs against production risk, repository standards, and the originating spec |
+| `code-review` | Reviews PR, branch, working-tree, or selected code with evidence-based risk, standards, spec, and design checks; coordinates authorized repair and verification loops |
 | `react` | Audits React and Next.js rendering, effects, performance, and modern APIs |
 | `react-hook-form` | Builds and modifies React Hook Form forms |
 | `react-hook-form-audit` | Audits React Hook Form code for correctness, accessibility, and performance |
 | `refactor` | Improves code structure while preserving behavior and public APIs |
 | `research` | Retrieves current, source-grounded framework and API documentation |
-| `review` | Reviews selected or local code changes for production-impacting defects and project-rule violations |
+| `implement` | Executes approved specs or bounded ticket work through feature, bug-fix, refactor, and migration playbooks using applicable specialist skills |
 | `spec` | Builds separately reviewed requirements, technical design, and an executable plan, then records approval and stops before implementation |
 | `tanstack-query` | Implements, debugs, and reviews modern TanStack Query resource, cache, mutation, and framework-integration behavior |
 | `test` | Builds behavior-focused tests, selects credible boundaries, and records executable evidence across test runners |
