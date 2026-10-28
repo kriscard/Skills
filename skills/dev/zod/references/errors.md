@@ -29,19 +29,32 @@ type ValidationProblem = {
   issues: Array<{ code: string; path: string[]; message: string }>;
 };
 
-export function toValidationProblem(error: z.ZodError): ValidationProblem {
+export function redactIssuePath(path: readonly PropertyKey[]): Array<string | number> {
+  return path.map((segment) => (typeof segment === "number" ? segment : "<key>"));
+}
+
+export function toValidationProblem(
+  error: z.ZodError,
+  publicPath: (path: readonly PropertyKey[]) => Array<string | number> = redactIssuePath,
+): ValidationProblem {
   return {
     type: "validation",
     issues: error.issues.map((issue) => ({
       code: issue.code,
-      path: issue.path.map(String),
+      path: publicPath(issue.path).map(String),
       message: issue.message,
     })),
   };
 }
 ```
 
-At an internal transport boundary, log stable context plus the same structural evidence:
+Issue paths can contain private input-derived record keys even when input values are omitted. The
+default projection masks string and symbol segments while preserving array indexes. Pass a
+schema-owned `publicPath` projector only when the client needs approved static field paths; distinguish
+fixed positions from dynamic keys rather than allowing a field name at every depth. Review custom
+messages too: they can embed sensitive values.
+
+At an internal transport boundary, log stable context with conservatively redacted paths:
 
 ```ts
 const result = SubscriptionSchema.safeParse(payload);
@@ -49,7 +62,7 @@ if (!result.success) {
   logger.warn("subscription contract rejected", {
     endpoint: "/api/subscriptions/:id",
     schema: "SubscriptionSchema",
-    issues: result.error.issues.map(({ code, path }) => ({ code, path })),
+    issues: result.error.issues.map(({ code, path }) => ({ code, path: redactIssuePath(path) })),
   });
   throw new ContractError(toValidationProblem(result.error));
 }
@@ -64,7 +77,9 @@ nested shape. Browser announcements, focus, field registration, and server-error
 frontend/form-owned.
 
 **Failure check:** test the public shape, nested paths, a root-level issue (`path: []`), multiple issues,
-and serialization. Assert that secrets and raw payload fields do not appear.
+and serialization. Include a failing record whose key is a sensitive identifier; assert that neither
+public output nor logs contain that key. Verify numeric indexes survive and approved static paths can
+be retained by the schema-owned projector. Assert that secrets and raw payload fields do not appear.
 
 ## Customize at the narrowest stable layer
 

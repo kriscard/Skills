@@ -102,9 +102,7 @@ assert.equal(artifact.title, "Product input");
 assert.equal(artifact.additionalProperties, false);
 const quantityArtifact = artifact.properties?.quantity;
 assert.ok(quantityArtifact && typeof quantityArtifact === "object");
-if (quantityArtifact && typeof quantityArtifact === "object" && "pattern" in quantityArtifact) {
-  assert.equal(quantityArtifact.pattern, "^[1-9]\\d*$");
-}
+assert.equal(quantityArtifact.pattern, "^[1-9]\\d*$");
 assert.equal(JSON.stringify(artifact).includes("RESERVED"), false);
 ```
 

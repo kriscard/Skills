@@ -103,19 +103,21 @@ accepted and rejected runtime values before trusting generated TypeScript.
 import assert from "node:assert/strict";
 import { z } from "zod";
 
-export function assertSchemaBoundary<S extends z.ZodType>(
+export async function assertSchemaBoundary<S extends z.ZodType>(
   schema: S,
   accepted: unknown,
   rejected: unknown,
-): z.output<S> {
-  const valid = schema.safeParse(accepted);
+): Promise<z.output<S>> {
+  const valid = await schema.safeParseAsync(accepted);
   if (!valid.success) throw valid.error;
 
-  const invalid = schema.safeParse(rejected);
+  const invalid = await schema.safeParseAsync(rejected);
   assert.equal(invalid.success, false);
   return valid.data;
 }
 ```
+
+Await this helper for both synchronous and asynchronous schemas, including nested async effects.
 
 Use an insert/update schema for writes and a select/response schema for reads; they are not
 interchangeable merely because one tool generated both. For a generated client, assign the transport
