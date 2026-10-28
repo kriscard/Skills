@@ -41,9 +41,9 @@ interoperability or extension semantics require change.
 
 ## Collected practices
 
-**Adoption: Pending for practices 20–29.** The policy alternatives below do not override
-current guidance until selected. See the [catalog](practice-catalog.md) for conflicts and
-selection.
+Practices 20–29 are policy alternatives, not automatic overrides of current guidance.
+Before applying one as policy, read its adoption decision in the [catalog](practice-catalog.md),
+the sole persistent adoption record. Keep the documented conflicts explicit.
 
 ## Practice 20 — Preserve established evidence
 
@@ -60,9 +60,9 @@ const loose: Record<string, unknown> = commands;
 const checked = commands satisfies Record<string, () => void>;
 ```
 
-The rule classifies `unknown`, `object`, open dictionaries, supported generic containers,
-and anonymous object targets. Its local syntax analysis is not the full TypeScript type
-checker. A deliberate public abstraction can be correct under current guidance; do not
+An automated check can classify `unknown`, `object`, open dictionaries, supported generic
+containers, and anonymous object targets. Local syntax analysis is not the full TypeScript
+type checker. A deliberate public abstraction can be correct under current guidance; do not
 remove an abstraction solely because it exposes less than its implementation.
 
 ## Practice 21 — Avoid widen-then-assert flows
@@ -106,7 +106,7 @@ Neither a brand nor `satisfies` can prove an arbitrary runtime invariant just be
 compiler cannot express it.
 
 **Conflict:** current policy permits justified interop assertions, including checked brand
-construction. Keep this stronger restriction visible as a pending policy choice; do not
+construction. Keep this stronger restriction visible as a selectable policy alternative; do not
 silently turn it into a ban or rewrite existing APIs to satisfy it.
 
 ## Practice 23 — Prohibit chained assertions
@@ -154,9 +154,10 @@ compatible TypeScript version (introduced in 4.9).
 
 ## Practice 25 — Assertion safety comments
 
-Require a nearby justification for every non-const TypeScript assertion. Default marker:
-`SAFETY:`; the rule accepts a non-empty configurable `markers` array. The comment must
-state the invariant, not merely repeat the target type.
+Require a nearby justification for every non-const TypeScript assertion. Use `SAFETY:` as
+the default marker; the comment must state the invariant, not merely repeat the target type.
+If automating this policy, a non-empty configurable `markers` array can allow alternative
+markers. This describes an enforcement option, not existing project configuration.
 
 ```typescript
 // SAFETY: the preceding decoder validated every required User field.
@@ -210,9 +211,10 @@ if (typeof optionalGlobal !== 'undefined') useOptionalGlobal();
 ```
 
 This policy exempts comparisons with the literal `'undefined'` using `===`, `!==`, `==`, or
-`!=`. Configuration `{ allowInTypeGuards: true }` additionally permits checks inside a
-function whose return annotation is a type predicate. Type-position `typeof` is not the
-runtime unary operator and is not prohibited by this rule.
+`!=`. An optional policy exception permits checks inside a function whose return annotation
+is a type predicate. An automated implementation can expose this as
+`{ allowInTypeGuards: true }`; that option is not assumed to exist in the target project.
+Type-position `typeof` is not the runtime unary operator and is not prohibited by this rule.
 
 **Conflict:** current guidance and #26 allow honest primitive narrowing. If selected,
 decide guard/parser exemptions explicitly; do not replace `typeof` with assertions or
@@ -251,7 +253,7 @@ const result = handler(...args);
 The replacement must preserve `this`, argument, and exception semantics; removing a
 receiver blindly changes behavior. Dynamic invocation can belong to a proxy/adapter under
 current policy. Isolate it and test the contract rather than claiming direct calls are
-always equivalent. This distinction remains pending alongside #28.
+always equivalent. Consult the catalog for adoption of this policy and #28.
 
 ## Review questions
 

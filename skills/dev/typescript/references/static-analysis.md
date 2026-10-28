@@ -14,10 +14,11 @@ reading for ordinary typed application edits.
 
 ## Collected implementation patterns
 
-**Adoption: Pending for practices 39–47.** These are implementation patterns for static
-analysis, **not application-code lint restrictions**. The examples and limits describe
-analyzer design, not a mandate to add a parser or implement this machinery in every project.
-See the [catalog](practice-catalog.md) for selection.
+Practices 39–47 are implementation patterns for static analysis, **not application-code
+lint restrictions**. The examples and limits describe analyzer design, not a mandate to
+add a parser or implement this machinery in every project. Before applying a numbered
+pattern as policy, read its adoption decision in the [catalog](practice-catalog.md), the
+sole persistent adoption record.
 
 ## Practice 39 — Resolve lexical bindings
 
@@ -204,5 +205,6 @@ instead of checking only `Identifier` parameters.
 
 The analyzer distinguishes syntax evidence from semantic proof, respects supported lexical
 bindings, terminates on cycles, and has fixtures for wrappers/shadowing/parameter variants.
-Cached results are bound to the correct AST. Patterns remain pending unless selected;
-ordinary TypeScript edits do not require implementing this analysis machinery.
+Cached results are bound to the correct AST. Apply numbered patterns as policy only per
+the catalog or explicit task selection; ordinary TypeScript edits do not require implementing
+this analysis machinery.

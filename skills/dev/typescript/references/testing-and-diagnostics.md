@@ -19,8 +19,9 @@ and platform mechanics to the applicable testing/frontend/framework skill.
 
 ## Collected practices
 
-**Adoption: Pending for practices 34–36.** Select them through the
-[catalog](practice-catalog.md); the policy alternatives below are not current default bans.
+Practices 34–36 are policy alternatives, not automatic default bans. Before applying one
+as policy, read its adoption decision in the [catalog](practice-catalog.md), the sole
+persistent adoption record.
 
 ## Practice 34 — No module mocking
 

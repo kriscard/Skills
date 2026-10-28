@@ -14,9 +14,9 @@ actual runtime support; declarations alone do not provide iterator helpers.
 
 Named argument objects are useful when the API benefits, not universally mandatory or
 universally wasteful. Broad `object` parameter types and domain-specific options objects
-are different. Keep intentional raw dictionaries/`unknown` at boundaries; do not hide them
-in meaningless aliases. Ordinary narrowing is valid; a one-off primitive check does not
-require a schema dependency.
+are different. When collection/API work involves untrusted dictionaries, `unknown`, primitive
+narrowing, or schema choices, read [Runtime Boundaries — Current skill guidance](runtime-boundaries.md#current-skill-guidance)
+for the canonical handling of those cases.
 
 Dynamic mechanisms and module mocking remain decisions for their owning adapter/testing
 boundary, not syntax defects by themselves. Do not flag a name solely for containing
@@ -25,8 +25,9 @@ not a competing prose layout policy. Stricter policy alternatives appear below.
 
 ## Collected practices
 
-**Adoption: Pending for practices 30–33 and 37–38.** Full policy alternatives remain available
-for selection in the [catalog](practice-catalog.md), not enforced by their inclusion here.
+Practices 30–33 and 37–38 remain full policy alternatives, not enforced by inclusion here.
+Before applying one as policy, read its adoption decision in the [catalog](practice-catalog.md),
+the sole persistent adoption record.
 
 ## Practice 30 — Avoid adjacent array filter/map passes
 
@@ -54,8 +55,8 @@ indexes; callback third arguments differ too. Map-then-filter predicates receive
 values. Preserve these facts or retain the original pipeline.
 
 **Conflict:** current guidance allows readable pipelines without a measured/established
-need to combine them. This syntactic prohibition is pending, not an automatic
-performance finding.
+need to combine them. Use the catalog decision for this syntactic prohibition; its presence
+alone is not an automatic performance finding.
 
 ## Practice 31 — Avoid copying growing reducer accumulators
 
@@ -118,7 +119,7 @@ is not equivalent to omission for JSON/object inspection, some APIs, or
 the whole object can be clearer.
 
 **Conflict:** current guidance permits conditional spreads when readable and semantically
-correct. This pending restriction is not proof the original form is unsafe.
+correct. This policy alternative is not proof the original form is unsafe.
 
 ## Practice 33 — Named object arguments
 

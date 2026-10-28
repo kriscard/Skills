@@ -60,8 +60,9 @@ and reconstructing it. Compatibility-check details live in
 
 ## Collected practices
 
-**Adoption: Pending for practices 1–6.** These are collected policy alternatives, not new
-default policy. See the [catalog](practice-catalog.md) for selection.
+Practices 1–6 are collected policy alternatives, not automatic default policy. Before
+applying one as policy, read its adoption decision in the [catalog](practice-catalog.md).
+The catalog alone records persistent adoption status.
 
 ## Practice 1 — Discriminated unions
 
@@ -189,7 +190,7 @@ Use brands for demonstrated interchange risks, not every number/string by reflex
 
 **Conflict with current guidance:** the current skill permits unique-symbol brands and
 checked-constructor assertions. The exact brand spelling and guard-only restriction
-remain pending choices, not an instruction to migrate existing brands.
+require explicit selection, not an automatic migration of existing brands.
 
 ## Practice 6 — Derive contracts before duplicating
 

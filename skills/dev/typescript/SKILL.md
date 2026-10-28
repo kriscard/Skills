@@ -22,10 +22,13 @@ audit.
 
 ### 1. Read the environment
 
-Inspect the manifest, lockfile, TypeScript version, runtime versions, `tsconfig` chain,
-framework-generated configuration, declarations, generated clients, schema libraries,
-and established typecheck/test/format scripts. Read nearby code for public `type`,
-`interface`, and `enum` conventions before recommending a different form.
+Scope discovery to the changed contract. Inspect the relevant manifest, lockfile,
+TypeScript version, runtime versions, `tsconfig` chain, framework-generated configuration,
+declarations, generated clients, schema libraries, and established typecheck/test/format
+scripts. Inspect runtime support for runtime features, schema APIs for decoding work, and
+generated contracts when they own the changed shape; skip unrelated or absent artifacts.
+Read nearby code for public `type`, `interface`, and `enum` conventions before recommending
+a different form.
 
 Treat installed declarations and runtime support as the compatibility boundary. Do not
 enable flags, add dependencies, or start migrations automatically.
@@ -70,13 +73,19 @@ green. State what was verified and what remains runtime-dependent.
 
 ## Collected practices are not automatic policy
 
-The references document 47 numbered practices. Their adoption is
-**Pending** until the user selects them; documenting a practice does not activate it.
+The references document 47 numbered practices; documenting a practice does not activate it.
 Use the unnumbered **Current skill guidance** sections as the existing default. Numbered
 sections preserve policy alternatives, examples, exceptions, and conflicts for selection.
-Do not turn a pending prohibition into a review finding or silently replace the current
-guidance with it. A task-specific request can select a practice for that task; durable
-policy changes require updating the catalog and its canonical section together.
+The **Decision** column in `references/practice-catalog.md` is the single authority for
+persistent adoption status. Before applying a numbered practice as policy, read its catalog
+entry and full section; pending or excluded entries do not introduce new review findings.
+A task-specific request can select a practice for that task without changing persistent
+status. Durable changes update the catalog decision and, only when needed, the affected
+conditions or conflicting guidance—not a second copy of the adoption status.
+
+Automation notes in numbered sections describe optional enforcement designs, not installed
+checker capabilities. Verify the target project's actual tooling before configuring options;
+collecting or selecting a practice does not authorize a tooling installation.
 
 ## References
 
@@ -91,7 +100,7 @@ numbered practice has one canonical section; the catalog is an index, not a subs
 | 2 — Conditional | Collection pipelines, reducers, iterator helpers, object construction, argument design, symbol naming, spacing, or syntactic code-quality findings | `references/code-quality.md` |
 | 2 — Conditional | TypeScript module mocks, dependency-injection test seams, real dependency tests, disposal/leak checks, running-UI evidence, structured logging, or console diagnostics | `references/testing-and-diagnostics.md` |
 | 2 — Conditional | Implementing lint rules, TypeScript AST tooling, codemods, alias/type analysis, scope resolution, or program-analysis caches | `references/static-analysis.md` |
-| 3 — Maintenance | Selecting practices, changing adoption status, comparing policy alternatives, or auditing coverage of all 47 practices | `references/practice-catalog.md` |
+| 1 — Policy check | Before applying a numbered practice as policy; selecting practices, changing adoption status, comparing policy alternatives, or auditing coverage of all 47 practices | `references/practice-catalog.md` |
 
 ## Ownership Boundary
 
@@ -114,5 +123,5 @@ Before finishing:
 - generics preserve a caller-visible relationship rather than hiding `unknown`;
 - assertions and suppressions are local, justified, and do not launder evidence;
 - checks use established scripts, and unverified runtime behavior is explicit;
-- numbered practices remain pending unless explicitly selected, and conflicting
+- numbered policy decisions follow the catalog or explicit task selection, and conflicting
   policy alternatives are reported rather than silently combined.

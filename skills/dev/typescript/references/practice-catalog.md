@@ -1,5 +1,6 @@
-> **Read this when:** selecting practices, changing adoption decisions, comparing policy
-> alternatives, or auditing coverage of the 47 collected practices.
+> **Read this when:** applying a numbered practice as policy, selecting practices,
+> changing adoption decisions, comparing policy alternatives, or auditing coverage of
+> the 47 collected practices.
 
 # TypeScript Practice Catalog
 
@@ -9,8 +10,9 @@ This catalog accounts for **47 of 47** collected practices. Each row links to on
 canonical section with its policy, rationale, examples where useful, exceptions, and
 conflicts. The catalog is an index, not a replacement for those sections.
 
-**Pending means documented, not enforced.** All 47 adoption decisions are pending.
-Some overlap the skill's existing guidance; that guidance remains active independently.
+**Pending means documented, not enforced.** The **Decision** column below is the single
+persistent adoption record for each practice; topical references do not duplicate it.
+Some practices overlap the skill's existing guidance; that guidance remains active independently.
 Approval to document all practices did not adopt every ban, naming convention, or tooling
 requirement. Numbered sections describe policy alternatives; unnumbered **Current skill
 guidance** sections retain the previous defaults and useful generics, compiler,
@@ -19,14 +21,16 @@ suppression, and ownership guidance outside the numbered collection.
 Use these decisions when the user selects policies:
 
 - **Adopt:** apply the practice with its documented scope.
-- **Adopt with conditions:** record the exact exceptions/configuration in its canonical
-  section, distinguishing the documented alternative from the chosen policy.
+- **Adopt with conditions:** record the decision here and the exact exceptions/configuration
+  in its canonical section, distinguishing the documented alternative from the chosen policy.
 - **Exclude:** preserve the documentation and rationale for excluding it.
 - **Pending:** preserve the option without activating it.
 
-Update a row and its canonical section's adoption metadata together. A restriction must
-not be softened, omitted, or activated silently. Resolve contradictory selections with
-the user, and update conflicting current guidance only as explicitly authorized.
+Update the practice's **Decision** cell here when its persistent adoption changes. Edit
+its canonical section only when the chosen conditions or guidance actually change; do not
+add a second adoption-status field there. A restriction must not be softened, omitted, or
+activated silently. Resolve contradictory selections with the user, and update conflicting
+current guidance only as explicitly authorized.
 A task-specific choice applies to that task without silently becoming a durable global
 policy. Do not install tools/dependencies merely to adopt prose guidance.
 
@@ -141,6 +145,7 @@ Before changing this collection, verify:
 - Every row's file and heading anchor exist; all six topical references are routed by SKILL.md.
 - Every canonical section retains its policy, meaningful detail, examples where useful,
   exceptions, and conflicts rather than merely a title.
-- The catalog and canonical adoption metadata agree; pending rules do not become default findings.
+- Every practice has one adoption decision in this catalog; topical sections do not duplicate
+  adoption status, and pending or excluded rules do not introduce new default findings.
 - Useful pre-existing guidance outside these IDs remains reachable.
 - Routing evals cover the relevant branches and distinguish collected documentation from adoption.

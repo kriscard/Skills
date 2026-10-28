@@ -55,15 +55,16 @@ function requireDecoded<T>(decoder: Decoder<T>, input: unknown): T {
 
 Current policy permits `unknown` and raw dictionaries at real boundaries, including
 parsers, low-level adapters, generic containers, and error causes. Restrictions 15–19
-are pending policy alternatives, not reasons to disguise untrusted data in a named
+are policy alternatives subject to catalog selection, not reasons to disguise untrusted data in a named
 alias. Brand construction is documented in [type modeling](type-modeling.md#practice-5--validated-branded-primitives).
 
 ## Collected practices
 
-**Adoption: Pending for practices 7–19.** Policy alternatives and their limits are preserved
-below. [Catalog](practice-catalog.md) tracks selection; numbered sections do not replace
-the current guidance until selected. Schema examples assume an already installed,
-compatible Zod API; adapt to the repository's real decoder rather than adding Zod.
+Practices 7–19 preserve policy alternatives and their limits. Before applying one as
+policy, read its adoption decision in the [catalog](practice-catalog.md), the sole persistent
+adoption record. Numbered sections do not replace current guidance merely by being documented.
+Schema examples assume an already installed, compatible Zod API; adapt to the repository's
+real decoder rather than adding Zod.
 
 ## Practice 7 — External data as unknown, not any
 
@@ -280,8 +281,8 @@ low-level abstractions. Do not replace the alias with an asserted domain type.
 ## Practice 18 — Restrict unsafe dictionary value types
 
 Reject dictionary contracts whose direct values resolve to `unknown`, `any`, `object`,
-`{}`, or a union containing these escape hatches. The helpers inspect index signatures,
-mapped types, aliases, and supported wrappers (`Readonly`, `Partial`, `Required`,
+`{}`, or a union containing these escape hatches. If automating this policy, inspect index
+signatures, mapped types, aliases, and wrappers (`Readonly`, `Partial`, `Required`,
 `NonNullable`, `Pick`, `Omit`), while respecting shadowed built-ins.
 
 ```typescript
@@ -294,8 +295,9 @@ type UsersById = Record<string, User>;
 
 This changes value specificity, not key existence. An open record can still have a missing
 key; choose optional lookup semantics, `noUncheckedIndexedAccess`, or `Map` as appropriate.
-Finite-key records differ from open dictionaries. The rule exempts certain generic
-constraints and avoids reporting the same alias at every consumer.
+Finite-key records differ from open dictionaries. For syntactic enforcement, exempt generic
+constraint positions and avoid reporting the same alias at every consumer. These are
+implementation considerations, not claims that a particular checker is installed.
 
 **Conflict:** the current skill permits raw dictionaries at an untrusted object boundary.
 Selecting a blanket ban requires a boundary exception or a different honest representation,
