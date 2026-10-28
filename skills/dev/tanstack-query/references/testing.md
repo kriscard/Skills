@@ -1,0 +1,70 @@
+> **Read this when:** tests or executable evidence are requested or affected for TanStack Query behavior.
+
+# Testing TanStack Query behavior
+
+Load `test` and choose the narrowest boundary that proves the consumer-visible cache behavior. Use
+the installed runner and repository conventions.
+
+## Harness
+
+- Create a fresh `QueryClient` per test or per isolated wrapper. If a shared helper is established,
+  clear it between tests and prevent parallel cache leakage.
+- Set query retries to `false` for deterministic error tests unless retry behavior is the subject.
+  Per-query retry options override client defaults.
+- Control `gcTime` only when the runner's open-handle behavior or the scenario requires it; do not
+  globally distort production cache policy merely for tests.
+- Render through the adapter's real provider/hook/component boundary. Avoid mocking TanStack Query
+  hooks or cache internals when the contract under test is fetching, invalidation, optimistic state,
+  cancellation, or pagination.
+- Await observable state with the runner's async utilities rather than sleeps. Account for v5
+  `status` and `fetchStatus` separately.
+
+## HTTP and MSW boundary
+
+When MSW is already installed, prefer handlers at the HTTP boundary so the real query function,
+AbortSignal, retries, cache, and UI state remain exercised. Assert consumer-visible outcomes, not
+Query internals or a mandatory list of HTTP calls. Request assertions are justified only when the
+request itself is the contract (for example, a required parameter or abort behavior), not merely
+because MSW intercepted it. Follow MSW's own setup/reset guidance and the existing harness rather
+than duplicating its mechanics here.
+
+A generic API or MSW test does not need this skill unless TanStack Query behavior is part of the
+contract. Conversely, a cache test need not mandate MSW when a smaller established transport seam
+can prove the behavior without replacing the subject.
+
+## High-value cases
+
+Cover only branches changed by the task:
+
+- equal keys deduplicate/share data; changed key inputs produce distinct requests/cache entries;
+- fresh data avoids an unwanted refetch while invalidation marks the intended family stale;
+- an enabled query responds to invalidation, while a deliberately disabled query does not;
+- an offline `online` query/mutation pauses without calling transport, exposes paused fetch state,
+  and continues on reconnect; `always` / `offlineFirst` behavior is tested only when configured;
+- cancellation reaches the request signal and stale work cannot overwrite newer/optimistic data;
+- successful mutations update or invalidate the intended entries and failed optimistic writes roll
+  back without losing unrelated concurrent changes; for same-resource optimism exercise
+  A-failure/B-pending, one-success/one-failure in both orders, both failures in both orders, and both
+  successes; overlapping settlements do not refetch over a still-pending related optimistic write;
+- hook-level mutation callbacks cover every invocation, while adapter per-call callbacks and
+  `mutateAsync` composition are tested for consecutive/out-of-order calls when UI behavior depends
+  on them;
+- persisted paused mutations restore with a matching default mutation function and do not race
+  initial query restoration when persistence is part of the task;
+- scoped mutations serialize only the matching scope; independent scopes remain concurrent;
+- infinite queries pass the expected page parameter, stop on `null`/`undefined`, preserve
+  `pages`/`pageParams`, and prevent or intentionally handle overlapping fetches;
+- components rerender for properties they consume without relying on private observer details;
+- SSR/router tests prove request isolation, shared client identity, loader/consumer key agreement,
+  active observation, hydration, and separate invalidation owners when those seams changed.
+
+For time-sensitive freshness, retry, polling, or garbage-collection tests, use the runner's fake
+clock carefully and flush async work according to local conventions. Prefer direct invalidation or
+small real durations when fake timers would obscure request scheduling.
+
+## Sources
+
+- [Testing guide](https://tanstack.com/query/v5/docs/framework/react/guides/testing)
+- [Query cancellation](https://tanstack.com/query/v5/docs/framework/react/guides/query-cancellation)
+- [Optimistic updates](https://tanstack.com/query/v5/docs/framework/react/guides/optimistic-updates)
+- [Infinite queries](https://tanstack.com/query/v5/docs/framework/react/guides/infinite-queries)
