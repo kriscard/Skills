@@ -25,7 +25,8 @@ Read `../vault/SKILL.md` and the live `AGENTS.md`. Resolve the destination and a
 | Explain connections across several notes | MOC using its live template and existing Bases |
 
 Use the request to choose the mode; ask when authorship or destination is unclear. A quick capture
-needs no classification interview. An unfinished question can already deserve an Atomic Note.
+needs no classification interview; uncertain classification can remain unresolved. An unfinished
+question can already deserve an Atomic Note.
 
 When promoting material from daily notes or other existing notes, read `references/promote-mode.md`.
 
@@ -55,6 +56,13 @@ Completion: the proposed write does not overwrite an existing note or duplicate 
 Completion: the draft fits its purpose and represents its owner honestly.
 
 ## 4. Preview, write, and verify
+
+Use the shared vault tag contract: preview a type only when the current content qualifies under the
+live taxonomy, alongside supported discovery areas, optional canonical keywords, and explicitly
+user-confirmed seed/topic tags. Show exact tag deltas. A template or destination does not establish
+`type/atomic`; leave the type unassigned on a blank scaffold. Human ownership does not establish
+wholly human wording for `type/original`. Approved tag metadata is independent of the user's writing
+space; leave their explanation and questions untouched.
 
 Show the exact path and content or section edit, plus any required index/log changes. After approval,
 use the vault safe-write flow and account for automatic template insertion. Reread the result and

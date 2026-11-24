@@ -42,7 +42,7 @@ Use first person and a concrete title. Prefer explanation over a session transcr
 
 ```markdown
 ---
-tags: [til/topic]
+tags: [type/til]
 date: YYYY-MM-DD
 project: <topic or project>
 ---
@@ -82,7 +82,7 @@ Append only:
 <one durable takeaway>
 ```
 
-Use 3–5 `til/` tags derived from actual subjects. Keep project or session backlinks only when the vault convention calls for them.
+Before proposing tags, read the live taxonomy through the `vault` contract. Use the supported TIL type and only useful, approved area and keyword tags; do not create a separate `til/` branch or impose a fixed tag count. Show exact tag additions and removals for approval. Keep project or session backlinks only when the vault convention calls for them.
 
 ## 5. Save safely
 

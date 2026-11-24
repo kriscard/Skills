@@ -68,11 +68,17 @@ membership separately from curated links; valid YAML alone does not establish th
 
 ### Metadata
 
-Compare notes only with metadata rules from `AGENTS.md` and conventions evidenced in their note
-class. Do not invent tag limits, required ownership markers, or preferred taxonomies. Group repeated
-violations into one pattern with representative paths. Read the live tag guide and affected Base
-filters before recommending tag changes. Preserve functional plugin tags and report stale folder
-filters or compatibility lists separately from note-metadata problems.
+Compare notes with metadata permissions and requirements from `AGENTS.md`; load the live
+`99 - System/Guides/Tag Taxonomy.md` through the shared vault contract for tag branch naming and
+classification. Inspect existing tags for canonical keywords. Missing optional discovery areas or
+keywords are not failures; confirmed seed/topic explorations are not overdue work. Neither human
+ownership nor an unfinished scaffold proves `type/original`.
+
+Do not invent tag limits or required ownership markers. Group repeated violations into one pattern
+with representative paths. Read affected Base filters and plugin dependencies, preserving required
+provenance, flashcard, and functional tags. Report Base/query problems, stale folder filters, and
+compatibility lists separately from note classification. Any later tag fix requires exact deltas
+and approval under the shared contract; configuration changes are a separate scope.
 
 For template findings, distinguish active templates from archived subfolders and inspect current folder
 rules. An automatic-template failure requires a creation test and inspection of the device-local

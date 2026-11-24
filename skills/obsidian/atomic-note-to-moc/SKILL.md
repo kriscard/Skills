@@ -7,8 +7,8 @@ description: >-
 
 # Atomic Note to MOC
 
-Integrate one existing atomic note into the vault's Base-backed MOCs without turning every note into a
-curated anchor.
+Classify one existing atomic note and, when requested, integrate it into the vault's Base-backed
+MOCs without turning every note into a curated anchor.
 
 ## 1. Establish the contract
 
@@ -16,31 +16,36 @@ Read the vault's `AGENTS.md` and `../vault/SKILL.md`. Resolve the target note, i
 folder and metadata. Resolve the MOC and Base directories from the schema. Read candidate MOCs and
 their actual embedded Base definitions, including any compatibility lists, to learn their filters.
 
-Treat agent-owned notes as writable through the vault safe-write flow. For human-owned notes, present
-recommendations without modifying them.
+Use live permissions and the vault safe-write flow. For human-owned notes, preserve user prose;
+exact explicitly approved tag metadata may change where live `AGENTS.md` permits it. Present other
+recommendations without modifying human writing.
 
 Completion: the target note, its write boundary, candidate MOCs, and the exact Base filters that could
 include it are known.
 
 ## 2. Classify the note
 
-Check whether the note already appears in the relevant Base. If it does, leave its classification
-alone. If it does not, distinguish a genuinely missing topic tag from a stale folder filter or
-compatibility list. Keep reusable knowledge in its schema-defined location rather than moving it to
-satisfy an old query. Read the live tag guide before proposing tag changes.
+Evaluate tags under the shared vault tag contract, independently of Base membership. A note's
+presence in a Base does not prove correct classification; absence does not prove missing tags.
+Distinguish taxonomy-grounded classification from stale folder filters or compatibility lists.
+Keep reusable knowledge in its schema-defined location; add no tags or moves just to satisfy an
+old query. Read dependencies and report impact, keeping Base/plugin changes outside tagging scope.
 
 Preserve ownership and unrelated metadata. Propose an index entry when the schema requires one;
 register it only within an approved write set.
 
 A MOC's hard-linked anchors are curated entry points. Propose a direct MOC link only when the note is
-important enough to serve as an anchor; ordinary notes belong in the Base only. If no current MOC or
-Base fits, ask whether to extend an existing Base, create a new MOC, or leave the note unclassified.
+important enough to serve as an anchor; ordinary notes need no curated anchor. If no current MOC or
+Base fits, classification can still be complete. A missing MOC requires neither a new Base nor
+invented classification. If MOC integration was requested, report the gap and ask whether a separate
+MOC/Base change is wanted.
 
 Preview every proposed note, index, Base, or MOC mutation and obtain approval through the vault
 safe-write flow before applying it.
 
-Completion: the approved classification makes the note discoverable through the relevant Base, any
-required index entry exists, and no MOC anchor was added without explicit approval.
+Completion: taxonomy-grounded classification is resolved or its ambiguity reported, approved tag
+deltas are verified, any required index entry exists, and no MOC anchor was added without explicit
+approval. Ordinary classification does not require Base integration.
 
 ## 3. Propose connections
 
@@ -71,7 +76,8 @@ When a link would change the subject, present it as a related-note suggestion in
 
 ## Verify discovery
 
-After an approved change, query or render the affected Base and confirm that the target note appears.
+When Base-backed MOC integration is actually requested, query or render the affected Base after
+approved integration changes and confirm that the target note appears.
 A valid filter file alone does not prove membership. Preserve the MOC's existing Base embed and
 unrelated anchors. If the query cannot be verified, report that limitation instead of claiming the
 note is integrated.

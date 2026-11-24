@@ -108,10 +108,13 @@ from the title, rating, or reading state.
 
 ## Tags and book-to-book links
 
-Read the live tag taxonomy, affected Bases, existing book tags, and relevant plugin dependencies
-before proposing tag changes. Preserve the book-discovery tag and other required tags. Show the
-exact shelf-to-tag mapping and each tag addition, rename, or removal. Shelf names remain intact in
-the shelves property even when selected shelves also map to approved topic tags. A custom shelf
+Follow the shared `vault` tag contract: read the live `99 - System/Guides/Tag Taxonomy.md`, affected
+Bases, existing book tags, and relevant plugin dependencies before proposing tag changes. The live
+taxonomy owns the book type; retain legacy `book` until its removal is separately approved after
+dependency review. Preserve required provenance, flashcard, and other functional tags. Report
+Base/plugin impact without changing configuration as part of tagging. Show the exact shelf-to-tag
+mapping and each tag addition, rename, or removal, and obtain explicit approval. Shelf names remain
+intact in the shelves property even when selected shelves also map to approved topic tags. A custom shelf
 is not automatically a tag, genre, or category; resolve the mapping explicitly. Keep unrelated tags
 unless their removal is separately approved. Do not create a new taxonomy or retag the whole vault
 as part of one import.

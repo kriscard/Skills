@@ -35,6 +35,27 @@ Completion: the target vault, live schema, and permissions relevant to the reque
 - Require explicit confirmation before deleting, moving, publishing, or overwriting a note.
 - Keep root `index.md` and root `log.md` in the LLM Wiki workflow when the schema requires them.
 
+## Tag classification contract
+
+Every workflow inherits this contract. Before assigning, changing, or evaluating note tags, read the
+live `99 - System/Guides/Tag Taxonomy.md`. `AGENTS.md` owns permissions; the taxonomy owns vocabulary.
+If either leaves a decision unclear, report the ambiguity rather than inventing labels or authority.
+
+- Inspect existing note tags for useful canonical keywords. Classify type, discovery area, and
+  optional keywords using the live taxonomy; discovery area is not folder placement, and
+  classification does not confer ownership. Apply no arbitrary tag-count limit.
+- Confirm `type/original` only for wholly human wording, never from human ownership or an empty
+  human scaffold. Seed/topic tags denote explicitly user-confirmed explorations; incompleteness
+  alone does not justify them, and they are never removed automatically.
+- Preview exact per-note tag additions, removals, and retained tags; obtain explicit approval before
+  writing, including metadata on human-owned notes where live permissions allow it. Preserve prose,
+  attribution, required provenance, flashcard, and other functional tags.
+- Read affected Base queries and plugin dependencies and report impact. Tagging does not authorize
+  Base/plugin configuration changes or note moves; those require a separate approved scope.
+
+Completion: classification is grounded in the live taxonomy, unresolved choices are explicit, and
+any tag write has exact approval and preserves required dependencies and provenance.
+
 ## Safe writes
 
 Generated Markdown is data, not shell code. Never place user- or model-generated content inside an

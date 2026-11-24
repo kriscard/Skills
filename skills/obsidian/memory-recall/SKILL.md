@@ -30,6 +30,13 @@ page bodies. Query the user's intended sense for ambiguous terms. Include Knowle
 Resources, and dated or archived journals when the question calls for them; derive paths from the
 schema. MOCs and their embedded Bases can provide additional entry points.
 
+For tag-based retrieval, load the live taxonomy through the shared vault contract. Inspect existing
+tags and intersect relevant type, discovery-area, and canonical keyword tags; include confirmed
+seed/topic explorations when the question concerns open questions or developing interests. Areas
+are discovery facets, not folder constraints. During the tagging transition, incomplete tag coverage
+is not absence of knowledge: retain catalog-first discovery and body-search fallback. Report
+ambiguous labels without retagging notes.
+
 If semantic search is unavailable or incomplete, use keyword search and report the limitation.
 Refreshing QMD embeddings and refreshing an Obsidian plugin's search index are separate operations;
 this read-only skill does neither automatically.

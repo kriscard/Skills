@@ -1,119 +1,136 @@
 ---
 name: ingest
 description: >-
-  Discuss and file an article, URL, video, book note, or selected Inbox source, then reuse a matching
-  Atomic Note or create a human-owned scaffold for the user to write. Use when the user asks to
-  ingest or add source material to the Obsidian knowledge base.
+  Discuss and file an article, URL, video, podcast, book note, or selected Inbox source as one
+  Resource note with preserved source content and space for personal annotations. Use when the user
+  asks to ingest or add source material to the Obsidian knowledge base.
 user-invocable: true
 ---
 
 # Ingest
 
-File one raw source and connect it to one Atomic Note for the user to write. Reuse the note for the
-same coherent idea; create a scaffold only for a distinct idea. Preserve the Karpathy LLM Wiki layers
-without writing the user's understanding for them.
+Ingest the source now; extract independent ideas later. Create or reuse one Resource note containing
+source metadata, a short summary, selected highlights, space for personal reflections, related links,
+and the preserved original. An Atomic Note is optional, not a required companion to every source.
 
-Use `process-inbox` for general triage, `create-note` for reusable conversation knowledge, and
-`save-session` for a session recap.
+Use `process-inbox` for general triage, `create-note` for explicitly requested independent ideas,
+and `save-session` for a session recap. An idea earns an Atomic Note when it stands independently of
+one source. Several sources may support the same idea; one source may support several ideas.
 
 ## 1. Resolve and read one source
 
 Read `../vault/SKILL.md` and the live `AGENTS.md` first. Use a supplied file or URL. Otherwise list
-the schema-defined raw Inbox and ask the user to choose one item. Read the complete source; fetch URL content directly when needed. Record whether the raw
-source already exists in the vault or must be archived from an external URL or file.
+the schema-defined Inbox and ask the user to choose one item. Read the complete available source;
+fetch URL content directly when needed. Identify its type, provenance, and whether it already exists
+in the vault. Report inaccessible or partial content explicitly.
 
 Do not batch an entire Inbox unless the user explicitly requests repeated one-at-a-time processing.
 
-Completion: one source, its type and provenance, and its raw-source archival state are known, and its
-content has been read.
+Completion: one source, its provenance, available content, and existing archival state are known.
 
 ## 2. Discuss before writing
 
-Search root `index.md` first for connected wiki pages. Use qmd when the catalog is ambiguous or the
-relevant language may occur only in page bodies. Read likely pages rather than reasoning from search
-snippets.
-
-Compare the source's ideas with likely Atomic Notes by scope, not title alone. Atomicity follows the
-idea, not the source:
-
-- **Same coherent idea:** recommend reusing the existing note and adding only the new Resource
-  backlink. A different source, author, framework, or example does not justify a duplicate note.
-- **Distinct reusable idea or question:** recommend a new scaffold and link it to the Resource.
-- **Unclear boundary:** show the closest existing note and ask whether the idea belongs there.
+Search root `index.md` first for the source and connected wiki pages. Use qmd when the catalog is
+ambiguous or relevant language may occur only in page bodies. Read likely matches rather than
+reasoning from search snippets. Reuse an existing Resource note for the same source.
 
 Present:
 
-1. two or three important ideas for discussion only;
-2. the closest existing Atomic Note and why it is the same idea or a different one;
-3. contradictions or uncertainty worth noticing;
-4. the raw-source destination, recommended existing-or-new Atomic Note target, backlink, and
-   index/log changes.
+1. two or three important ideas, plus contradictions or uncertainty worth noticing;
+2. the Resource destination and proposed summary, highlights, and related links;
+3. exact tag deltas under the shared vault tag contract and required index/log changes.
 
-Wait for the user to confirm the source destination and Atomic Note target. Discussion is mandatory,
-but its contents stay in the conversation unless the user explicitly requests another write.
+Link useful existing Atomic Notes from the Resource without requiring edits to those notes.
+Obsidian discovers inbound links automatically. A shared topic alone does not establish a useful
+connection. If no related note fits, proceed without one.
 
-Completion: the user approved the raw-source destination and either an existing Atomic Note or a new
-scaffold title.
+Keep personal interpretations in the conversation unless the user approves saving their wording or
+explicitly requests drafting help. A source summary describes the source, not the user's beliefs.
+If the user requests a new Atomic Note, hand it off to `create-note` with its own preview and approval;
+its creation is not an ingest completion requirement.
 
-## 3. Prepare the raw source
+Completion: the Resource target is known, the source has been discussed, and the proposed content,
+connections, and uncertainties are explicit. No Atomic Note target is required.
 
-Include one raw-source operation in the approved write set:
+## 3. Prepare one Resource note
 
-- **Inbox source:** move it unchanged to the schema-defined immutable source directory.
-- **External URL or file:** create the raw-source artifact in the schema-defined immutable directory.
-  Preserve the fetched original content or transcript, canonical URL, title, author/publisher when
-  known, retrieval date, and source type. Mark unavailable original content instead of replacing it
-  with a summary.
-- **Already filed source:** leave it unchanged and verify its path.
+Discover and read the relevant active Resource template if one exists. Preserve its fields and
+required structure. If none exists, preview the following structure with provenance metadata:
 
-After filing, treat the source as immutable. If filing fails, preserve the original and stop before
-creating the Atomic Note.
+```markdown
+## Summary
 
-Completion: one raw source has an approved destination and exact backlink title.
+## Highlights
 
-## 4. Prepare the Atomic Note target
+## My Notes
 
-Use the target the user approved:
+## Why this resonated
 
-- **Existing note:** preserve all current content and propose one bounded change: add one plain
-  wikilink to the filed `03 - Resources/*` note under its related-notes section. If that exact link
-  already exists, leave the note unchanged. Do not create another Atomic Note for the same idea.
-- **New note:** read the live Atomic Note template and confirm the destination does not exist. Create
-  one human-owned scaffold from the template. Resolve only its title and date fields, keep its
-  prompts, aliases, and tags otherwise unchanged, and add one plain wikilink to the filed Resource
-  note under the template's related-notes section.
+## Related notes
 
-The user writes the explanation, examples, connection, questions, tags, and aliases. The Atomic Note
-contains no new summaries, claims, headings, commentary, relationship explanations, agent ownership
-metadata, or agent-authored prose. Do not create a separate agent-owned synthesis page or enrich the
-note's prose during `ingest`.
+## Original article
+```
 
-Completion: an existing note has one approved Resource backlink, or a new scaffold differs from the
-live template only by resolved fields and that backlink.
+Use an appropriate original-content heading for videos, podcasts, books, and other source types.
+Populate sections as follows:
 
-## 5. Preview and write safely
+- **Summary:** a few sentences describing the source's main point. Attribute claims to the source
+  and disclose partial access rather than presenting a summary of unavailable material.
+- **Highlights:** a small selection of verbatim passages with source locations when available.
+  Distinguish quotations from commentary; avoid duplicating the entire source here.
+- **My Notes:** leave empty for the user unless they approve supplied wording or explicitly request
+  drafting help. Label any requested agent-drafted reflection as a draft, not an endorsed belief.
+- **Why this resonated:** leave empty unless the user supplies or explicitly requests the content.
+  Do not infer personal significance from the fact that they saved a source.
+- **Related notes:** approved links to verified existing notes, with brief connection descriptions
+  where useful. Leave empty when none fit.
+- **Original content:** preserve the fetched original text or transcript and attribution separately
+  from annotations. Include canonical URL, title, author/publisher when known, retrieval date, and
+  source type in the note's metadata or a clearly delimited provenance block. Mark unavailable
+  content rather than substituting the summary for the original.
 
-Show the complete write set before mutating the vault: the raw-source operation, the exact bounded
-Atomic Note change, any required catalog entry, and the ingest log entry. After approval:
+Apply this structure within the approved operation:
 
-1. file and verify the raw source;
-2. create the new scaffold or add the backlink to the approved existing note through the `vault`
-   safe-write flow, accounting for automatic template insertion;
-3. reread the Atomic Note and verify that the backlink is its only ingest-authored content;
-4. register the Resource under its source section in root `index.md`;
-5. for a new scaffold, register it under **Backlinks to human notes**, never **Concept notes**; keep an
-   existing note's current catalog placement and avoid a duplicate entry;
-6. append one ingest operation to root `log.md` and verify the registrations;
-7. run `obsidian open path="<vault-relative Atomic Note path>"` so the approved Atomic Note becomes
-   the active note for the user to write in immediately.
+- **Inbox source:** move it to the approved schema-defined source directory. Preserve its original
+  body, attribution, and existing personal prose. Wrapping original content in a source section or
+  adding annotation sections requires an exact preview and approval.
+- **External URL or file:** create one Resource artifact combining the preserved original and the
+  approved annotation sections. Do not create a second raw-source or synthesis note by default.
+- **Already filed source:** preserve existing structure, body, attribution, and personal prose.
+  Propose only missing or explicitly requested section changes; avoid duplicate sections or notes.
 
-Never interpolate generated Markdown into shell commands. Apart from the approved backlink, preserve
-human-owned pages, already-filed immutable sources, and existing Knowledge pages. Opening the note is
-the final action. If Obsidian or its CLI is unavailable, keep the completed ingestion intact and
-report the exact note path the user should open.
+Follow live `AGENTS.md` ownership and source permissions, including any immutability boundary. If
+annotations in the Resource are prohibited, explain the conflict and ask for direction before writing;
+this skill grants no exception. Change tags only within the exact approved scope and live permissions.
+Human ownership alone does not establish `type/original`, and an article annotation is not automatically
+`type/atomic`. Preserve existing bibliographic and plugin fields.
 
-Completion: the verified immutable source, reused note or template-only scaffold, index entries, and
-log entry exist, and the Atomic Note is open in Obsidian; every partial failure is explicit.
+Completion: one Resource operation is ready for approval, with preserved original content, clearly
+separated annotations, exact metadata changes, and no invented personal reflections.
+
+## 4. Preview and write safely
+
+Show the complete write set before mutating the vault: exact paths, source move or creation,
+proposed sections and content, tag deltas, catalog entry, and ingest log entry. After explicit approval:
+
+1. file or update the Resource through the `vault` safe-write flow, accounting for automatic template
+   insertion; if filing fails, preserve the original and report the failure;
+2. reread the Resource and verify one frontmatter block, resolved template fields, intact original
+   content and attribution, distinct annotation sections, and only approved metadata/prose changes;
+3. verify related links resolve without changing their targets;
+4. register the Resource under its source section in root `index.md`, avoiding duplicate entries;
+5. append one ingest operation to root `log.md` and verify both registrations;
+6. run `obsidian open path="<vault-relative Resource path>"` so the Resource becomes the active note
+   for the user to annotate.
+
+Never interpolate generated Markdown into shell commands. Preserve everything outside the approved
+write set. Existing Atomic Notes remain unchanged during this workflow. Opening the Resource is the
+final action. If Obsidian or its CLI is unavailable, keep completed ingestion intact and report the
+exact Resource path the user should open.
+
+Completion: one verified Resource note contains the available original and approved annotations,
+index/log registration is verified, and the Resource is open in Obsidian or its path is reported.
+Every blocked, partial, or unverified item is explicit. No Atomic Note creation is required.
 
 ## References
 
